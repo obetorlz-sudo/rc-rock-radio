@@ -16,11 +16,29 @@ const GENRES = [
   { id:'psychedelic', label:'Psychedelic', tag:'psychedelic rock', icon:'✦', desc:'Space · Psych · Stoner', bg:'radial-gradient(circle at 25% 20%,#ff3bba 0,transparent 22%),radial-gradient(circle at 75% 75%,#00c8ff 0,transparent 22%),linear-gradient(140deg,#20103d,#101116)' }
 ];
 
+
+const BANDS = [
+  {id:'iron-maiden',name:'Iron Maiden',query:'iron maiden',mono:'IM',desc:'Heavy Metal · NWOBHM',bg:'linear-gradient(135deg,#4a090d,#16131a 58%,#281052)'},
+  {id:'metallica',name:'Metallica',query:'metallica',mono:'M',desc:'Thrash · Heavy Metal',bg:'linear-gradient(135deg,#3b3d42,#121318 58%,#281010)'},
+  {id:'acdc',name:'AC/DC',query:'acdc',mono:'AC',desc:'Hard Rock · Classic',bg:'linear-gradient(135deg,#7a1018,#211014 58%,#09090b)'},
+  {id:'black-sabbath',name:'Black Sabbath',query:'black sabbath',mono:'BS',desc:'Heavy · Doom · Classic',bg:'linear-gradient(135deg,#221438,#0d1116 58%,#132d26)'},
+  {id:'guns-n-roses',name:"Guns N' Roses",query:'guns n roses',mono:'GNR',desc:'Hard Rock · 80s/90s',bg:'linear-gradient(135deg,#5b1510,#2a190c 58%,#09090b)'},
+  {id:'ozzy',name:'Ozzy Osbourne',query:'ozzy osbourne',mono:'OZ',desc:'Heavy Metal · Classic',bg:'linear-gradient(135deg,#38115c,#17101d 58%,#06070a)'},
+  {id:'pink-floyd',name:'Pink Floyd',query:'pink floyd',mono:'PF',desc:'Progressive · Psychedelic',bg:'linear-gradient(135deg,#4b163c,#101c35 58%,#06333a)'},
+  {id:'led-zeppelin',name:'Led Zeppelin',query:'led zeppelin',mono:'LZ',desc:'Classic · Hard Rock',bg:'linear-gradient(135deg,#56330a,#1a1510 58%,#15151b)'},
+  {id:'queen',name:'Queen',query:'queen',mono:'Q',desc:'Classic Rock · Arena',bg:'linear-gradient(135deg,#51183c,#1d1027 58%,#291a06)'},
+  {id:'nirvana',name:'Nirvana',query:'nirvana',mono:'N',desc:'Grunge · Alternative',bg:'linear-gradient(135deg,#5d4b04,#211d0b 58%,#101114)'},
+  {id:'dream-theater',name:'Dream Theater',query:'dream theater',mono:'DT',desc:'Progressive Metal',bg:'linear-gradient(135deg,#18336a,#141328 58%,#30144d)'},
+  {id:'judas-priest',name:'Judas Priest',query:'judas priest',mono:'JP',desc:'Heavy Metal · NWOBHM',bg:'linear-gradient(135deg,#5a0b18,#211016 58%,#191a20)'}
+];
+
 const MUSIC_TOKENS = ['rock','metal','grunge','blues','jazz','progressive','prog','psychedelic','stoner','alternative','hard rock','classic rock','fusion'];
 
 const state = {
   apiBase: API_SEEDS[0],
   currentGenre: GENRES[0],
+  currentBand: null,
+  bandStations: [],
   currentStations: [],
   mapStations: [],
   countries: [],
@@ -100,6 +118,47 @@ async function discoverMirrors(){
     const servers=await fetchJSON('/json/servers');
     [...new Set((servers||[]).map(s=>s.name).filter(Boolean).map(n=>`https://${n}`))].forEach(u=>{ if(!API_SEEDS.includes(u)) API_SEEDS.push(u); });
   }catch{}
+}
+
+function renderBands(){
+  const card=b=>`<button class="band-card ${state.currentBand?.id===b.id?'active':''}" data-band="${b.id}" style="--band-bg:${b.bg}"><span class="band-monogram">${esc(b.mono)}</span><strong>${esc(b.name)}</strong><small>${esc(b.desc)}</small><span class="band-live">BUSCAR RADIOS →</span></button>`;
+  const all=BANDS.map(card).join('');
+  if($('#bandGrid')) $('#bandGrid').innerHTML=all;
+  if($('#homeBandGrid')) $('#homeBandGrid').innerHTML=BANDS.slice(0,6).map(card).join('');
+}
+async function loadBandStations(bandId){
+  const band=BANDS.find(b=>b.id===bandId)||BANDS[0];
+  state.currentBand=band;
+  renderBands();
+  switchView('bands');
+  $('#bandStationsTitle').textContent=`${band.name} en vivo`;
+  $('#bandResultCopy').textContent=`Buscando emisoras dedicadas o relacionadas con ${band.name}…`;
+  $('#bandStatus').className='status-pill';
+  $('#bandStatus').innerHTML='<span></span> buscando';
+  skeletons($('#bandStations'),8);
+  try{
+    const base={hidebroken:'true',limit:'60',order:'clickcount',reverse:'true'};
+    const [byName,byTag]=await Promise.all([
+      fetchJSON(`/json/stations/search?${new URLSearchParams({...base,name:band.query})}`).catch(()=>[]),
+      fetchJSON(`/json/stations/search?${new URLSearchParams({...base,tag:band.query})}`).catch(()=>[])
+    ]);
+    let stations=mobileCompatible([...byName,...byTag]);
+    stations=uniqueStations(stations).sort((a,b)=>(Number(b.clickcount)||0)-(Number(a.clickcount)||0));
+    state.bandStations=stations;
+    state.currentStations=stations.length?stations:state.currentStations;
+    renderStations($('#bandStations'),stations.slice(0,28));
+    $('#bandStatus').className='status-pill online';
+    $('#bandStatus').innerHTML=`<span></span> ${stations.length} radios`;
+    $('#bandResultCopy').textContent=stations.length
+      ? `Emisoras encontradas para ${band.name}. Algunas son dedicadas y otras incluyen programación centrada en la banda.`
+      : `No encontramos una emisora compatible de ${band.name} en este momento. Prueba otra banda.`;
+  }catch{
+    state.bandStations=[];
+    renderStations($('#bandStations'),[]);
+    $('#bandStatus').className='status-pill error';
+    $('#bandStatus').innerHTML='<span></span> sin conexión';
+    $('#bandResultCopy').textContent='No fue posible consultar las radios de esta banda.';
+  }
 }
 
 function renderGenres(){
@@ -429,7 +488,7 @@ function switchView(view){
   state.view=view; $$('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${view}`));
   $$('.nav-item,.bottom-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
   $('#hero').style.display=view==='home'?'grid':'none'; $('#sidebar').classList.remove('open'); window.scrollTo({top:0,behavior:'smooth'});
-  if(view==='favorites') renderFavorites(); if(view==='recent') renderRecent();
+  if(view==='favorites') renderFavorites(); if(view==='recent') renderRecent(); if(view==='bands') renderBands();
   if(view==='map'){
     const signature=`${state.currentGenre.id}|${state.country}`;
     if(state.mapSignature!==signature) loadMapStations();
@@ -438,6 +497,8 @@ function switchView(view){
 
 function attachEvents(){
   document.addEventListener('click',e=>{
+    const band=e.target.closest('[data-band]');
+    if(band){ loadBandStations(band.dataset.band); return; }
     const genre=e.target.closest('[data-genre]');
     if(genre){ if(genre.closest('#genreGrid')) switchView('explore'); loadGenre(genre.dataset.genre,{target:'both'}); return; }
     const nav=e.target.closest('[data-view]'); if(nav){ switchView(nav.dataset.view); return; }
@@ -453,7 +514,7 @@ function attachEvents(){
   $('#nextBtn').addEventListener('click',()=>nextStation(1)); $('#sheetNext').addEventListener('click',()=>nextStation(1));
   $('#volume').addEventListener('input',e=>audio.volume=Number(e.target.value));
   $('#playerFavorite').addEventListener('click',()=>toggleFavorite(state.activeStation)); $('#sheetFavorite').addEventListener('click',()=>toggleFavorite(state.activeStation));
-  $('#refreshBtn').addEventListener('click',()=>state.view==='map'?loadMapStations():loadGenre(state.currentGenre.id,{target:'both'}));
+  $('#refreshBtn').addEventListener('click',()=>state.view==='map'?loadMapStations():(state.view==='bands'&&state.currentBand?loadBandStations(state.currentBand.id):loadGenre(state.currentGenre.id,{target:'both'})));
   $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
   $('#surpriseBtn').addEventListener('click',randomStation); $('#surpriseBtnTop').addEventListener('click',randomStation);
   $('#expandPlayerBtn').addEventListener('click',openPlayerSheet); $('#shareStationBtn').addEventListener('click',shareStation);
@@ -475,11 +536,11 @@ function attachEvents(){
 }
 
 async function init(){
-  renderGenres(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents();
+  renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents();
   if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
   showInstallButton();
   const requestedView=new URLSearchParams(location.search).get('view');
-  if(['home','explore','map','favorites','recent','about'].includes(requestedView)) switchView(requestedView);
+  if(['home','explore','map','bands','favorites','recent','about'].includes(requestedView)) switchView(requestedView);
   discoverMirrors(); loadCountries(); await loadGenre('rock',{target:'both'});
 }
 init();
