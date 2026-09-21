@@ -11,10 +11,10 @@
   <meta name="theme-color" content="#09090b" />
   <meta name="description" content="RC Rock Radio: radios de Rock, Metal, Progresivo, Grunge, Power Metal, Blues y Jazz de todo el mundo." />
   <title>RC Rock Radio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=10.0" />
-  <link rel="icon" href="icon.svg?v=10.0" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.webmanifest?v=11.0" />
+  <link rel="icon" href="icon.svg?v=11.0" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="styles.css?v=10.0" />
+  <link rel="stylesheet" href="styles.css?v=11.0" />
 </head>
 <body>
   <div class="noise"></div>
@@ -25,7 +25,7 @@
     <header class="topbar">
       <button class="icon-btn mobile-only" id="menuBtn" aria-label="Menú">☰</button>
       <div class="brand" role="banner">
-        <div class="brand-mark brand-mark-logo"><img src="icon.svg?v=10.0" alt="RC Rock Radio"></div>
+        <div class="brand-mark brand-mark-logo"><img src="icon.svg?v=11.0" alt="RC Rock Radio"></div>
         <div class="brand-copy">
           <div class="brand-name"><span>RC</span> ROCK RADIO</div>
           <div class="brand-tagline">MÁS QUE MÚSICA, ES ACTITUD</div>
@@ -43,6 +43,7 @@
         <button class="nav-item active" data-view="home"><span>⌂</span><b>Inicio</b></button>
         <button class="nav-item" data-view="explore"><span>⌕</span><b>Explorar</b></button>
         <button class="nav-item" data-view="map"><span>◎</span><b>Mapa mundial</b></button>
+        <button class="nav-item" data-view="bands"><span>★</span><b>Radios de Bandas</b></button>
         <button class="nav-item" data-view="favorites"><span>♥</span><b>Favoritos</b></button>
         <button class="nav-item" data-view="recent"><span>◴</span><b>Recientes</b></button>
         <button class="nav-item" data-view="about"><span>⚡</span><b>RC Rock</b></button>
@@ -96,6 +97,12 @@
           <button class="text-btn" data-jump="explore">Explorar →</button>
         </div>
         <div class="ranking-list" id="rankingList"></div>
+
+        <div class="section-head compact-top">
+          <div><span class="eyebrow">ESPECIALES</span><h2>Radios de Bandas</h2></div>
+          <button class="text-btn" data-jump="bands">Ver todas →</button>
+        </div>
+        <div class="band-grid band-grid-home" id="homeBandGrid"></div>
       </section>
 
       <section class="view" id="view-explore">
@@ -124,6 +131,16 @@
         <div class="map-fallback hidden" id="mapFallback">No se pudo cargar el mapa interactivo. Las radios siguen disponibles desde Explorar.</div>
       </section>
 
+      <section class="view" id="view-bands">
+        <div class="page-title"><span class="eyebrow">RADIOS ESPECIALES</span><h2>Radios de Bandas</h2><p>Busca emisoras dedicadas o especialmente enfocadas en tus bandas favoritas.</p></div>
+        <div class="band-grid" id="bandGrid"></div>
+        <div class="section-head compact-top band-results-head">
+          <div><span class="eyebrow">EN VIVO</span><h2 id="bandStationsTitle">Elige una banda</h2><p id="bandResultCopy">Selecciona una banda para buscar emisoras disponibles.</p></div>
+          <span class="status-pill" id="bandStatus"><span></span> esperando</span>
+        </div>
+        <div class="station-grid" id="bandStations"></div>
+      </section>
+
       <section class="view" id="view-favorites">
         <div class="page-title"><span class="eyebrow">TU COLECCIÓN</span><h2>Favoritos</h2><p>Las radios que guardaste quedan almacenadas en este dispositivo.</p></div>
         <div class="station-grid" id="favoriteStations"></div>
@@ -138,7 +155,7 @@
 
       <section class="view" id="view-about">
         <div class="about-panel">
-          <div class="about-logo about-logo-image"><img src="icon.svg?v=10.0" alt="RC Rock Radio"></div><span class="eyebrow">RC ROCK RADIO</span>
+          <div class="about-logo about-logo-image"><img src="icon.svg?v=11.0" alt="RC Rock Radio"></div><span class="eyebrow">RC ROCK RADIO</span>
           <h2>Una radio mundial hecha para escuchar fuerte.</h2>
           <p>RC Rock Radio reúne emisoras públicas de internet asociadas a Rock, Metal, Progresivo, Grunge, Power Metal, Blues, Jazz y estilos cercanos.</p>
           <div class="about-features">
@@ -173,6 +190,7 @@
       <button class="bottom-item active" data-view="home"><span>⌂</span><b>Inicio</b></button>
       <button class="bottom-item" data-view="explore"><span>⌕</span><b>Explorar</b></button>
       <button class="bottom-item" data-view="map"><span>◎</span><b>Mapa</b></button>
+      <button class="bottom-item" data-view="bands"><span>★</span><b>Bandas</b></button>
       <button class="bottom-item" data-view="favorites"><span>♥</span><b>Favoritos</b></button>
       <button class="bottom-item" data-view="recent"><span>◴</span><b>Recientes</b></button>
     </nav>
@@ -222,6 +240,6 @@
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=10.0" defer></script>
+  <script src="app.js?v=11.0" defer></script>
 </body>
 </html>
