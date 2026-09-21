@@ -4,7 +4,7 @@ import net from 'node:net';
 const RB_SERVERS=['https://de1.api.radio-browser.info','https://nl1.api.radio-browser.info'];
 const USER_AGENT='RC-Rock-Radio/6.0 (+https://rc-rock-radio.vercel.app)';
 
-function json(res,status,body,cache='public, s-maxage=18, stale-while-revalidate=30'){
+function json(res,status,body,cache='no-store, max-age=0, must-revalidate'){
   res.statusCode=status;
   res.setHeader('Content-Type','application/json; charset=utf-8');
   res.setHeader('Cache-Control',cache);
