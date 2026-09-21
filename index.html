@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="RC Rock Radio" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="description" content="RC Rock Radio: radios de Rock, Metal, Progresivo, Grunge, Power Metal, Blues y Jazz de todo el mundo." />
+  <title>RC Rock Radio</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <button class="icon-btn mobile-only" id="menuBtn" aria-label="Menú">☰</button>
+      <div class="brand" role="banner">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" class="brand-svg" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringGrad" x1="10" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff4a57"/>
+      <stop offset="0.55" stop-color="#ff7b31"/>
+      <stop offset="1" stop-color="#8a5cff"/>
+    </linearGradient>
+    <linearGradient id="cupGrad" x1="10" y1="18" x2="54" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff3347"/>
+      <stop offset="1" stop-color="#ff6a2d"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="29" fill="#0b0c10" stroke="url(#ringGrad)" stroke-width="2.6"/>
+  <circle cx="32" cy="32" r="22" fill="#11131a" stroke="rgba(255,255,255,.08)" stroke-width="1.2"/>
+  <path d="M18.6 29.6c0-8.7 6.4-15.6 13.4-15.6 7 0 13.4 6.9 13.4 15.6" fill="none" stroke="#f5f7fb" stroke-width="3.1" stroke-linecap="round"/>
+  <rect x="13.2" y="28.7" width="7.1" height="14.8" rx="3.1" fill="url(#cupGrad)"/>
+  <rect x="43.7" y="28.7" width="7.1" height="14.8" rx="3.1" fill="url(#cupGrad)"/>
+  <path d="M22.7 24.4c2.8-3.5 6-5.3 9.3-5.3 3.3 0 6.5 1.8 9.3 5.3 1.2 2.8 1.6 5.8 1.2 8.8-.8 6-4.5 10.5-10.5 13-6-2.5-9.7-7-10.5-13-.4-3 .1-6 1.2-8.8Z" fill="#f1f3f7"/>
+  <ellipse cx="27.1" cy="31.8" rx="3.1" ry="2.7" fill="#0b0c10"/>
+  <ellipse cx="36.9" cy="31.8" rx="3.1" ry="2.7" fill="#0b0c10"/>
+  <path d="M31.2 35.8h1.6l-.8-1.9Z" fill="#0b0c10"/>
+  <path d="M27.3 39.4c1.5 1.5 3 2.1 4.7 2.1 1.7 0 3.2-.7 4.7-2.1" fill="none" stroke="#0b0c10" stroke-width="2.1" stroke-linecap="round"/>
+  <path d="M11 13.2 20 16.4 16.6 20l2.7 4.7-10.3-3.8Z" fill="#ff3347" opacity=".95"/>
+  <path d="M53 13.2 44 16.4 47.4 20l-2.7 4.7 10.3-3.8Z" fill="#8a5cff" opacity=".95"/>
+  <path d="M26.2 49.2h11.6" stroke="#ff4e59" stroke-width="2.3" stroke-linecap="round" opacity=".9"/>
+</svg>
+        </div>
+        <div class="brand-copy">
+          <div class="brand-name"><span>RC</span> ROCK RADIO</div>
+          <div class="brand-tagline">MÁS QUE MÚSICA, ES ACTITUD</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="surpriseBtnTop" class="ghost-action" title="Radio aleatoria">⚡ Sorpréndeme</button>
+        <button id="installBtn" class="install-btn hidden">＋ Instalar</button>
+        <button class="icon-btn" id="refreshBtn" aria-label="Actualizar radios" title="Actualizar">↻</button>
+      </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+      <nav class="side-nav" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="home"><span>⌂</span><b>Inicio</b></button>
+        <button class="nav-item" data-view="explore"><span>⌕</span><b>Explorar</b></button>
+        <button class="nav-item" data-view="map"><span>◎</span><b>Mapa mundial</b></button>
+        <button class="nav-item" data-view="favorites"><span>♥</span><b>Favoritos</b></button>
+        <button class="nav-item" data-view="recent"><span>◴</span><b>Recientes</b></button>
+        <button class="nav-item" data-view="about"><span>⚡</span><b>RC Rock</b></button>
+      </nav>
+
+      <div class="sidebar-card">
+        <span class="live-dot"></span>
+        <div><strong>Radios en vivo</strong><small>Desde distintos países</small></div>
+      </div>
+      <div class="sidebar-quote">“EL ROCK TAMBIÉN UNE MUNDOS”</div>
+    </aside>
+
+    <main class="content">
+      <section class="hero" id="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">RADIO GLOBAL · SOLO BUENA MÚSICA</span>
+          <h1>Encuentra tu <span>frecuencia</span>.</h1>
+          <p>Rock, Metal, Progresivo, Grunge, Power Metal, Blues y Jazz de todo el mundo.</p>
+          <form class="search-wrap" id="searchForm">
+            <span>⌕</span>
+            <input id="searchInput" type="search" autocomplete="off" placeholder="Buscar radio, país o estilo…" aria-label="Buscar radio" />
+            <button type="submit">Buscar</button>
+          </form>
+          <div class="hero-actions">
+            <div class="quick-chips" id="quickChips"></div>
+            <button class="surprise-btn" id="surpriseBtn">⚡ RADIO ALEATORIA</button>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="vinyl"><div class="vinyl-center">RC</div></div>
+          <div class="eq-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="hero-word">LOUD</div>
+        </div>
+      </section>
+
+      <section class="view active" id="view-home">
+        <div class="section-head">
+          <div><span class="eyebrow">ELIGE TU SONIDO</span><h2>Géneros</h2></div>
+          <button class="text-btn" data-jump="explore">Ver todos →</button>
+        </div>
+        <div class="genre-grid" id="genreGrid"></div>
+
+        <div class="section-head compact-top">
+          <div><span class="eyebrow">RECOMENDADAS</span><h2 id="stationsTitle">Rock en vivo</h2></div>
+          <span class="status-pill" id="apiStatus"><span></span> conectando</span>
+        </div>
+        <div class="station-grid" id="featuredStations"></div>
+
+        <div class="section-head compact-top">
+          <div><span class="eyebrow">TENDENCIAS</span><h2>Top del momento</h2></div>
+          <button class="text-btn" data-jump="explore">Explorar →</button>
+        </div>
+        <div class="ranking-list" id="rankingList"></div>
+      </section>
+
+      <section class="view" id="view-explore">
+        <div class="page-title"><span class="eyebrow">DESCUBRE</span><h2>Explorar radios</h2><p>Filtra por género, país y popularidad.</p></div>
+        <div class="explore-toolbar">
+          <div class="filter-row" id="filterRow"></div>
+          <div class="select-row">
+            <label>País<select id="countrySelect"><option value="">Todos los países</option></select></label>
+            <label>Orden<select id="sortSelect"><option value="clickcount">Más escuchadas</option><option value="votes">Más votadas</option><option value="bitrate">Mayor bitrate</option><option value="name">Nombre A-Z</option><option value="random">Aleatorio</option></select></label>
+            <button id="clearFiltersBtn" class="secondary-btn">Limpiar filtros</button>
+          </div>
+        </div>
+        <div class="station-grid" id="exploreStations"></div>
+      </section>
+
+      <section class="view" id="view-map">
+        <div class="page-title"><span class="eyebrow">RADIO GLOBAL</span><h2>Mapa mundial</h2><p>Explora emisoras del género seleccionado que publican una ubicación geográfica.</p></div>
+        <div class="map-toolbar">
+          <div class="map-filter-copy"><b id="mapGenreLabel">Rock</b><span id="mapCount">Buscando radios geolocalizadas…</span></div>
+          <div class="select-row map-selects">
+            <label>País<select id="mapCountrySelect"><option value="">Todos los países</option></select></label>
+            <button id="reloadMapBtn" class="secondary-btn">Actualizar mapa</button>
+          </div>
+        </div>
+        <div id="radioMap" class="radio-map"></div>
+        <div class="map-fallback hidden" id="mapFallback">No se pudo cargar el mapa interactivo. Las radios siguen disponibles desde Explorar.</div>
+      </section>
+
+      <section class="view" id="view-favorites">
+        <div class="page-title"><span class="eyebrow">TU COLECCIÓN</span><h2>Favoritos</h2><p>Las radios que guardaste quedan almacenadas en este dispositivo.</p></div>
+        <div class="station-grid" id="favoriteStations"></div>
+        <div class="empty-state hidden" id="favoriteEmpty"><div>♥</div><h3>Aún no tienes favoritos</h3><p>Toca el corazón de una radio para guardarla aquí.</p></div>
+      </section>
+
+      <section class="view" id="view-recent">
+        <div class="page-title"><span class="eyebrow">HISTORIAL</span><h2>Escuchadas recientemente</h2><p>Vuelve rápidamente a las últimas emisoras que escuchaste.</p></div>
+        <div class="station-grid" id="recentStations"></div>
+        <div class="empty-state hidden" id="recentEmpty"><div>◴</div><h3>Sin historial todavía</h3><p>Cuando escuches una radio aparecerá aquí.</p></div>
+      </section>
+
+      <section class="view" id="view-about">
+        <div class="about-panel">
+          <div class="about-logo">⚡</div><span class="eyebrow">RC ROCK RADIO</span>
+          <h2>Una radio mundial hecha para escuchar fuerte.</h2>
+          <p>RC Rock Radio reúne emisoras públicas de internet asociadas a Rock, Metal, Progresivo, Grunge, Power Metal, Blues, Jazz y estilos cercanos.</p>
+          <div class="about-features">
+            <div><b>🌎 Mapa global</b><span>Explora radios que publican ubicación.</span></div>
+            <div><b>♥ Personal</b><span>Favoritos guardados localmente.</span></div>
+            <div><b>⚡ Descubrimiento</b><span>Radio aleatoria y ranking por género.</span></div>
+            <div><b>📻 Real</b><span>Streams provistos por las emisoras.</span></div>
+          </div>
+          <small>Algunas radios pueden no reproducirse por restricciones del propio stream, formato, geobloqueo o seguridad HTTPS.</small>
+        </div>
+      </section>
+    </main>
+
+    <footer class="player" id="player">
+      <button class="player-station player-open" id="expandPlayerBtn" aria-label="Abrir reproductor completo">
+        <div class="player-art" id="playerArt"><span>⚡</span></div>
+        <div class="player-meta"><div class="player-title-line"><strong id="playerName">Selecciona una radio</strong><span class="now-playing-inline" id="playerNowPlaying">Esperando canción…</span></div><span id="playerDetails">RC Rock Radio</span></div>
+        <span class="expand-symbol">⌃</span>
+      </button>
+      <button id="playerFavorite" class="heart-btn" aria-label="Agregar a favoritos">♡</button>
+      <div class="player-mini-viz" id="playerMiniViz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="player-controls">
+        <button id="prevBtn" class="control-btn" aria-label="Anterior">⏮</button>
+        <button id="playBtn" class="play-main" aria-label="Reproducir">▶</button>
+        <button id="nextBtn" class="control-btn" aria-label="Siguiente">⏭</button>
+      </div>
+      <div class="player-extra"><span id="liveLabel"><i></i> EN VIVO</span><span>🔊</span><input id="volume" type="range" min="0" max="1" step="0.01" value="0.85" aria-label="Volumen" /></div>
+      <audio id="audio" preload="none" playsinline></audio>
+    </footer>
+
+    <nav class="bottom-nav" aria-label="Navegación móvil">
+      <button class="bottom-item active" data-view="home"><span>⌂</span><b>Inicio</b></button>
+      <button class="bottom-item" data-view="explore"><span>⌕</span><b>Explorar</b></button>
+      <button class="bottom-item" data-view="map"><span>◎</span><b>Mapa</b></button>
+      <button class="bottom-item" data-view="favorites"><span>♥</span><b>Favoritos</b></button>
+      <button class="bottom-item" data-view="recent"><span>◴</span><b>Recientes</b></button>
+    </nav>
+  </div>
+
+  <section class="player-sheet hidden" id="playerSheet" aria-label="Reproductor completo">
+    <div class="sheet-backdrop" data-close-player></div>
+    <div class="sheet-card">
+      <div class="sheet-head"><span>REPRODUCTOR · EN VIVO</span><button class="sheet-close" data-close-player>×</button></div>
+      <div class="sheet-main">
+        <div class="sheet-cover" id="sheetCover"><span>⚡</span></div>
+        <div class="sheet-info">
+          <span class="eyebrow" id="sheetCountry">RADIO GLOBAL</span>
+          <h2 id="sheetName">RC Rock Radio</h2>
+          <p id="sheetTags">Selecciona una radio para comenzar.</p>
+          <div class="now-playing-card" id="nowPlayingCard"><span>SONANDO AHORA</span><strong id="sheetNowPlaying">Esperando información de la emisora…</strong><small id="sheetNowPlayingStatus">La app consultará los metadatos del stream.</small></div>
+          <div class="sheet-badges"><span id="sheetCodec">AUDIO</span><span id="sheetPopularity">0 escuchas</span><span id="sheetVotes">0 votos</span></div>
+          <div class="big-visualizer" id="bigVisualizer" aria-hidden="true"></div>
+          <div class="sheet-controls">
+            <button id="sheetPrev" class="round-secondary">⏮</button>
+            <button id="sheetPlay" class="round-primary">▶</button>
+            <button id="sheetNext" class="round-secondary">⏭</button>
+          </div>
+          <div class="sheet-actions">
+            <button id="sheetFavorite" class="secondary-btn">♡ Favorito</button>
+            <button id="shareStationBtn" class="secondary-btn">↗ Compartir</button>
+            <a id="stationWebsite" class="secondary-btn link-btn hidden" href="#" target="_blank" rel="noopener">🌐 Sitio web</a>
+          </div>
+          <div class="sleep-row"><label>Temporizador<select id="sleepTimer"><option value="0">Desactivado</option><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">60 minutos</option></select></label><span id="sleepStatus"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="install-sheet hidden" id="installSheet" aria-label="Instalar RC Rock Radio">
+    <div class="sheet-backdrop" data-close-install></div>
+    <div class="install-card">
+      <button class="sheet-close install-close" data-close-install aria-label="Cerrar">×</button>
+      <div class="install-logo"><img src="icons/icon-192.png" alt="RC Rock Radio"></div>
+      <span class="eyebrow">INSTALA RC ROCK RADIO</span>
+      <h2 id="installTitle">Lleva la radio en tu teléfono</h2>
+      <p id="installText">Instálala como una app para abrirla desde tu pantalla de inicio.</p>
+      <div class="install-steps" id="installSteps"></div>
+      <button class="install-confirm" id="nativeInstallBtn">Instalar ahora</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
