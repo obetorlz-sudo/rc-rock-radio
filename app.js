@@ -44,9 +44,12 @@ let deferredPrompt = null;
 let toastTimer = null;
 let sleepTimeout = null;
 let nowPlayingTimer = null;
+let nowPlayingInterval = null;
 let nowPlayingAbort = null;
 let nowPlayingStationKey = '';
 let nowPlayingMisses = 0;
+let nowPlayingRequestInFlight = false;
+const NOW_PLAYING_INTERVAL = 15000;
 
 function readStore(key, fallback){ try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function writeStore(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
@@ -182,8 +185,9 @@ function syncCountrySelects(){ $('#countrySelect').value=state.country; $('#mapC
 
 function clearNowPlayingMonitor(){
   clearTimeout(nowPlayingTimer); nowPlayingTimer=null;
+  clearInterval(nowPlayingInterval); nowPlayingInterval=null;
   if(nowPlayingAbort){ try{ nowPlayingAbort.abort(); }catch{} nowPlayingAbort=null; }
-  nowPlayingStationKey=''; nowPlayingMisses=0;
+  nowPlayingStationKey=''; nowPlayingMisses=0; nowPlayingRequestInFlight=false;
 }
 function resetNowPlaying(s){
   state.nowPlaying=null; state.nowPlayingStatus=s?'checking':'idle';
@@ -235,7 +239,7 @@ async function requestNowPlaying(s){
   if(nowPlayingAbort){ try{ nowPlayingAbort.abort(); }catch{} }
   nowPlayingAbort=new AbortController();
   try{
-    const r=await fetch(`/api/now-playing?uuid=${encodeURIComponent(s.stationuuid)}`,{cache:'no-store',signal:nowPlayingAbort.signal,headers:{Accept:'application/json'}});
+    const r=await fetch(`/api/now-playing?uuid=${encodeURIComponent(s.stationuuid)}&_=${Date.now()}`,{cache:'no-store',signal:nowPlayingAbort.signal,headers:{Accept:'application/json','Cache-Control':'no-cache'}});
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     return await r.json();
   }catch(e){
@@ -245,30 +249,42 @@ async function requestNowPlaying(s){
 }
 async function refreshNowPlaying(s){
   const key=stationKey(s);
-  if(!s || !state.activeStation || stationKey(state.activeStation)!==key || audio.paused) return;
+  if(!s || !state.activeStation || stationKey(state.activeStation)!==key || audio.paused || nowPlayingRequestInFlight) return;
   nowPlayingStationKey=key;
-  state.nowPlayingStatus='checking'; updateNowPlayingUI();
-  const data=await requestNowPlaying(s);
-  if(!data || !state.activeStation || stationKey(state.activeStation)!==key) return;
-  if(data.available && data.streamTitle){
-    const old=nowPlayingText();
-    state.nowPlaying={streamTitle:data.streamTitle,artist:data.artist||'',song:data.song||''};
-    state.nowPlayingStatus='available'; nowPlayingMisses=0;
-    updateNowPlayingUI(); updateMediaSession(s);
-    const current=nowPlayingText();
-    if(current && old && current!==old) toast(`Ahora suena: ${current}`);
-    nowPlayingTimer=setTimeout(()=>refreshNowPlaying(s),22000);
-  }else{
-    state.nowPlaying=null; state.nowPlayingStatus='unavailable'; nowPlayingMisses++;
-    updateNowPlayingUI(); updateMediaSession(s);
-    const delay=nowPlayingMisses>=2?60000:25000;
-    nowPlayingTimer=setTimeout(()=>refreshNowPlaying(s),delay);
+  nowPlayingRequestInFlight=true;
+  if(!state.nowPlaying) state.nowPlayingStatus='checking';
+  updateNowPlayingUI();
+  try{
+    const data=await requestNowPlaying(s);
+    if(!data || !state.activeStation || stationKey(state.activeStation)!==key) return;
+    if(data.available && data.streamTitle){
+      const old=nowPlayingText();
+      state.nowPlaying={streamTitle:data.streamTitle,artist:data.artist||'',song:data.song||''};
+      state.nowPlayingStatus='available';
+      nowPlayingMisses=0;
+      updateNowPlayingUI();
+      updateMediaSession(s);
+      const current=nowPlayingText();
+      if(current && old && current!==old) toast(`Ahora suena: ${current}`);
+    }else{
+      nowPlayingMisses++;
+      if(!state.nowPlaying && nowPlayingMisses>=2){
+        state.nowPlayingStatus='unavailable';
+        updateNowPlayingUI();
+        updateMediaSession(s);
+      }
+    }
+  }finally{
+    nowPlayingRequestInFlight=false;
   }
 }
 function startNowPlayingMonitor(s){
-  clearNowPlayingMonitor(); resetNowPlaying(s);
-  if(!s?.stationuuid) { state.nowPlayingStatus='unavailable'; updateNowPlayingUI(); return; }
-  setTimeout(()=>{ if(state.activeStation && stationKey(state.activeStation)===stationKey(s) && !audio.paused) refreshNowPlaying(s); },250);
+  clearNowPlayingMonitor();
+  resetNowPlaying(s);
+  if(!s?.stationuuid){ state.nowPlayingStatus='unavailable'; updateNowPlayingUI(); return; }
+  const run=()=>{ if(state.activeStation && stationKey(state.activeStation)===stationKey(s) && !audio.paused) refreshNowPlaying(s); };
+  setTimeout(run,200);
+  nowPlayingInterval=setInterval(run,NOW_PLAYING_INTERVAL);
 }
 
 async function playStation(s){
@@ -447,9 +463,11 @@ function attachEvents(){
   $('#sortSelect').addEventListener('change',e=>{state.sort=e.target.value;loadGenre(state.currentGenre.id,{target:'both'});});
   $('#clearFiltersBtn').addEventListener('click',()=>{state.country='';state.sort='clickcount';syncCountrySelects();$('#sortSelect').value='clickcount';loadGenre(state.currentGenre.id,{target:'both'});});
   $('#reloadMapBtn').addEventListener('click',loadMapStations);
-  audio.addEventListener('playing',()=>{state.isPlaying=true;updatePlayerButton(); if(state.activeStation && nowPlayingStationKey!==stationKey(state.activeStation)) startNowPlayingMonitor(state.activeStation);}); audio.addEventListener('pause',()=>{state.isPlaying=false;updatePlayerButton();clearNowPlayingMonitor();});
+  audio.addEventListener('playing',()=>{state.isPlaying=true;updatePlayerButton(); if(state.activeStation && (!nowPlayingInterval || nowPlayingStationKey!==stationKey(state.activeStation))) startNowPlayingMonitor(state.activeStation);}); audio.addEventListener('pause',()=>{state.isPlaying=false;updatePlayerButton();clearNowPlayingMonitor();});
   audio.addEventListener('error',()=>{state.isPlaying=false;updatePlayerButton();toast('El stream de esta radio no respondió. Prueba otra emisora.');});
   window.addEventListener('keydown',e=>{ if(e.key==='Escape') closePlayerSheet(); if(e.code==='Space'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();togglePlay();} });
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && state.activeStation && !audio.paused) refreshNowPlaying(state.activeStation); });
+  window.addEventListener('focus',()=>{ if(state.activeStation && !audio.paused) refreshNowPlaying(state.activeStation); });
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;showInstallButton();});
   window.addEventListener('appinstalled',()=>{state.isStandalone=true;deferredPrompt=null;$('#installBtn').classList.add('hidden');toast('RC Rock Radio instalada 🤘');});
   $('#installBtn').addEventListener('click',openInstallSheet);
