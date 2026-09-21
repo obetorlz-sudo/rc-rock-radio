@@ -211,11 +211,13 @@ function updateNowPlayingUI(){
     inline.textContent=`♫ ${text}`; inline.classList.add('detected');
     sheet.textContent=text;
     status.textContent='Detectado automáticamente desde los metadatos de la emisora.';
+    $('#playerName').textContent=`${s.name||'Radio'} · ${text}`;
   }else{
     inline.classList.remove('detected');
+    $('#playerName').textContent=s.name||'Radio';
     if(state.nowPlayingStatus==='checking'){
       inline.textContent='♫ Detectando canción…';
-      sheet.textContent='Detectando canción…';
+      sheet.textContent='Detectando canción y artista…';
       status.textContent='Consultando los metadatos del stream.';
     }else if(state.nowPlayingStatus==='unavailable'){
       inline.textContent='♫ Título no informado';
@@ -255,18 +257,18 @@ async function refreshNowPlaying(s){
     updateNowPlayingUI(); updateMediaSession(s);
     const current=nowPlayingText();
     if(current && old && current!==old) toast(`Ahora suena: ${current}`);
-    nowPlayingTimer=setTimeout(()=>refreshNowPlaying(s),45000);
+    nowPlayingTimer=setTimeout(()=>refreshNowPlaying(s),22000);
   }else{
     state.nowPlaying=null; state.nowPlayingStatus='unavailable'; nowPlayingMisses++;
     updateNowPlayingUI(); updateMediaSession(s);
-    const delay=nowPlayingMisses>=2?180000:90000;
+    const delay=nowPlayingMisses>=2?60000:25000;
     nowPlayingTimer=setTimeout(()=>refreshNowPlaying(s),delay);
   }
 }
 function startNowPlayingMonitor(s){
   clearNowPlayingMonitor(); resetNowPlaying(s);
   if(!s?.stationuuid) { state.nowPlayingStatus='unavailable'; updateNowPlayingUI(); return; }
-  setTimeout(()=>{ if(state.activeStation && stationKey(state.activeStation)===stationKey(s) && !audio.paused) refreshNowPlaying(s); },1800);
+  setTimeout(()=>{ if(state.activeStation && stationKey(state.activeStation)===stationKey(s) && !audio.paused) refreshNowPlaying(s); },250);
 }
 
 async function playStation(s){
@@ -288,7 +290,7 @@ function updatePlayerButton(){
 }
 function updatePlayerUI(){
   const s=state.activeStation; if(!s) return;
-  $('#playerName').textContent=s.name||'Radio'; $('#playerDetails').textContent=`${flag(s.countrycode)} ${s.country||'Mundo'} · ${qualityText(s)}`;
+  const npText=nowPlayingText(); $('#playerName').textContent=npText ? `${s.name||'Radio'} · ${npText}` : (s.name||'Radio'); $('#playerDetails').textContent=`${flag(s.countrycode)} ${s.country||'Mundo'} · ${qualityText(s)}`;
   const art=$('#playerArt'); art.innerHTML=s.favicon&&/^https?:\/\//i.test(s.favicon)?`<img src="${esc(s.favicon)}" alt="" onerror="this.parentNode.innerHTML='⚡'">`:'⚡';
   $('#playerFavorite').classList.toggle('active',isFavorite(s)); $('#playerFavorite').textContent=isFavorite(s)?'♥':'♡';
   $('#sheetName').textContent=s.name||'Radio'; $('#sheetCountry').textContent=`${flag(s.countrycode)} ${(s.country||'Mundo').toUpperCase()}`;
