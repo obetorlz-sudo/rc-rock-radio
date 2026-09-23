@@ -1,16 +1,12 @@
-const CACHE='rc-rock-radio-v14-rock-news';
-const ASSETS=['./','./index.html','./styles.css?v=14.0','./app.js?v=14.0','./manifest.webmanifest?v=14.0','./icon.svg?v=14.0','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
+const CACHE='rc-rock-radio-v15-fast-start';
+const ASSETS=['./','./index.html','./styles.css?v=15.0','./app.js?v=15.0','./manifest.webmanifest?v=15.0','./icon.svg?v=15.0','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
 
 self.addEventListener('activate',event=>{
-  event.waitUntil(
-    caches.keys()
-      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-      .then(()=>self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
 
 self.addEventListener('fetch',event=>{
@@ -25,42 +21,31 @@ self.addEventListener('fetch',event=>{
 
   if(event.request.mode==='navigate'){
     event.respondWith(
-      fetch(event.request,{cache:'no-store'})
-        .then(response=>{
-          const copy=response.clone();
-          caches.open(CACHE).then(c=>c.put('./index.html',copy));
-          return response;
-        })
-        .catch(()=>caches.match('./index.html'))
+      fetch(event.request,{cache:'no-store'}).then(response=>{
+        const copy=response.clone();
+        caches.open(CACHE).then(c=>c.put('./index.html',copy));
+        return response;
+      }).catch(()=>caches.match('./index.html'))
     );
     return;
   }
 
-  const mustRefresh=/\.(?:css|js|svg|png|webmanifest)$/i.test(url.pathname);
-  if(mustRefresh){
+  const isStatic=/\.(?:css|js|svg|png|webmanifest)$/i.test(url.pathname);
+  if(isStatic){
     event.respondWith(
-      fetch(event.request,{cache:'no-store'})
-        .then(response=>{
+      caches.match(event.request).then(cached=>{
+        if(cached) return cached;
+        return fetch(event.request).then(response=>{
           if(response.ok){
             const copy=response.clone();
             caches.open(CACHE).then(c=>c.put(event.request,copy));
           }
           return response;
-        })
-        .catch(()=>caches.match(event.request))
+        });
+      })
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(cached=>
-      cached||fetch(event.request).then(response=>{
-        if(response.ok){
-          const copy=response.clone();
-          caches.open(CACHE).then(c=>c.put(event.request,copy));
-        }
-        return response;
-      })
-    )
-  );
+  event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request)));
 });
