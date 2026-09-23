@@ -32,6 +32,74 @@ const BANDS = [
   {id:'judas-priest',name:'Judas Priest',query:'judas priest',mono:'JP',desc:'Heavy Metal · NWOBHM',bg:'linear-gradient(135deg,#5a0b18,#211016 58%,#191a20)'}
 ];
 
+
+const COUNTER_NS='rc-rock-radio.vercel.app';
+const COUNTER_BASE='https://counterapi.com/api';
+const THEMES=['red','blue','green','orange','purple'];
+
+function formatCommunityCount(v){
+  const n=Number(v)||0;
+  return new Intl.NumberFormat('es-CL',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
+}
+async function counterRequest(action,key,{readOnly=false,behavior='view'}={}){
+  const params=new URLSearchParams({behavior});
+  if(readOnly) params.set('readOnly','true');
+  const url=`${COUNTER_BASE}/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(action)}/${encodeURIComponent(key)}?${params}`;
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok) throw new Error('counter');
+  return await r.json();
+}
+async function initCommunityStats(){
+  const visitEl=$('#visitCount'), likeEl=$('#likeCount'), likeBtn=$('#likeBtn');
+  try{
+    let data;
+    if(!sessionStorage.getItem('rc_view_counted')){
+      data=await counterRequest('view','homepage',{behavior:'view'});
+      sessionStorage.setItem('rc_view_counted','1');
+    }else{
+      data=await counterRequest('view','homepage',{readOnly:true,behavior:'view'});
+    }
+    if(visitEl) visitEl.textContent=formatCommunityCount(data?.value);
+  }catch{ if(visitEl) visitEl.textContent='—'; }
+
+  try{
+    const data=await counterRequest('like','homepage',{readOnly:true,behavior:'vote'});
+    if(likeEl) likeEl.textContent=formatCommunityCount(data?.value);
+  }catch{ if(likeEl) likeEl.textContent='—'; }
+
+  const liked=localStorage.getItem('rc_like_given')==='1';
+  if(likeBtn){
+    likeBtn.classList.toggle('liked',liked);
+    if(liked) likeBtn.setAttribute('aria-pressed','true');
+  }
+}
+async function giveLike(){
+  const btn=$('#likeBtn'), count=$('#likeCount');
+  if(localStorage.getItem('rc_like_given')==='1'){
+    toast('Ya dejaste tu Me gusta 🤘');
+    return;
+  }
+  if(btn) btn.disabled=true;
+  try{
+    const data=await counterRequest('like','homepage',{behavior:'vote'});
+    localStorage.setItem('rc_like_given','1');
+    if(count) count.textContent=formatCommunityCount(data?.value);
+    if(btn){btn.classList.add('liked');btn.setAttribute('aria-pressed','true');}
+    toast('¡Gracias por apoyar RC Rock Radio! 🤘');
+  }catch{
+    toast('No pudimos registrar el Me gusta en este momento.');
+  }finally{ if(btn) btn.disabled=false; }
+}
+function applyTheme(theme,{save=true}={}){
+  const selected=THEMES.includes(theme)?theme:'red';
+  document.documentElement.dataset.theme=selected;
+  const picker=$('#themeSelect'); if(picker) picker.value=selected;
+  if(save) localStorage.setItem('rc_theme',selected);
+}
+function initTheme(){
+  applyTheme(localStorage.getItem('rc_theme')||'red',{save:false});
+}
+
 const MUSIC_TOKENS = ['rock','metal','grunge','blues','jazz','progressive','prog','psychedelic','stoner','alternative','hard rock','classic rock','fusion'];
 
 const state = {
@@ -531,12 +599,14 @@ function attachEvents(){
   window.addEventListener('focus',()=>{ if(state.activeStation && !audio.paused) refreshNowPlaying(state.activeStation); });
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;showInstallButton();});
   window.addEventListener('appinstalled',()=>{state.isStandalone=true;deferredPrompt=null;$('#installBtn').classList.add('hidden');toast('RC Rock Radio instalada 🤘');});
+  $('#likeBtn')?.addEventListener('click',giveLike);
+  $('#themeSelect')?.addEventListener('change',e=>{applyTheme(e.target.value);toast('Tema actualizado');});
   $('#installBtn').addEventListener('click',openInstallSheet);
   $('#nativeInstallBtn').addEventListener('click',triggerNativeInstall);
 }
 
 async function init(){
-  renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents();
+  initTheme(); renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents(); initCommunityStats();
   if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
   showInstallButton();
   const requestedView=new URLSearchParams(location.search).get('view');
