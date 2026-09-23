@@ -714,7 +714,8 @@ function attachEvents(){
     if(e.target.closest('[data-close-player]')){ closePlayerSheet(); return; }
     if(e.target.closest('[data-close-install]')){ closeInstallSheet(); return; }
   });
-  $('#searchForm').addEventListener('submit',e=>{e.preventDefault();searchStations($('#searchInput').value)});
+  $('#searchForm').addEventListener('submit',e=>{e.preventDefault();const q=$('#searchInput').value; if($('#exploreSearchInput')) $('#exploreSearchInput').value=q; searchStations(q)});
+  $('#exploreSearchForm')?.addEventListener('submit',e=>{e.preventDefault();const q=$('#exploreSearchInput').value; if($('#searchInput')) $('#searchInput').value=q; searchStations(q)});
   $('#playBtn').addEventListener('click',togglePlay); $('#sheetPlay').addEventListener('click',togglePlay);
   $('#prevBtn').addEventListener('click',()=>nextStation(-1)); $('#sheetPrev').addEventListener('click',()=>nextStation(-1));
   $('#nextBtn').addEventListener('click',()=>nextStation(1)); $('#sheetNext').addEventListener('click',()=>nextStation(1));
@@ -728,7 +729,7 @@ function attachEvents(){
   $('#countrySelect').addEventListener('change',e=>{state.country=e.target.value;syncCountrySelects();loadGenre(state.currentGenre.id,{target:'both'});});
   $('#mapCountrySelect').addEventListener('change',e=>{state.country=e.target.value;syncCountrySelects();state.mapSignature='';loadMapStations();});
   $('#sortSelect').addEventListener('change',e=>{state.sort=e.target.value;loadGenre(state.currentGenre.id,{target:'both'});});
-  $('#clearFiltersBtn').addEventListener('click',()=>{state.country='';state.sort='clickcount';syncCountrySelects();$('#sortSelect').value='clickcount';loadGenre(state.currentGenre.id,{target:'both'});});
+  $('#clearFiltersBtn').addEventListener('click',()=>{state.country='';state.sort='clickcount';syncCountrySelects();$('#sortSelect').value='clickcount';if($('#exploreSearchInput')) $('#exploreSearchInput').value='';if($('#searchInput')) $('#searchInput').value='';loadGenre(state.currentGenre.id,{target:'both'});});
   $('#reloadMapBtn').addEventListener('click',loadMapStations);
   audio.addEventListener('playing',()=>{state.isPlaying=true;updatePlayerButton(); if(state.activeStation && (!nowPlayingInterval || nowPlayingStationKey!==stationKey(state.activeStation))) startNowPlayingMonitor(state.activeStation);}); audio.addEventListener('pause',()=>{state.isPlaying=false;updatePlayerButton();clearNowPlayingMonitor();});
   audio.addEventListener('error',()=>{state.isPlaying=false;updatePlayerButton();toast('El stream de esta radio no respondió. Prueba otra emisora.');});
