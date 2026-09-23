@@ -373,19 +373,89 @@ async function loadGenre(genreId,{target='both'}={}){
   }
 }
 
+function normalizeSearchText(value=''){
+  return String(value)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,'')
+    .trim();
+}
+function detectGenre(term){
+  const n=normalizeSearchText(term);
+  if(!n) return null;
+  const aliases={
+    rock:'rock',
+    metal:'metal',
+    progresivo:'progressive',
+    progressive:'progressive',
+    prog:'progressive',
+    grunge:'grunge',
+    powermetal:'power-metal',
+    power:'power-metal',
+    blues:'blues',
+    jazz:'jazz',
+    hardrock:'hard-rock',
+    classicrock:'classic-rock',
+    rockclasico:'classic-rock',
+    psychedelic:'psychedelic',
+    psychedelicrock:'psychedelic',
+    psicodelico:'psychedelic',
+    rockpsicodelico:'psychedelic'
+  };
+  if(aliases[n]) return GENRES.find(g=>g.id===aliases[n])||null;
+  return GENRES.find(g=>[g.id,g.label,g.tag].some(v=>normalizeSearchText(v)===n))||null;
+}
+function detectCountry(term){
+  const n=normalizeSearchText(term);
+  if(!n) return null;
+  return (state.countries||[]).find(c=>normalizeSearchText(c.name)===n)||null;
+}
 async function searchStations(term){
-  const clean=term.trim(); if(!clean) return loadGenre(state.currentGenre.id,{target:'explore'});
-  switchView('explore'); skeletons($('#exploreStations'),12); setApiStatus('', 'buscando');
+  const clean=term.trim();
+  if(!clean) return loadGenre(state.currentGenre.id,{target:'explore'});
+
+  switchView('explore');
+
+  const genre=detectGenre(clean);
+  if(genre){
+    state.country='';
+    syncCountrySelects();
+    state.currentGenre=genre;
+    $('.chip[data-genre]').forEach(b=>b.classList.toggle('active',b.dataset.genre===genre.id));
+    if($('#exploreSearchInput')) $('#exploreSearchInput').value=genre.label;
+    if($('#searchInput')) $('#searchInput').value=genre.label;
+    return loadGenre(genre.id,{target:'explore'});
+  }
+
+  const country=detectCountry(clean);
+  if(country){
+    state.country=country.name;
+    syncCountrySelects();
+    $('.chip[data-genre]').forEach(b=>b.classList.toggle('active',b.dataset.genre===state.currentGenre.id));
+    $('#stationsTitle').textContent=`${state.currentGenre.label} en ${country.name}`;
+    return loadGenre(state.currentGenre.id,{target:'explore'});
+  }
+
+  // Búsqueda libre: no fingir que "Rock" fue el filtro elegido.
+  $('.chip[data-genre]').forEach(b=>b.classList.remove('active'));
+  skeletons($('#exploreStations'),10);
+  setApiStatus('', 'buscando');
   try{
-    const base={hidebroken:'true',limit:'50',order:'clickcount',reverse:'true'};
+    const base={hidebroken:'true',limit:'60',order:'clickcount',reverse:'true'};
     const [byName,byTag,byCountry]=await Promise.all([
       fetchJSON(`/json/stations/search?${new URLSearchParams({...base,name:clean})}`).catch(()=>[]),
       fetchJSON(`/json/stations/search?${new URLSearchParams({...base,tag:clean})}`).catch(()=>[]),
       fetchJSON(`/json/stations/search?${new URLSearchParams({...base,country:clean})}`).catch(()=>[])
     ]);
-    const uniq=mobileCompatible([...byName,...byTag,...byCountry]).filter(matchesMusicProfile);
-    state.currentStations=uniq; renderStations($('#exploreStations'),uniq.slice(0,32)); renderRanking(); setApiStatus('online',`${uniq.length} resultados`);
-  }catch{ renderStations($('#exploreStations'),[]); setApiStatus('error','error de búsqueda'); }
+    const uniq=mobileCompatible([...byName,...byTag,...byCountry]);
+    state.currentStations=uniq;
+    renderStations($('#exploreStations'),uniq.slice(0,32));
+    renderRanking();
+    setApiStatus('online',`${uniq.length} resultados`);
+  }catch{
+    renderStations($('#exploreStations'),[]);
+    setApiStatus('error','error de búsqueda');
+  }
 }
 
 async function loadCountries(){
@@ -706,7 +776,7 @@ function attachEvents(){
     const band=e.target.closest('[data-band]');
     if(band){ loadBandStations(band.dataset.band); return; }
     const genre=e.target.closest('[data-genre]');
-    if(genre){ if(genre.closest('#genreGrid')) switchView('explore'); loadGenre(genre.dataset.genre,{target:'both'}); return; }
+    if(genre){ if($('#exploreSearchInput')) $('#exploreSearchInput').value='';if($('#searchInput')) $('#searchInput').value=''; if(genre.closest('#genreGrid')) switchView('explore'); loadGenre(genre.dataset.genre,{target:'both'}); return; }
     const nav=e.target.closest('[data-view]'); if(nav){ switchView(nav.dataset.view); return; }
     const jump=e.target.closest('[data-jump]'); if(jump){ switchView(jump.dataset.jump); return; }
     const play=e.target.closest('[data-play]'); if(play){ playStation(findStation(play.dataset.play)); return; }
@@ -726,7 +796,7 @@ function attachEvents(){
   $('#surpriseBtn').addEventListener('click',randomStation); $('#surpriseBtnTop').addEventListener('click',randomStation);
   $('#expandPlayerBtn').addEventListener('click',openPlayerSheet); $('#shareStationBtn').addEventListener('click',shareStation);
   $('#sleepTimer').addEventListener('change',e=>setSleepTimer(Number(e.target.value)));
-  $('#countrySelect').addEventListener('change',e=>{state.country=e.target.value;syncCountrySelects();loadGenre(state.currentGenre.id,{target:'both'});});
+  $('#countrySelect').addEventListener('change',e=>{state.country=e.target.value;syncCountrySelects();if($('#exploreSearchInput')) $('#exploreSearchInput').value='';if($('#searchInput')) $('#searchInput').value='';loadGenre(state.currentGenre.id,{target:'both'});});
   $('#mapCountrySelect').addEventListener('change',e=>{state.country=e.target.value;syncCountrySelects();state.mapSignature='';loadMapStations();});
   $('#sortSelect').addEventListener('change',e=>{state.sort=e.target.value;loadGenre(state.currentGenre.id,{target:'both'});});
   $('#clearFiltersBtn').addEventListener('click',()=>{state.country='';state.sort='clickcount';syncCountrySelects();$('#sortSelect').value='clickcount';if($('#exploreSearchInput')) $('#exploreSearchInput').value='';if($('#searchInput')) $('#searchInput').value='';loadGenre(state.currentGenre.id,{target:'both'});});
