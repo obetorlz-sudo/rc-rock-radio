@@ -148,3 +148,23 @@ body .map-pin .map-tip{background:rgba(8,10,16,.94)!important;border:1px solid r
 .community-like.liked{background:linear-gradient(135deg,color-mix(in srgb,var(--red) 24%,#111),#11131a);border-color:color-mix(in srgb,var(--red) 50%,transparent)}.community-like.liked span{color:var(--red)}
 .theme-picker{padding-right:8px}.theme-picker>span{font-size:10px;color:var(--muted);font-weight:800}.theme-picker select{height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#0e1016;color:#fff;padding:0 8px;outline:none;cursor:pointer}
 @media(max-width:620px){.community-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.theme-picker{grid-column:1/-1}.community-stat,.community-like,.theme-picker{width:100%;justify-content:center}.theme-picker select{flex:1}}
+
+/* V14 rock news carousel */
+.news-section-head p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.news-arrows{display:flex;gap:8px}
+.news-arrows .icon-btn{font-size:28px;line-height:1}
+.news-status{font-size:11px;color:var(--muted);margin:-4px 0 12px}
+.news-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:2px 2px 12px;scrollbar-width:thin;scrollbar-color:var(--red) transparent}
+.news-card{position:relative;flex:0 0 min(360px,82vw);min-height:330px;border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;background:#101117;scroll-snap-align:start;box-shadow:0 16px 38px rgba(0,0,0,.28)}
+.news-art{height:175px;position:relative;overflow:hidden;background:radial-gradient(circle at 25% 20%,color-mix(in srgb,var(--red) 55%,transparent),transparent 34%),radial-gradient(circle at 80% 75%,color-mix(in srgb,var(--purple) 40%,transparent),transparent 28%),linear-gradient(135deg,#151720,#08090c)}
+.news-art img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.news-card:hover .news-art img{transform:scale(1.035)}
+.news-art-fallback{height:100%;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:24px;letter-spacing:2px;color:rgba(255,255,255,.72)}
+.news-source{position:absolute;left:12px;top:12px;padding:6px 9px;border-radius:999px;background:rgba(5,5,8,.82);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);font-size:9px;font-weight:900;letter-spacing:.8px;text-transform:uppercase}
+.news-body{padding:16px}
+.news-meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px;margin-bottom:8px}
+.news-body h3{font-size:16px;line-height:1.27;margin:0 0 8px}
+.news-body p{font-size:11px;line-height:1.5;color:#b3b5be;margin:0 0 14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-link{display:inline-flex;align-items:center;gap:6px;color:#fff;text-decoration:none;font-size:11px;font-weight:900;padding:9px 11px;border-radius:11px;background:linear-gradient(135deg,var(--red),var(--red2))}
+.news-empty{min-width:100%;padding:28px;border:1px dashed rgba(255,255,255,.12);border-radius:18px;color:var(--muted);text-align:center}
+@media(max-width:620px){.news-card{flex-basis:86vw;min-height:310px}.news-art{height:155px}.news-section-head{align-items:flex-end}.news-section-head p{max-width:240px}}
