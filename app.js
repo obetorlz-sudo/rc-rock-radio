@@ -97,7 +97,7 @@ function applyTheme(theme,{save=true}={}){
   if(save) localStorage.setItem('rc_theme',selected);
 }
 function initTheme(){
-  applyTheme(localStorage.getItem('rc_theme')||'red',{save:false});
+  applyTheme(localStorage.getItem('rc_theme')||'orange',{save:false});
 }
 
 const MUSIC_TOKENS = ['rock','metal','grunge','blues','jazz','progressive','prog','psychedelic','stoner','alternative','hard rock','classic rock','fusion'];
