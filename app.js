@@ -33,44 +33,50 @@ const BANDS = [
 ];
 
 
-const COUNTER_NS='rc-rock-radio.vercel.app';
-const COUNTER_BASE='https://counterapi.com/api';
 const THEMES=['red','blue','green','orange','purple'];
 
 function formatCommunityCount(v){
-  const n=Number(v)||0;
+  const n=Math.max(0,Number(v)||0);
   return new Intl.NumberFormat('es-CL',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
 }
-async function counterRequest(action,key,{readOnly=false,behavior='view'}={}){
-  const params=new URLSearchParams({behavior});
-  if(readOnly) params.set('readOnly','true');
-  const url=`${COUNTER_BASE}/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(action)}/${encodeURIComponent(key)}?${params}`;
-  const r=await fetch(url,{cache:'no-store'});
-  if(!r.ok) throw new Error('counter');
-  return await r.json();
+function getCommunityUserId(){
+  let id=localStorage.getItem('rc_community_uid');
+  if(!id){
+    const rnd=(globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-zA-Z0-9_-]/g,'');
+    id='rc_'+rnd.slice(0,64);
+    localStorage.setItem('rc_community_uid',id);
+  }
+  return id;
+}
+async function communityRequest(type,mode='get'){
+  const uid=getCommunityUserId();
+  const url=`/api/community?type=${encodeURIComponent(type)}&mode=${encodeURIComponent(mode)}&uid=${encodeURIComponent(uid)}&_=${Date.now()}`;
+  const r=await fetch(url,{cache:'no-store',headers:{Accept:'application/json','Cache-Control':'no-cache'}});
+  if(!r.ok) throw new Error(`community-${r.status}`);
+  const data=await r.json();
+  if(!data?.ok || !Number.isFinite(Number(data.value))) throw new Error('community-invalid');
+  return Number(data.value);
 }
 async function initCommunityStats(){
   const visitEl=$('#visitCount'), likeEl=$('#likeCount'), likeBtn=$('#likeBtn');
+  const visitMode=localStorage.getItem('rc_visit_counted_v2')==='1'?'get':'inc';
   try{
-    let data;
-    if(!sessionStorage.getItem('rc_view_counted')){
-      data=await counterRequest('view','homepage',{behavior:'view'});
-      sessionStorage.setItem('rc_view_counted','1');
-    }else{
-      data=await counterRequest('view','homepage',{readOnly:true,behavior:'view'});
-    }
-    if(visitEl) visitEl.textContent=formatCommunityCount(data?.value);
-  }catch{ if(visitEl) visitEl.textContent='—'; }
-
+    const value=await communityRequest('visit',visitMode);
+    if(visitMode==='inc') localStorage.setItem('rc_visit_counted_v2','1');
+    if(visitEl) visitEl.textContent=formatCommunityCount(value);
+  }catch{
+    if(visitEl) visitEl.textContent='—';
+  }
   try{
-    const data=await counterRequest('like','homepage',{readOnly:true,behavior:'vote'});
-    if(likeEl) likeEl.textContent=formatCommunityCount(data?.value);
-  }catch{ if(likeEl) likeEl.textContent='—'; }
-
+    const value=await communityRequest('like','get');
+    if(likeEl) likeEl.textContent=formatCommunityCount(value);
+  }catch{
+    if(likeEl) likeEl.textContent='—';
+  }
   const liked=localStorage.getItem('rc_like_given')==='1';
   if(likeBtn){
     likeBtn.classList.toggle('liked',liked);
-    if(liked) likeBtn.setAttribute('aria-pressed','true');
+    likeBtn.setAttribute('aria-pressed',liked?'true':'false');
   }
 }
 async function giveLike(){
@@ -81,17 +87,19 @@ async function giveLike(){
   }
   if(btn) btn.disabled=true;
   try{
-    const data=await counterRequest('like','homepage',{behavior:'vote'});
+    const value=await communityRequest('like','inc');
     localStorage.setItem('rc_like_given','1');
-    if(count) count.textContent=formatCommunityCount(data?.value);
+    if(count) count.textContent=formatCommunityCount(value);
     if(btn){btn.classList.add('liked');btn.setAttribute('aria-pressed','true');}
     toast('¡Gracias por apoyar RC Rock Radio! 🤘');
   }catch{
     toast('No pudimos registrar el Me gusta en este momento.');
-  }finally{ if(btn) btn.disabled=false; }
+  }finally{
+    if(btn) btn.disabled=false;
+  }
 }
 function applyTheme(theme,{save=true}={}){
-  const selected=THEMES.includes(theme)?theme:'red';
+  const selected=THEMES.includes(theme)?theme:'orange';
   document.documentElement.dataset.theme=selected;
   const picker=$('#themeSelect'); if(picker) picker.value=selected;
   if(save) localStorage.setItem('rc_theme',selected);
