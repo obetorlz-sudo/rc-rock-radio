@@ -11,10 +11,10 @@
   <meta name="theme-color" content="#09090b" />
   <meta name="description" content="RC Rock Radio: radios de Rock, Metal, Progresivo, Grunge, Power Metal, Blues y Jazz de todo el mundo." />
   <title>RC Rock Radio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=11.0" />
-  <link rel="icon" href="icon.svg?v=11.0" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.webmanifest?v=12.0" />
+  <link rel="icon" href="icon.svg?v=12.0" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="styles.css?v=11.0" />
+  <link rel="stylesheet" href="styles.css?v=12.0" />
 </head>
 <body>
   <div class="noise"></div>
@@ -25,7 +25,7 @@
     <header class="topbar">
       <button class="icon-btn mobile-only" id="menuBtn" aria-label="Menú">☰</button>
       <div class="brand" role="banner">
-        <div class="brand-mark brand-mark-logo"><img src="icon.svg?v=11.0" alt="RC Rock Radio"></div>
+        <div class="brand-mark brand-mark-logo"><img src="icon.svg?v=12.0" alt="RC Rock Radio"></div>
         <div class="brand-copy">
           <div class="brand-name"><span>RC</span> ROCK RADIO</div>
           <div class="brand-tagline">MÁS QUE MÚSICA, ES ACTITUD</div>
@@ -70,6 +70,19 @@
           <div class="hero-actions">
             <div class="quick-chips" id="quickChips"></div>
             <button class="surprise-btn" id="surpriseBtn">⚡ RADIO ALEATORIA</button>
+          </div>
+          <div class="community-bar" aria-label="Comunidad RC Rock Radio">
+            <div class="community-stat"><span>👁</span><strong id="visitCount">—</strong><small>visitas</small></div>
+            <button class="community-like" id="likeBtn" type="button" aria-label="Me gusta RC Rock Radio"><span>♥</span><strong id="likeCount">—</strong><small>Me gusta</small></button>
+            <label class="theme-picker">🎨 <span>Tema</span>
+              <select id="themeSelect" aria-label="Combinación de colores">
+                <option value="red">Negro + Rojo</option>
+                <option value="blue">Negro + Azul</option>
+                <option value="green">Negro + Verde</option>
+                <option value="orange">Negro + Naranja</option>
+                <option value="purple">Negro + Morado</option>
+              </select>
+            </label>
           </div>
         </div>
         <div class="hero-visual" aria-hidden="true">
@@ -155,7 +168,7 @@
 
       <section class="view" id="view-about">
         <div class="about-panel">
-          <div class="about-logo about-logo-image"><img src="icon.svg?v=11.0" alt="RC Rock Radio"></div><span class="eyebrow">RC ROCK RADIO</span>
+          <div class="about-logo about-logo-image"><img src="icon.svg?v=12.0" alt="RC Rock Radio"></div><span class="eyebrow">RC ROCK RADIO</span>
           <h2>Una radio mundial hecha para escuchar fuerte.</h2>
           <p>RC Rock Radio reúne emisoras públicas de internet asociadas a Rock, Metal, Progresivo, Grunge, Power Metal, Blues, Jazz y estilos cercanos.</p>
           <div class="about-features">
@@ -240,6 +253,6 @@
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=11.0" defer></script>
+  <script src="app.js?v=12.0" defer></script>
 </body>
 </html>
