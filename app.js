@@ -175,12 +175,28 @@ function uniqueStations(list){ return (list||[]).filter(s=>s&&(s.url_resolved||s
 function matchesMusicProfile(s){ const tags=(s?.tags||'').toLowerCase(); if(!tags) return true; return MUSIC_TOKENS.some(t=>tags.includes(t)); }
 function formatNumber(value){ return new Intl.NumberFormat('es-CL',{notation:Number(value)>=10000?'compact':'standard',maximumFractionDigits:1}).format(Number(value)||0); }
 
+function readTimedCache(key,maxAge=6*60*60*1000){
+  try{
+    const item=JSON.parse(localStorage.getItem(key)||'null');
+    if(!item || !Array.isArray(item.data) || Date.now()-Number(item.ts||0)>maxAge) return null;
+    return item.data;
+  }catch{return null;}
+}
+function writeTimedCache(key,data){
+  try{localStorage.setItem(key,JSON.stringify({ts:Date.now(),data}));}catch{}
+}
+function deferTask(fn,delay=800){
+  const run=()=>{try{fn();}catch{}};
+  if('requestIdleCallback' in window) window.requestIdleCallback(run,{timeout:delay+1200});
+  else setTimeout(run,delay);
+}
+
 async function fetchJSON(path){
   let lastErr;
   const bases=[state.apiBase,...API_SEEDS.filter(x=>x!==state.apiBase)];
   for(const base of bases){
     try{
-      const ctrl=new AbortController(); const timer=setTimeout(()=>ctrl.abort(),10000);
+      const ctrl=new AbortController(); const timer=setTimeout(()=>ctrl.abort(),5500);
       const response=await fetch(base+path,{signal:ctrl.signal,headers:{Accept:'application/json'}}); clearTimeout(timer);
       if(!response.ok) throw new Error(`HTTP ${response.status}`);
       const data=await response.json(); state.apiBase=base; return data;
@@ -257,16 +273,22 @@ function renderRockNews(items){
 }
 async function loadRockNews(){
   const status=$('#newsStatus');
+  const cached=readTimedCache('rc_rock_news_cache',60*60*1000);
+  if(cached?.length){
+    renderRockNews(cached);
+    if(status) status.textContent=cached.length+' noticias · actualizando…';
+  }
   if(status) status.textContent='Actualizando noticias de rock y metal…';
   try{
     const r=await fetch('/api/rock-news?_='+Date.now(),{cache:'no-store',headers:{Accept:'application/json'}});
     if(!r.ok) throw new Error('news');
     const data=await r.json();
     renderRockNews(data.items||[]);
+    if(data.items?.length) writeTimedCache('rc_rock_news_cache',data.items);
     if(status) status.textContent=(data.items&&data.items.length)?(data.items.length+' noticias recientes · Fuentes externas'):'Sin noticias disponibles ahora';
   }catch{
-    renderRockNews([]);
-    if(status) status.textContent='No fue posible actualizar las noticias.';
+    if(!cached?.length) renderRockNews([]);
+    if(status) status.textContent=cached?.length?'Noticias guardadas · sin actualización':'No fue posible actualizar las noticias.';
   }
 }
 function scrollNews(dir){
@@ -314,19 +336,36 @@ function stationQuery({limit=48,order=state.sort}={}){
 
 async function loadGenre(genreId,{target='both'}={}){
   const genre=GENRES.find(g=>g.id===genreId)||GENRES[0]; state.currentGenre=genre; state.mapSignature='';
-  $$('.chip[data-genre]').forEach(b=>b.classList.toggle('active',b.dataset.genre===genre.id));
+  $('.chip[data-genre]').forEach(b=>b.classList.toggle('active',b.dataset.genre===genre.id));
   $('#stationsTitle').textContent=`${genre.label} en vivo`; $('#mapGenreLabel').textContent=genre.label;
-  if(target==='both'||target==='home') skeletons($('#featuredStations'),8);
-  if(target==='both'||target==='explore') skeletons($('#exploreStations'),12);
-  setApiStatus('', 'conectando');
-  try{
-    let stations=mobileCompatible(await fetchJSON(`/json/stations/search?${stationQuery({limit:84})}`));
+
+  const cacheKey=`rc_station_cache_${genre.id}_${state.country||'all'}_${state.sort}`;
+  const cached=readTimedCache(cacheKey,3*60*60*1000);
+  if(cached?.length){
+    const stations=mobileCompatible(cached);
     state.currentStations=stations;
+    if(target==='both'||target==='home') renderStations($('#featuredStations'),stations.slice(0,8));
+    if(target==='both'||target==='explore') renderStations($('#exploreStations'),stations.slice(0,28));
+    renderRanking(); setApiStatus('', 'actualizando…');
+  }else{
+    if(target==='both'||target==='home') skeletons($('#featuredStations'),8);
+    if(target==='both'||target==='explore') skeletons($('#exploreStations'),10);
+    setApiStatus('', 'conectando');
+  }
+
+  try{
+    let stations=mobileCompatible(await fetchJSON(`/json/stations/search?${stationQuery({limit:48})}`));
+    state.currentStations=stations;
+    writeTimedCache(cacheKey,stations);
     if(target==='both'||target==='home') renderStations($('#featuredStations'),stations.slice(0,8));
     if(target==='both'||target==='explore') renderStations($('#exploreStations'),stations.slice(0,28));
     renderRanking(); setApiStatus('online',`${stations.length} radios`);
     if(state.view==='map') loadMapStations();
   }catch{
+    if(cached?.length){
+      setApiStatus('online',`${state.currentStations.length} radios · caché`);
+      return;
+    }
     state.currentStations=[];
     if(target==='both'||target==='home') renderStations($('#featuredStations'),[]);
     if(target==='both'||target==='explore') renderStations($('#exploreStations'),[]);
@@ -350,10 +389,16 @@ async function searchStations(term){
 }
 
 async function loadCountries(){
-  try{
-    state.countries=(await fetchJSON('/json/countries?hidebroken=true&order=stationcount&reverse=true&limit=140'))||[];
+  const render=list=>{
+    state.countries=list||[];
     const options='<option value="">Todos los países</option>'+state.countries.map(c=>`<option value="${esc(c.name)}">${esc(c.name)} (${formatNumber(c.stationcount)})</option>`).join('');
-    $('#countrySelect').innerHTML=options; $('#mapCountrySelect').innerHTML=options;
+    $('#countrySelect').innerHTML=options; $('#mapCountrySelect').innerHTML=options; syncCountrySelects();
+  };
+  const cached=readTimedCache('rc_country_cache',24*60*60*1000);
+  if(cached?.length) render(cached);
+  try{
+    const fresh=(await fetchJSON('/json/countries?hidebroken=true&order=stationcount&reverse=true&limit=140'))||[];
+    writeTimedCache('rc_country_cache',fresh); render(fresh);
   }catch{}
 }
 function syncCountrySelects(){ $('#countrySelect').value=state.country; $('#mapCountrySelect').value=state.country; }
@@ -656,11 +701,21 @@ function attachEvents(){
 }
 
 async function init(){
-  initTheme(); renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents(); initCommunityStats(); loadRockNews();
+  initTheme();
+  renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents();
   if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
   showInstallButton();
+
   const requestedView=new URLSearchParams(location.search).get('view');
   if(['home','explore','map','bands','favorites','recent','about'].includes(requestedView)) switchView(requestedView);
-  discoverMirrors(); loadCountries(); await loadGenre('rock',{target:'both'});
+
+  // Prioridad 1: mostrar radios cuanto antes.
+  loadGenre('rock',{target:'both'});
+
+  // Prioridad 2: cargar funciones secundarias cuando el navegador esté libre.
+  deferTask(()=>loadCountries(),350);
+  deferTask(()=>initCommunityStats(),700);
+  deferTask(()=>loadRockNews(),950);
+  deferTask(()=>discoverMirrors(),2200);
 }
 init();
