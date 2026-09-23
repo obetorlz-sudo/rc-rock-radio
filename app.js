@@ -237,6 +237,46 @@ async function loadBandStations(bandId){
   }
 }
 
+function formatNewsDate(value){
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('es-CL',{day:'2-digit',month:'short'});
+}
+function renderRockNews(items){
+  const box=$('#newsCarousel');
+  if(!box) return;
+  if(!items || !items.length){
+    box.innerHTML='<div class="news-empty">No pudimos cargar noticias en este momento. La radio sigue funcionando normalmente.</div>';
+    return;
+  }
+  box.innerHTML=items.map(n=>{
+    const source=esc(n.source||'Fuente');
+    const image=n.image ? '<img src="'+esc(n.image)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="news-art-fallback" style="display:none">RC NEWS</div>' : '<div class="news-art-fallback">RC NEWS</div>';
+    return '<article class="news-card"><div class="news-art">'+image+'<span class="news-source">'+source+'</span></div><div class="news-body"><div class="news-meta"><span>⚡ ROCK NEWS</span><span>·</span><span>'+esc(formatNewsDate(n.date))+'</span></div><h3>'+esc(n.title||'Noticia')+'</h3><p>'+esc(n.summary||'Actualidad de rock y metal.')+'</p><a class="news-link" href="'+esc(n.url||'#')+'" target="_blank" rel="noopener noreferrer">Leer noticia ↗</a></div></article>';
+  }).join('');
+}
+async function loadRockNews(){
+  const status=$('#newsStatus');
+  if(status) status.textContent='Actualizando noticias de rock y metal…';
+  try{
+    const r=await fetch('/api/rock-news?_='+Date.now(),{cache:'no-store',headers:{Accept:'application/json'}});
+    if(!r.ok) throw new Error('news');
+    const data=await r.json();
+    renderRockNews(data.items||[]);
+    if(status) status.textContent=(data.items&&data.items.length)?(data.items.length+' noticias recientes · Fuentes externas'):'Sin noticias disponibles ahora';
+  }catch{
+    renderRockNews([]);
+    if(status) status.textContent='No fue posible actualizar las noticias.';
+  }
+}
+function scrollNews(dir){
+  const box=$('#newsCarousel');
+  if(!box) return;
+  const card=box.querySelector('.news-card');
+  const amount=(card?card.getBoundingClientRect().width:320)+14;
+  box.scrollBy({left:dir*amount,behavior:'smooth'});
+}
+
 function renderGenres(){
   $('#genreGrid').innerHTML=GENRES.slice(0,7).map(g=>`<button class="genre-card" data-genre="${g.id}" style="--genre-bg:${g.bg}"><span class="genre-icon">${esc(g.icon)}</span><span class="lines"></span><strong>${esc(g.label)}</strong><small>${esc(g.desc)}</small></button>`).join('');
   $('#quickChips').innerHTML=GENRES.slice(0,7).map(g=>`<button type="button" class="chip ${g.id==='rock'?'active':''}" data-genre="${g.id}">${esc(g.label)}</button>`).join('');
@@ -590,7 +630,7 @@ function attachEvents(){
   $('#nextBtn').addEventListener('click',()=>nextStation(1)); $('#sheetNext').addEventListener('click',()=>nextStation(1));
   $('#volume').addEventListener('input',e=>audio.volume=Number(e.target.value));
   $('#playerFavorite').addEventListener('click',()=>toggleFavorite(state.activeStation)); $('#sheetFavorite').addEventListener('click',()=>toggleFavorite(state.activeStation));
-  $('#refreshBtn').addEventListener('click',()=>state.view==='map'?loadMapStations():(state.view==='bands'&&state.currentBand?loadBandStations(state.currentBand.id):loadGenre(state.currentGenre.id,{target:'both'})));
+  $('#refreshBtn').addEventListener('click',()=>{ if(state.view==='map') return loadMapStations(); if(state.view==='bands'&&state.currentBand) return loadBandStations(state.currentBand.id); if(state.view==='home') loadRockNews(); return loadGenre(state.currentGenre.id,{target:'both'}); });
   $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
   $('#surpriseBtn').addEventListener('click',randomStation); $('#surpriseBtnTop').addEventListener('click',randomStation);
   $('#expandPlayerBtn').addEventListener('click',openPlayerSheet); $('#shareStationBtn').addEventListener('click',shareStation);
@@ -607,6 +647,8 @@ function attachEvents(){
   window.addEventListener('focus',()=>{ if(state.activeStation && !audio.paused) refreshNowPlaying(state.activeStation); });
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;showInstallButton();});
   window.addEventListener('appinstalled',()=>{state.isStandalone=true;deferredPrompt=null;$('#installBtn').classList.add('hidden');toast('RC Rock Radio instalada 🤘');});
+  $('#newsPrev')?.addEventListener('click',()=>scrollNews(-1));
+  $('#newsNext')?.addEventListener('click',()=>scrollNews(1));
   $('#likeBtn')?.addEventListener('click',giveLike);
   $('#themeSelect')?.addEventListener('change',e=>{applyTheme(e.target.value);toast('Tema actualizado');});
   $('#installBtn').addEventListener('click',openInstallSheet);
@@ -614,7 +656,7 @@ function attachEvents(){
 }
 
 async function init(){
-  initTheme(); renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents(); initCommunityStats();
+  initTheme(); renderGenres(); renderBands(); renderVisualizer(); renderFavorites(); renderRecent(); attachEvents(); initCommunityStats(); loadRockNews();
   if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
   showInstallButton();
   const requestedView=new URLSearchParams(location.search).get('view');
