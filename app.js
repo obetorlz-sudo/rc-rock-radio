@@ -539,7 +539,52 @@ function updatePlayerUI(){
 }
 function renderAllActiveCards(){ $$('.station-card').forEach(c=>c.classList.toggle('playing',!!state.activeStation&&c.dataset.key===stationKey(state.activeStation))); }
 function nextStation(dir){ if(!state.currentStations.length) return; const key=state.activeStation?stationKey(state.activeStation):''; let i=state.currentStations.findIndex(s=>stationKey(s)===key); i=(i+dir+state.currentStations.length)%state.currentStations.length; playStation(state.currentStations[i]); }
-function randomStation(){ if(!state.currentStations.length){ toast('Espera a que carguen las radios.'); return; } playStation(state.currentStations[Math.floor(Math.random()*state.currentStations.length)]); }
+async function randomStation(){
+  const buttons=[$('#surpriseBtn'),$('#surpriseBtnTop')].filter(Boolean);
+  const labels=buttons.map(b=>b.textContent);
+  buttons.forEach(b=>{b.disabled=true;b.textContent='⚡ BUSCANDO…';});
+  toast('Buscando una radio sorpresa…');
+
+  try{
+    const shuffled=[...GENRES].sort(()=>Math.random()-.5);
+    let candidates=[];
+
+    for(const genre of shuffled.slice(0,4)){
+      const params=new URLSearchParams({
+        tag:genre.tag,
+        hidebroken:'true',
+        limit:'60',
+        order:'random'
+      });
+      try{
+        const found=mobileCompatible(await fetchJSON(`/json/stations/search?${params}`));
+        candidates=uniqueStations([...candidates,...found]).filter(matchesMusicProfile);
+        if(candidates.length>=8) break;
+      }catch{}
+    }
+
+    const currentKey=state.activeStation?stationKey(state.activeStation):'';
+    const fresh=candidates.filter(s=>stationKey(s)!==currentKey);
+    const pool=fresh.length?fresh:candidates;
+
+    if(!pool.length){
+      const fallback=state.currentStations.filter(s=>stationKey(s)!==currentKey);
+      if(!fallback.length) throw new Error('no-stations');
+      const pick=fallback[Math.floor(Math.random()*fallback.length)];
+      await playStation(pick);
+      return;
+    }
+
+    const pick=pool[Math.floor(Math.random()*pool.length)];
+    state.currentStations=uniqueStations([pick,...candidates,...state.currentStations]).slice(0,120);
+    toast(`⚡ Sorpresa: ${pick.name||'Radio'} · ${pick.country||'Mundo'}`);
+    await playStation(pick);
+  }catch{
+    toast('No pude encontrar una radio sorpresa ahora. Intenta nuevamente.');
+  }finally{
+    buttons.forEach((b,i)=>{b.disabled=false;b.textContent=labels[i];});
+  }
+}
 async function countClick(s){ if(!s.stationuuid) return; try{ await fetch(`${state.apiBase}/json/url/${encodeURIComponent(s.stationuuid)}`); }catch{} }
 function updateMediaSession(s){
   if(!('mediaSession' in navigator)) return;
