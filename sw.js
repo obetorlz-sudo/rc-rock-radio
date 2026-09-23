@@ -1,5 +1,5 @@
-const CACHE='rc-rock-radio-v12-1-orange-default';
-const ASSETS=['./','./index.html','./styles.css?v=12.1','./app.js?v=12.1','./manifest.webmanifest?v=12.1','./icon.svg?v=12.1','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
+const CACHE='rc-rock-radio-v13-persistent-community';
+const ASSETS=['./','./index.html','./styles.css?v=13.0','./app.js?v=13.0','./manifest.webmanifest?v=13.0','./icon.svg?v=13.0','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
