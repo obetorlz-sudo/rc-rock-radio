@@ -273,7 +273,7 @@ function renderRockNews(items){
 }
 async function loadRockNews(){
   const status=$('#newsStatus');
-  const cached=readTimedCache('rc_rock_news_cache',60*60*1000);
+  const cached=readTimedCache('rc_rock_news_cache_v16',60*60*1000);
   if(cached?.length){
     renderRockNews(cached);
     if(status) status.textContent=cached.length+' noticias · actualizando…';
@@ -284,7 +284,7 @@ async function loadRockNews(){
     if(!r.ok) throw new Error('news');
     const data=await r.json();
     renderRockNews(data.items||[]);
-    if(data.items?.length) writeTimedCache('rc_rock_news_cache',data.items);
+    if(data.items?.length) writeTimedCache('rc_rock_news_cache_v16',data.items);
     if(status) status.textContent=(data.items&&data.items.length)?(data.items.length+' noticias recientes · Fuentes externas'):'Sin noticias disponibles ahora';
   }catch{
     if(!cached?.length) renderRockNews([]);
