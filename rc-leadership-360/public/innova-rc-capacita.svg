@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="240" viewBox="0 0 900 240" role="img" aria-label="INNOVA RC CAPACITA">
+<rect width="900" height="240" rx="10" fill="#050505"/>
+<g transform="translate(28 28)">
+  <polygon points="50,0 100,0 125,43 100,86 50,86 25,43" fill="#39ACE8"/>
+  <polygon points="50,86 100,86 125,129 100,172 50,172 25,129" fill="#FF8E3C"/>
+  <polygon points="100,43 150,43 175,86 150,129 100,129 75,86" fill="#F4DE82"/>
+  <polygon points="150,43 200,43 225,86 200,129 150,129 125,86" fill="#7A49F2"/>
+</g>
+<text x="285" y="122" fill="#FFFFFF" font-family="Arial,Helvetica,sans-serif" font-size="78" font-weight="800" letter-spacing="3">INNOVA RC</text>
+<text x="365" y="184" fill="#FFFFFF" font-family="Arial,Helvetica,sans-serif" font-size="42" font-weight="700" letter-spacing="18">CAPACITA</text>
+</svg>
