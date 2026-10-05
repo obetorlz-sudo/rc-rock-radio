@@ -13,3 +13,6 @@ Aplicación de desarrollo organizacional para evaluación de supervisores con au
 El instrumento es formativo y no corresponde al DISC o LPI oficial ni a un diagnóstico psicológico clínico.
 
 Para una prueba visual del cuestionario, escribe `demo` como RUT en la portada.
+
+
+Administrador: contraseña gestionada mediante secreto de Vercel.
