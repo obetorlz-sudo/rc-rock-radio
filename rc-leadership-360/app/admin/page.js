@@ -15,7 +15,7 @@ export default function AdminPage(){
   const [login,setLogin]=useState({rut:'',password:''});
   const [company,setCompany]=useState({name:'',rut:'',email:'',password:''});
   const [sup,setSup]=useState({companyId:'',fullName:'',rut:'',position:'',area:'',email:''});
-  const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'});
+  const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'}); const [professional,setProfessional]=useState({fullName:'',username:'',password:''});
   const load=async()=>{try{setData(await jfetch('/api/dashboard'))}catch(e){setMsg(e.message)}};
   useEffect(()=>{if(session) load()},[session]);
   const supervisors=useMemo(()=>data?.supervisors?.filter(x=>!sup.companyId||String(x.company_id)===String(sup.companyId))||[],[data,sup.companyId]);
@@ -28,7 +28,7 @@ export default function AdminPage(){
     <section className="panel login">
       <div className="eyebrow">Administración</div>
       <h1>RC Leadership 360</h1>
-      <p className="muted">Ingresa con las credenciales de administración o empresa.</p>
+      <p className="muted">Ingresa con las credenciales de administración, empresa o psicología laboral.</p>
       <form onSubmit={doLogin}>
         <label>Usuario / RUT<input value={login.rut} onChange={e=>setLogin({...login,rut:e.target.value})} required/></label>
         <label>Contraseña<input type="password" value={login.password} onChange={e=>setLogin({...login,password:e.target.value})} required/></label>
@@ -69,8 +69,15 @@ export default function AdminPage(){
           <button className="primary" onClick={()=>send('/api/manage/company',company)}>Crear empresa</button>
         </article>}
 
-        <article>
-          <h3>{session.role==='admin'?'2':'1'}. Crear supervisor</h3>
+        {session.role==='admin'&&<article>
+          <h3>2. Crear usuario Psicóloga</h3>
+          <input placeholder="Nombre completo" value={professional.fullName} onChange={e=>setProfessional({...professional,fullName:e.target.value})}/>
+          <input placeholder="Usuario (ej. PSICOLOGA)" value={professional.username} onChange={e=>setProfessional({...professional,username:e.target.value})}/>
+          <input type="password" placeholder="Contraseña inicial" value={professional.password} onChange={e=>setProfessional({...professional,password:e.target.value})}/>
+          <button className="primary" onClick={()=>send('/api/manage/professional',professional)}>Crear / actualizar Psicóloga</button>
+        </article>}
+        {session.role!=='psychologist'&&<article>
+          <h3>{session.role==='admin'?'3':'1'}. Crear supervisor</h3>
           {session.role!=='company'&&<select value={sup.companyId} onChange={e=>setSup({...sup,companyId:e.target.value})}>
             <option value="">Selecciona empresa</option>
             {(data.companies||[]).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
@@ -81,10 +88,10 @@ export default function AdminPage(){
           <input placeholder="Área" value={sup.area} onChange={e=>setSup({...sup,area:e.target.value})}/>
           <input placeholder="Correo opcional" value={sup.email} onChange={e=>setSup({...sup,email:e.target.value})}/>
           <button className="primary" onClick={()=>send('/api/manage/supervisor',sup)}>Crear supervisor</button>
-        </article>
+        </article>}
 
-        <article>
-          <h3>{session.role==='admin'?'3':'2'}. Abrir ciclo 360°</h3>
+        {session.role!=='psychologist'&&<article>
+          <h3>{session.role==='admin'?'4':'2'}. Abrir ciclo 360°</h3>
           <select value={cycle.supervisorId} onChange={e=>setCycle({...cycle,supervisorId:e.target.value})}>
             <option value="">Selecciona supervisor</option>
             {supervisors.map(x=><option key={x.id} value={x.id}>{x.full_name}</option>)}
@@ -92,7 +99,7 @@ export default function AdminPage(){
           <input value={cycle.cycleName} onChange={e=>setCycle({...cycle,cycleName:e.target.value})}/>
           <button className="primary" onClick={()=>send('/api/manage/assessment',cycle)}>Abrir evaluación</button>
           <p className="muted small">Una vez abierto el ciclo, supervisor y trabajadores ingresan desde la portada con el RUT del supervisor.</p>
-        </article>
+        </article>}
       </div>
     </section>
 
@@ -106,7 +113,7 @@ export default function AdminPage(){
           <td>{x.cycle_name}</td>
           <td>{x.self_done?'Completada':'Pendiente'}</td>
           <td>{x.team_count} respuestas</td>
-          <td><a className="link" href={'/?analysis='+x.id}>Ver</a></td>
+          <td>{['admin','psychologist'].includes(session.role)?<a className="link" href={'/analysis?id='+x.id}>Ver análisis</a>:<span className="muted">Restringido</span>}</td>
         </tr>)}</tbody>
       </table></div>
     </section>
