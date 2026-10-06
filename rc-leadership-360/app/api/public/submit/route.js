@@ -7,7 +7,7 @@ export async function POST(req){
   try{
     const body=await req.json(); const mode=body.mode;
     if(!['self','team'].includes(mode)) return NextResponse.json({error:'Modo inválido.'},{status:400});
-    const {result,ordered,items}=validateAndScore(mode,body.answers);
+    const {result,ordered,items}=await validateAndScore(mode,body.answers);
     const aid=body.assessmentId;
     const {rows}=await query(`select a.id,a.status,a.team_survey_open,a.self_completed_at,s.rut supervisor_rut
       from rc360_assessments a join rc360_supervisors s on s.id=a.supervisor_id where a.id=$1`,[aid]);
