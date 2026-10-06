@@ -75,3 +75,5 @@
 /* Admin registry management */
 .adminRegistry{margin-top:22px}.registryBlock{margin-top:22px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}.registryBlock h3{margin:10px 0 12px}.registryActions{display:flex;gap:7px;flex-wrap:wrap}.smallBtn{padding:8px 10px!important;border-radius:10px!important;font-size:12px!important;white-space:nowrap}.professionalRegistry{padding:16px;border-radius:18px;background:linear-gradient(145deg,rgba(20,49,78,.42),rgba(30,22,57,.42));border:1px solid rgba(109,216,255,.12)}.adminRegistry table td{vertical-align:middle}.adminRegistry .pill{white-space:nowrap}
 @media(max-width:800px){.registryActions{flex-direction:column;align-items:stretch}.registryActions button{width:100%}.adminRegistry{padding:16px}.registryBlock{overflow:hidden}}
+
+.dangerBtn{background:rgba(175,42,65,.14);border:1px solid rgba(255,105,125,.34);color:#ff9cab;font-weight:800;cursor:pointer}.dangerBtn:hover{background:rgba(190,43,67,.24);border-color:#ff8798;box-shadow:0 0 16px rgba(255,70,95,.12)}
