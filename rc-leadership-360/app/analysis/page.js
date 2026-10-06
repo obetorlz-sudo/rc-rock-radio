@@ -317,6 +317,11 @@ export default function AnalysisPage(){
   }).catch(e=>setMsg(e.message));
 
   useEffect(load,[id]);
+  useEffect(()=>{
+    if(!d||typeof window==='undefined'||window.location.hash!=='#percepcion')return;
+    const t=setTimeout(()=>document.getElementById('percepcion')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
+    return()=>clearTimeout(t);
+  },[d]);
 
   const gaps=useMemo(()=>d?.self&&d?.team?.competencies
     ?COMP.map(k=>[k,+d.self.competencies[k],+d.team.competencies[k]]).map(x=>[...x,x[1]-x[2]])
@@ -390,7 +395,7 @@ export default function AnalysisPage(){
         <tbody>{gaps.map(([k,a,b,g])=>{const [lab,cl]=gapLabel(a,b);return <tr key={k}><td>{k}</td><td>{a}%</td><td>{b}%</td><td>{g>0?'+':''}{g}</td><td><span className={'pill '+cl}>{lab}</span></td></tr>})}</tbody>
       </table></div></section>}
 
-      <section className="panel">
+      <section className="panel" id="percepcion">
         <div className="eyebrow">Entrevista profesional</div><h2>Análisis estructurado de la Psicóloga</h2>
         <p className="muted">Esta información se integra al informe final y permite considerar las características reales del puesto de trabajo y su contexto.</p>
         {isPsych&&!finalized?<PsychForm value={psych} setValue={setPsych} onSave={savePsych}/>:<div className="psychRead">
