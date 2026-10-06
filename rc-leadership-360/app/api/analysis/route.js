@@ -14,6 +14,18 @@ function avgJson(rows,key){
 function sorted(obj,desc=true){
   return Object.entries(obj||{}).filter(([,v])=>Number.isFinite(Number(v))).sort((a,b)=>desc?Number(b[1])-Number(a[1]):Number(a[1])-Number(b[1]));
 }
+function gapRows(self,team){
+  if(!self?.competencies||!team?.competencies)return [];
+  return Object.keys(self.competencies).map(k=>{
+    const a=Number(self.competencies[k]),b=Number(team.competencies[k]),g=a-b;
+    let reading='Percepción consistente';
+    if(a>=75&&b>=75&&Math.abs(g)<=10)reading='Fortaleza confirmada';
+    else if(g>=15)reading='Brecha de autopercepción';
+    else if(g<=-15)reading='Fortaleza poco reconocida';
+    else if(a<60&&b<60)reading='Prioridad de desarrollo';
+    return {competency:k,self:a,team:b,gap:g,reading};
+  }).sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap));
+}
 function selfBrief(self){
   if(!self)return null;
   const strong=sorted(self.competencies,true).slice(0,3).map(x=>x[0]);
@@ -22,21 +34,15 @@ function selfBrief(self){
 }
 function chartSummary(self,team){
   if(!self)return null;
-  const discHigh=sorted(self.disc,true)[0];
-  const discLow=sorted(self.disc,false)[0];
-  const compHigh=sorted(self.competencies,true)[0];
-  const compLow=sorted(self.competencies,false)[0];
-  let largestGap=null;
-  if(team?.competencies){
-    largestGap=Object.keys(self.competencies||{}).map(k=>({k,g:Number(self.competencies[k])-Number(team.competencies[k])}))
-      .filter(x=>Number.isFinite(x.g)).sort((a,b)=>Math.abs(b.g)-Math.abs(a.g))[0]||null;
-  }
+  const discHigh=sorted(self.disc,true)[0],discLow=sorted(self.disc,false)[0];
+  const compHigh=sorted(self.competencies,true)[0],compLow=sorted(self.competencies,false)[0];
+  const gaps=gapRows(self,team);
   return {
     dominant:discHigh?{key:discHigh[0],value:discHigh[1]}:null,
     lower:discLow?{key:discLow[0],value:discLow[1]}:null,
     strongest_competency:compHigh?{key:compHigh[0],value:compHigh[1]}:null,
     development_competency:compLow?{key:compLow[0],value:compLow[1]}:null,
-    largest_gap:largestGap
+    largest_gap:gaps[0]?{k:gaps[0].competency,g:gaps[0].gap}:null
   };
 }
 function psychText(note){
@@ -56,16 +62,29 @@ function integratedSummary(self,team,note){
   const strengths=sorted(self.competencies,true).slice(0,2).map(x=>x[0]);
   const dev=sorted(self.competencies,false).slice(0,2).map(x=>x[0]);
   let text=`La autoevaluación identifica como fortalezas relativas ${strengths.join(' y ')}, mientras que ${dev.join(' y ')} aparecen como focos de desarrollo.`;
-  if(team?.respondent_count>=3&&team.competencies){
-    const gaps=Object.keys(self.competencies||{}).map(k=>({k,g:Number(self.competencies[k])-Number(team.competencies[k])})).filter(x=>Number.isFinite(x.g)).sort((a,b)=>Math.abs(b.g)-Math.abs(a.g));
+  const gaps=gapRows(self,team);
+  if(gaps.length){
     const g=gaps[0];
-    if(g) text+=Math.abs(g.g)>=15
-      ?` La principal brecha de percepción se encuentra en ${g.k}, con ${Math.abs(g.g)} puntos de diferencia.`
+    text+=Math.abs(g.gap)>=15
+      ?` La principal brecha de percepción se encuentra en ${g.competency}, con ${Math.abs(g.gap)} puntos de diferencia.`
       :' La percepción del supervisor y del equipo resulta relativamente consistente en las competencias evaluadas.';
   }
   const p=psychText(note);
   if(p) text+=' El análisis profesional agrega: '+p;
   return text;
+}
+function evidenceMatrix(self,team,note){
+  if(!self)return [];
+  const rows=[];
+  for(const [k,v] of sorted(self.competencies,true).slice(0,3)){
+    rows.push({type:'Fortaleza',focus:k,evidence:`Autoevaluación ${v}%${team?.competencies?.[k]!=null?', equipo '+team.competencies[k]+'%':''}`,impact:'Puede utilizarse como recurso para sostener el desempeño y apoyar al equipo.'});
+  }
+  for(const [k,v] of sorted(self.competencies,false).slice(0,3)){
+    rows.push({type:'Área de desarrollo',focus:k,evidence:`Autoevaluación ${v}%${team?.competencies?.[k]!=null?', equipo '+team.competencies[k]+'%':''}`,impact:'Requiere seguimiento mediante conductas observables y acciones vinculadas al puesto.'});
+  }
+  if(note?.strengths_observed)rows.push({type:'Entrevista',focus:'Fortalezas observadas',evidence:note.strengths_observed,impact:'Antecedente profesional incorporado a la interpretación.'});
+  if(note?.development_observed)rows.push({type:'Entrevista',focus:'Aspectos a desarrollar',evidence:note.development_observed,impact:'Antecedente profesional para priorizar el plan de mejora.'});
+  return rows;
 }
 function reportSuggestion(self,team,note){
   if(!self)return null;
@@ -76,25 +95,36 @@ function reportSuggestion(self,team,note){
   }
   const strengths=sorted(combined,true).slice(0,3).map(([k,v])=>`${k}: fortaleza relativa (${v}%)`);
   const development=sorted(combined,false).slice(0,3).map(([k,v])=>`${k}: área prioritaria de desarrollo (${v}%)`);
-  const opportunities=[];
-  if(team?.respondent_count>=3&&team.competencies){
-    const gaps=Object.keys(self.competencies||{}).map(k=>({k,g:Number(self.competencies[k])-Number(team.competencies[k])})).filter(x=>Number.isFinite(x.g)).sort((a,b)=>Math.abs(b.g)-Math.abs(a.g)).slice(0,3);
-    for(const g of gaps) opportunities.push(`${g.k}: trabajar la brecha de percepción de ${Math.abs(g.g)} puntos mediante feedback y conductas observables.`);
-  }
-  if(note?.context_position) opportunities.push('Alinear el plan de mejora con las exigencias reales del puesto: '+note.context_position);
-  if(note?.environment_factors) opportunities.push('Considerar factores del entorno laboral descritos por la Psicóloga: '+note.environment_factors);
-  if(!opportunities.length) opportunities.push('Profundizar los focos de desarrollo mediante seguimiento y retroalimentación periódica.');
+  const opportunities=gapRows(self,team).slice(0,3).map(g=>`${g.competency}: trabajar una diferencia de percepción de ${Math.abs(g.gap)} puntos mediante feedback y acuerdos observables.`);
+  if(note?.context_position)opportunities.push('Alinear las acciones con las exigencias reales del puesto: '+note.context_position);
+  if(note?.environment_factors)opportunities.push('Considerar factores del entorno laboral: '+note.environment_factors);
+  if(!opportunities.length)opportunities.push('Profundizar los focos de desarrollo mediante seguimiento y retroalimentación periódica.');
   const recommendations=[
-    note?.professional_recommendations||'Definir conductas observables y metas concretas para los principales focos de desarrollo.',
+    note?.professional_recommendations||'Definir conductas observables y metas concretas para los focos prioritarios.',
     'Solicitar retroalimentación estructurada del equipo y revisar avances con la Psicóloga.',
-    'Aplicar acciones de mejora en situaciones reales del puesto y evaluar evidencias de cambio.'
+    'Aplicar las acciones de mejora en situaciones reales del puesto y revisar evidencias de cambio.'
   ];
+  const focus1=development[0]?.split(':')[0]||'Comunicación';
+  const focus2=development[1]?.split(':')[0]||'Delegación';
   const action_plan=[
-    {horizon:'30 días',action:'Acordar dos conductas prioritarias, indicadores simples y una instancia formal de feedback.'},
-    {horizon:'60 días',action:'Revisar evidencias de cambio, ajustar acciones y reforzar prácticas efectivas vinculadas al puesto.'},
-    {horizon:'90 días',action:'Evaluar avances con la Psicóloga y definir continuidad del plan de desarrollo.'}
+    {focus:focus1,objective:'Mejorar una conducta observable asociada al foco prioritario.',action:'Acordar la conducta esperada y aplicarla de forma planificada en situaciones reales de trabajo.',responsible:'Supervisor',deadline:'30 días',indicator:'Conducta definida, aplicada y revisada en una instancia de feedback.'},
+    {focus:focus2,objective:'Fortalecer la consistencia entre la intención del supervisor y la experiencia del equipo.',action:'Solicitar retroalimentación estructurada y ajustar la forma de coordinación o comunicación.',responsible:'Supervisor / Psicóloga',deadline:'60 días',indicator:'Registro de feedback y evidencia de ajustes implementados.'},
+    {focus:'Seguimiento',objective:'Consolidar avances y definir continuidad del desarrollo.',action:'Revisar resultados, evidencias y percepción del equipo para acordar nuevos compromisos.',responsible:'Supervisor / Psicóloga',deadline:'90 días',indicator:'Revisión de cierre realizada y continuidad definida.'}
   ];
-  return {strengths,development_areas:development,opportunities,recommendations,action_plan,executive_summary:integratedSummary(self,team,note)};
+  const indicators=[
+    {indicator:'Acciones de mejora ejecutadas',target:'≥ 80% de las acciones comprometidas',frequency:'Mensual'},
+    {indicator:'Instancias de feedback realizadas',target:'Al menos 1 por mes',frequency:'Mensual'},
+    {indicator:'Evidencias de conducta observada',target:'Registro de ejemplos concretos de avance',frequency:'30/60/90 días'}
+  ];
+  const objective_scope='Integrar la autoevaluación del supervisor, la percepción agregada del equipo y la entrevista profesional para identificar fortalezas, brechas y prioridades de desarrollo vinculadas al puesto de trabajo. Este informe es de carácter formativo y de desarrollo organizacional; no corresponde a un diagnóstico clínico ni a un instrumento de selección.';
+  const conclusion=`Se recomienda concentrar el proceso de desarrollo en un número acotado de conductas prioritarias, vinculadas a las exigencias reales del puesto y revisadas mediante evidencia observable y retroalimentación periódica. El seguimiento 30/60/90 días permitirá verificar avances, ajustar las acciones y consolidar prácticas efectivas.`;
+  return {
+    strengths,development_areas:development,opportunities,recommendations,action_plan,indicators,
+    evidence_matrix:evidenceMatrix(self,team,note),
+    objective_scope,
+    executive_summary:integratedSummary(self,team,note),
+    conclusion
+  };
 }
 
 export async function GET(req){
@@ -114,7 +144,9 @@ export async function GET(req){
     const note=(await query(`select n.note,n.context_position,n.interview_observations,n.strengths_observed,n.development_observed,n.environment_factors,n.professional_recommendations,n.created_at,u.full_name author
       from rc360_psychologist_notes n left join rc360_users u on u.id=n.author_id
       where n.assessment_id=$1 order by n.created_at desc limit 1`,[id])).rows[0]||null;
-    const finalReport=(await query('select strengths,development_areas,opportunities,recommendations,action_plan,executive_summary,status,finalized_at,updated_at from rc360_final_reports where assessment_id=$1',[id])).rows[0]||null;
+    const finalReport=(await query(`select strengths,development_areas,opportunities,recommendations,action_plan,executive_summary,
+      objective_scope,indicators,conclusion,evidence_matrix,status,finalized_at,updated_at
+      from rc360_final_reports where assessment_id=$1`,[id])).rows[0]||null;
     const selfOut=self?{disc:self.disc,competencies:self.competencies,primary:self.primary_profile,secondary:self.secondary_profile,completed_at:self.completed_at}:null;
 
     return NextResponse.json({
@@ -125,6 +157,7 @@ export async function GET(req){
       self:selfOut,
       self_analysis:selfBrief(selfOut),
       chart_summary:chartSummary(selfOut,team),
+      gap_rows:gapRows(selfOut,team),
       team,
       professional_note:note,
       integrated_summary:integratedSummary(selfOut,team,note),
