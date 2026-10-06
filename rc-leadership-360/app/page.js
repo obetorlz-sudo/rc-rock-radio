@@ -9,33 +9,39 @@ function Result({r,onHome}){const ranked=Object.entries(r.competencies||{}).sort
 function Login({onBack}){const [rut,setRut]=useState(''),[password,setPassword]=useState(''),[session,setSession]=useState(null),[msg,setMsg]=useState('');if(session)return <Dashboard session={session} onLogout={async()=>{await api('/api/auth/logout',{method:'POST'});setSession(null)}}/>;return <main className="shell"><button className="link" onClick={onBack}>← Inicio</button><section className="panel login"><h1>Empresa / Psicología laboral</h1><input placeholder="RUT" value={rut} onChange={e=>setRut(e.target.value)}/><input type="password" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)}/>{msg&&<div className="notice">{msg}</div>}<button className="primary" onClick={async()=>{try{setSession(await api('/api/auth/login',{method:'POST',body:JSON.stringify({rut,password})}))}catch(e){setMsg(e.message)}}}>Ingresar</button></section></main>}
 function Dashboard({session,onLogout}){const [data,setData]=useState(null),[sel,setSel]=useState(null),[msg,setMsg]=useState('');const load=()=>api('/api/dashboard').then(setData).catch(e=>setMsg(e.message));useEffect(load,[]);if(sel)return <Analysis id={sel} onBack={()=>setSel(null)}/>;if(!data)return <main className="shell">{msg||'Cargando…'}</main>;return <main className="shell wide"><div className="topline"><div><h1>RC Leadership 360</h1><p className="muted">{session.full_name||session.name} · {session.role}</p></div><button className="ghost" onClick={onLogout}>Cerrar sesión</button></div><section className="panel"><h2>Evaluaciones</h2><div className="tablewrap"><table><thead><tr><th>Empresa</th><th>Supervisor</th><th>Ciclo</th><th>Auto</th><th>Equipo</th><th></th></tr></thead><tbody>{data.assessments.map(x=><tr key={x.id}><td>{x.company_name}</td><td>{x.full_name}</td><td>{x.cycle_name}</td><td>{x.self_done?'Sí':'Pendiente'}</td><td>{x.team_count}</td><td><button className="ghost" onClick={()=>setSel(x.id)}>Analizar</button></td></tr>)}</tbody></table></div></section></main>}
 function Analysis({id,onBack}){const [d,setD]=useState(null),[msg,setMsg]=useState('');useEffect(()=>{api('/api/analysis?id='+id).then(setD).catch(e=>setMsg(e.message))},[id]);if(!d)return <main className="shell">{msg||'Cargando análisis…'}</main>;const s=d.self,t=d.team,enough=(t?.respondent_count||0)>=3,gaps=enough&&s?COMP.map(k=>[k,+s.competencies[k],+t.competencies[k]]).map(x=>[...x,x[1]-x[2]]):[];return <main className="shell wide"><div className="topline"><button className="link" onClick={onBack}>← Dashboard</button><button className="primary" onClick={()=>window.print()}>Imprimir / PDF</button></div><section className="panel"><h1>{d.supervisor.name}</h1><p>{d.company.name} · {d.assessment.cycle}</p></section><div className="grid2"><section className="panel"><h2>Autopercepción</h2>{s?<Bars values={s.competencies}/>:<p>Pendiente</p>}</section><section className="panel"><h2>Equipo</h2>{enough?<Bars values={t.competencies}/>:<div className="privacy">Muestra insuficiente: {t?.respondent_count||0} respuesta(s). Se requieren 3.</div>}</section></div>{enough&&s&&<section className="panel"><h2>Brechas 360°</h2><div className="tablewrap"><table><thead><tr><th>Competencia</th><th>Supervisor</th><th>Equipo</th><th>Brecha</th><th>Lectura</th></tr></thead><tbody>{gaps.map(([k,a,b,g])=>{const [lab,cl]=gapLabel(a,b);return <tr key={k}><td>{k}</td><td>{a}%</td><td>{b}%</td><td>{g>0?'+':''}{g}</td><td><span className={`pill ${cl}`}>{lab}</span></td></tr>})}</tbody></table></div></section>}</main>}
-export default function Home(){const [view,setView]=useState('home'),[accessMode,setAccessMode]=useState(''),[rut,setRut]=useState(''),[supRut,setSupRut]=useState(''),[ctx,setCtx]=useState(null),[res,setRes]=useState(null),[msg,setMsg]=useState('');const start=async(mode)=>{const input=mode==='self'?rut:supRut;try{const d=input.toLowerCase()==='demo'?{assessment_id:'demo-'+mode,company_name:'Empresa Demo',supervisor_name:'Supervisor Demo',cycle_name:'Diagnóstico Demo',demo:true}:await api('/api/public/start',{method:'POST',body:JSON.stringify({mode,rut:input})});setCtx({...d,rut:input});setView(mode)}catch(e){setMsg(e.message)}};if(view==='self')return <Questionnaire mode="self" ctx={ctx} onBack={()=>setView('home')} onDone={()=>setView('thanks')}/>;if(view==='team')return <Questionnaire mode="team" ctx={ctx} onBack={()=>setView('home')} onDone={()=>setView('thanks')}/>;if(view==='result')return <Result r={res} onHome={()=>setView('home')}/>;if(view==='thanks')return <main className="shell"><section className="panel centered"><div className="success">✓</div><h1>Respuesta registrada</h1><p>Gracias por responder. Tu participación contribuye al desarrollo de mejores equipos y organizaciones.</p><button className="primary" onClick={()=>setView('home')}>Volver</button></section></main>;if(view==='login')return <Login onBack={()=>setView('home')}/>;return <main className="landing"><nav><div className="brandLogo"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><span>Leadership 360</span></div><button className="link" onClick={()=>setView('login')}>Acceso administración / psicología</button></nav><section className="hero"><div><div className="eyebrow">Herramienta de análisis empresarial</div><h1>Impulsamos el desarrollo de las personas para fortalecer a la empresa.</h1><p>Estamos para apoyar el crecimiento de la empresa, entregando información sobre liderazgo, comunicación y percepción de los equipos para orientar acciones de desarrollo.</p></div><div className="heroVisual" aria-hidden="true"><img src="/leadership-team-hero.webp" alt=""/><div className="heroVisualOverlay"/></div></section><section className="choices">
-<div className="choice">
-  <div className="icon">S</div>
-  <h2>Si eres supervisor</h2>
-  <p>Realiza una evaluación general sobre tu forma de trabajar, comunicarte y liderar.</p>
-  <button className="primary" onClick={()=>{setAccessMode('self');setMsg('')}}>Haz clic aquí</button>
-</div>
-<div className="choice">
-  <div className="icon">T</div>
-  <h2>Si eres trabajador</h2>
-  <p>Responde una encuesta general sobre la experiencia de trabajo y conductas observables.</p>
-  <button className="secondary" onClick={()=>{setAccessMode('team');setMsg('')}}>Haz clic aquí</button>
-</div>
-</section>
-{accessMode&&<section className="panel accessPanel">
-  <button className="link" onClick={()=>{setAccessMode('');setMsg('')}}>← Volver</button>
-  {accessMode==='self'?<>
-    <div className="eyebrow">Evaluación general del trabajo</div>
-    <h2>Acceso a evaluación</h2>
-    <p className="muted">Ingresa el código o RUT de acceso entregado por la empresa.</p>
-    <input value={rut} onChange={e=>setRut(e.target.value)} placeholder="Código o RUT de acceso"/>
-    <button className="primary" onClick={()=>start('self')}>Comenzar evaluación</button>
-  </>:<>
-    <div className="eyebrow">Encuesta general del trabajo</div>
-    <h2>Acceso a encuesta</h2>
-    <p className="muted">Ingresa el código o RUT de acceso informado por la empresa.</p>
-    <input value={supRut} onChange={e=>setSupRut(e.target.value)} placeholder="Código o RUT de acceso"/>
-    <button className="secondary" onClick={()=>start('team')}>Comenzar encuesta</button>
-  </>}
-</section>}{msg&&<div className="floatingNotice">{msg}</div>}<footer>Instrumento formativo. No corresponde al DISC o LPI oficial ni a un diagnóstico clínico.</footer></main>}
+export default function Home(){
+  return <main className="landing landingHome">
+    <div className="homeBackdrop" aria-hidden="true"/>
+    <nav className="homeNav">
+      <div className="brandLogo"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><span>Leadership 360</span></div>
+      <a className="link" href="/admin">Acceso administración / psicología</a>
+    </nav>
+
+    <section className="homeHero">
+      <div className="homeHeroContent">
+        <div className="eyebrow">Herramienta de desarrollo organizacional</div>
+        <h1>Impulsamos el desarrollo de las personas para fortalecer a la empresa.</h1>
+        <p>Evaluación de liderazgo, comunicación, conductas y percepción de equipos para orientar acciones de mejora.</p>
+      </div>
+    </section>
+
+    <section className="publicEntry">
+      <div className="entryIntro">
+        <h2>Selecciona tu acceso</h2>
+        <p>Supervisor y trabajador ingresan desde páginas independientes.</p>
+      </div>
+      <div className="entryLinks">
+        <a className="entryButton supervisor" href="/supervisor">
+          <b>Acceso Supervisor</b>
+          <span>Realizar evaluación personal</span>
+        </a>
+        <a className="entryButton worker" href="/trabajador">
+          <b>Acceso Trabajador</b>
+          <span>Responder encuesta de equipo</span>
+        </a>
+      </div>
+    </section>
+
+    <footer>Instrumento formativo. No corresponde al DISC o LPI oficial ni a un diagnóstico clínico.</footer>
+  </main>
+}
