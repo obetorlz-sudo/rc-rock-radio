@@ -119,3 +119,10 @@ create table if not exists rc360_final_reports(
   updated_at timestamptz not null default now()
 );
 create index if not exists rc360_final_reports_status_idx on rc360_final_reports(status);
+
+alter table rc360_psychologist_notes add column if not exists context_position text;
+alter table rc360_psychologist_notes add column if not exists interview_observations text;
+alter table rc360_psychologist_notes add column if not exists strengths_observed text;
+alter table rc360_psychologist_notes add column if not exists development_observed text;
+alter table rc360_psychologist_notes add column if not exists environment_factors text;
+alter table rc360_psychologist_notes add column if not exists professional_recommendations text;
