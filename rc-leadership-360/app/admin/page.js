@@ -20,8 +20,14 @@ export default function AdminPage(){
   const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'});
   const [professional,setProfessional]=useState({fullName:'',username:'',password:''});
 
-  const load=async()=>{try{setData(await jfetch('/api/dashboard'))}catch(e){setMsg(e.message)}};
-  useEffect(()=>{if(session)load()},[session]);
+  const load=async()=>{
+    try{
+      const d=await jfetch('/api/dashboard');
+      setData(d);
+      if(!session&&d.session)setSession({role:d.session.role,full_name:d.session.name||'Usuario',company_id:d.session.companyId||null});
+    }catch(e){setMsg(e.message)}
+  };
+  useEffect(()=>{load()},[]);
   const availableSup=useMemo(()=>data?.supervisors?.filter(x=>!sup.companyId||String(x.company_id)===String(sup.companyId))||[],[data,sup.companyId]);
 
   const doLogin=async e=>{
@@ -36,6 +42,7 @@ export default function AdminPage(){
     catch(e){setMsg(e.message)}
   };
 
+  if(!session&&data===null&&msg==='')return <main className="shell"><div className="panel">Cargando acceso profesional…</div></main>;
   if(!session)return <main className="shell">
     <a className="link" href="/">← Volver al inicio</a>
     <section className="panel login">
@@ -75,6 +82,9 @@ export default function AdminPage(){
     </div>
 
     {msg&&<div className="notice">{msg}</div>}
+    {session.role==='psychologist'&&<div className="privacy">
+      Tienes acceso profesional al listado completo de supervisores, resultados DISC, percepción agregada del equipo, brechas e informes. En cada supervisor puedes ingresar tu percepción profesional y preparar el informe final.
+    </div>}
 
     <section className="panel">
       <div className="sectionTitle">
@@ -96,7 +106,7 @@ export default function AdminPage(){
             <td>{statusPill(x.has_psychologist_note,'Ingresado','Pendiente')}</td>
             <td>{statusPill(x.final_report_status==='finalized','Finalizado','Pendiente')}</td>
             <td>{x.assessment_id
-              ?<a className="link" href={'/analysis?id='+x.assessment_id}>{session.role==='psychologist'?'Revisar / informar':'Ver análisis'}</a>
+              ?<a className="link" href={'/analysis?id='+x.assessment_id}>{session.role==='psychologist'?'Ingresar percepción / Ver ficha completa':'Ver ficha completa'}</a>
               :<span className="muted">Sin ciclo abierto</span>}</td>
           </tr>)}
         </tbody>
@@ -150,14 +160,17 @@ export default function AdminPage(){
       </div>
     </section>}
 
-    {session.role==='admin'&&<section className="panel">
+    {['admin','psychologist'].includes(session.role)&&<section className="panel">
       <h2>Historial de evaluaciones</h2>
+      <p className="muted">Consulta todos los ciclos y accede a la ficha completa de cada supervisor.</p>
       <div className="tablewrap"><table>
-        <thead><tr><th>Empresa</th><th>Supervisor</th><th>Ciclo</th><th>DISC</th><th>Equipo</th><th>Informe</th></tr></thead>
+        <thead><tr><th>Empresa</th><th>Supervisor</th><th>Ciclo</th><th>DISC</th><th>Equipo</th><th>Entrevista</th><th>Informe</th><th>Acción</th></tr></thead>
         <tbody>{assessments.map(x=><tr key={x.id}>
           <td>{x.company_name}</td><td>{x.full_name}</td><td>{x.cycle_name}</td>
           <td>{x.self_done?'Completado':'Pendiente'}</td><td>{x.team_count}</td>
+          <td>{x.has_psychologist_note?'Ingresada':'Pendiente'}</td>
           <td>{x.final_report_status==='finalized'?'Finalizado':'Pendiente'}</td>
+          <td><a className="link" href={'/analysis?id='+x.id}>{session.role==='psychologist'?'Ingresar percepción':'Ver análisis'}</a></td>
         </tr>)}</tbody>
       </table></div>
     </section>}
