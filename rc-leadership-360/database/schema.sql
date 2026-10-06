@@ -126,3 +126,8 @@ alter table rc360_psychologist_notes add column if not exists strengths_observed
 alter table rc360_psychologist_notes add column if not exists development_observed text;
 alter table rc360_psychologist_notes add column if not exists environment_factors text;
 alter table rc360_psychologist_notes add column if not exists professional_recommendations text;
+
+alter table rc360_final_reports add column if not exists objective_scope text;
+alter table rc360_final_reports add column if not exists indicators jsonb not null default '[]'::jsonb;
+alter table rc360_final_reports add column if not exists conclusion text;
+alter table rc360_final_reports add column if not exists evidence_matrix jsonb not null default '[]'::jsonb;
