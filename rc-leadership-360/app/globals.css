@@ -71,3 +71,7 @@
 
 .actionStack{display:flex;flex-direction:column;align-items:flex-start;gap:4px}.psychAction{display:inline-flex;align-items:center;padding:8px 11px;border-radius:10px;background:linear-gradient(135deg,rgba(62,207,255,.16),rgba(149,84,255,.18));border:1px solid rgba(102,218,255,.24);color:#9eeeff;text-decoration:none;font-size:12px;font-weight:900}.psychAction:hover{border-color:#6deaff;box-shadow:0 0 18px rgba(76,215,255,.15)}
 #percepcion{scroll-margin-top:18px}
+
+/* Admin registry management */
+.adminRegistry{margin-top:22px}.registryBlock{margin-top:22px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}.registryBlock h3{margin:10px 0 12px}.registryActions{display:flex;gap:7px;flex-wrap:wrap}.smallBtn{padding:8px 10px!important;border-radius:10px!important;font-size:12px!important;white-space:nowrap}.professionalRegistry{padding:16px;border-radius:18px;background:linear-gradient(145deg,rgba(20,49,78,.42),rgba(30,22,57,.42));border:1px solid rgba(109,216,255,.12)}.adminRegistry table td{vertical-align:middle}.adminRegistry .pill{white-space:nowrap}
+@media(max-width:800px){.registryActions{flex-direction:column;align-items:stretch}.registryActions button{width:100%}.adminRegistry{padding:16px}.registryBlock{overflow:hidden}}
