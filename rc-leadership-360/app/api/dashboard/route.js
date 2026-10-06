@@ -61,13 +61,19 @@ export async function GET(){
       ? query('select id,name,rut from rc360_companies where active=true order by name')
       : Promise.resolve({rows:[]});
 
-    const [assessmentsRes,supervisorsRes,companiesRes,mc,ms,mp]=await Promise.all([
+    const questionsPromise=['admin','psychologist'].includes(s.role)
+      ? query(`select id,mode,text,disc,competency,position,active,created_at,updated_at
+        from rc360_questions where deleted_at is null order by mode,position,id`)
+      : Promise.resolve({rows:[]});
+
+    const [assessmentsRes,supervisorsRes,companiesRes,mc,ms,mp,mq]=await Promise.all([
       query(assessmentsSql,params),
       query(supervisorsSql,params),
       companiesPromise,
       managementCompanies,
       managementSupervisors,
-      managementProfessionals
+      managementProfessionals,
+      questionsPromise
     ]);
 
     return NextResponse.json({
@@ -79,7 +85,8 @@ export async function GET(){
         companies:mc.rows,
         supervisors:ms.rows,
         professionals:mp.rows
-      }:null
+      }:null,
+      questions:mq.rows
     },{headers:{'Cache-Control':'no-store, max-age=0'}});
   }catch(e){
     console.error(e);
