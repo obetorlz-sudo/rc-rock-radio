@@ -4,11 +4,12 @@ import { getSession } from '../../../../lib/security';
 
 export async function POST(req){
   const s=await getSession();
-  if(!s||s.role!=='psychologist') return NextResponse.json({error:'Solo la Psicóloga puede guardar o finalizar el informe profesional.'},{status:403});
+  if(!s||!['admin','psychologist'].includes(s.role)) return NextResponse.json({error:'Acceso reservado a Administración y Psicología Laboral.'},{status:403});
   try{
     const b=await req.json();
     if(!b.assessmentId) return NextResponse.json({error:'Evaluación inválida.'},{status:400});
     const status=b.status==='finalized'?'finalized':'draft';
+    if(status==='finalized'&&s.role!=='psychologist') return NextResponse.json({error:'Solo la Psicóloga puede finalizar el informe profesional.'},{status:403});
     const arr=x=>Array.isArray(x)?x.slice(0,30):[];
     const clean=v=>String(v||'').trim().slice(0,12000);
     const action=arr(b.action_plan);
