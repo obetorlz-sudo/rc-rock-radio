@@ -110,6 +110,21 @@ export default function AdminPage(){
     manage('/api/manage/professional',{action:'reset_password',id:x.id,password},'Contraseña de profesional restablecida.');
   };
 
+  const deleteProfessional=x=>{
+    if(!window.confirm('¿Eliminar definitivamente a '+x.full_name+'? Esta acción no se puede deshacer.'))return;
+    manage('/api/manage/professional',{action:'delete',id:x.id},'Profesional eliminado.');
+  };
+  const deleteSupervisor=x=>{
+    if(!window.confirm('¿Eliminar definitivamente a '+x.full_name+'? También se eliminarán sus evaluaciones y resultados asociados.'))return;
+    manage('/api/manage/supervisor',{action:'delete',id:x.id},'Supervisor eliminado.');
+  };
+  const deleteCompany=x=>{
+    if(!window.confirm('¿Eliminar definitivamente la empresa '+x.name+'? Se eliminarán también sus supervisores, evaluaciones, respuestas e informes asociados.'))return;
+    const check=window.prompt('Escribe ELIMINAR para confirmar');
+    if(check!=='ELIMINAR')return;
+    manage('/api/manage/company',{action:'delete',id:x.id},'Empresa eliminada.');
+  };
+
   if(!session)return <main className="shell">
     <a className="link" href="/">← Volver al inicio</a>
     <section className="panel login">
@@ -250,6 +265,7 @@ export default function AdminPage(){
               <button className="ghost smallBtn" onClick={()=>editCompany(x)}>Editar</button>
               <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer clave</button>
               <button className="ghost smallBtn" onClick={()=>manage('/api/manage/company',{action:'toggle',id:x.id},x.active?'Empresa desactivada.':'Empresa activada.')}>{x.active?'Desactivar':'Activar'}</button>
+              <button className="dangerBtn smallBtn" onClick={()=>deleteCompany(x)}>Eliminar</button>
             </div></td>
           </tr>)}
           {(data.management?.companies||[]).length===0&&<tr><td colSpan="5" className="muted">No hay empresas registradas.</td></tr>}
@@ -267,6 +283,7 @@ export default function AdminPage(){
             <td><div className="registryActions">
               <button className="ghost smallBtn" onClick={()=>editSupervisor(x)}>Editar</button>
               <button className="ghost smallBtn" onClick={()=>manage('/api/manage/supervisor',{action:'toggle',id:x.id},x.active?'Supervisor desactivado.':'Supervisor activado.')}>{x.active?'Desactivar':'Activar'}</button>
+              <button className="dangerBtn smallBtn" onClick={()=>deleteSupervisor(x)}>Eliminar</button>
             </div></td>
           </tr>)}
           {(data.management?.supervisors||[]).length===0&&<tr><td colSpan="6" className="muted">No hay supervisores registrados.</td></tr>}
@@ -284,6 +301,7 @@ export default function AdminPage(){
               <button className="ghost smallBtn" onClick={()=>editProfessional(x)}>Editar</button>
               <button className="primary smallBtn" onClick={()=>resetProfessionalPassword(x)}>Restablecer clave</button>
               <button className="ghost smallBtn" onClick={()=>manage('/api/manage/professional',{action:'toggle',id:x.id},x.active?'Profesional desactivado.':'Profesional activado.')}>{x.active?'Desactivar':'Activar'}</button>
+              <button className="dangerBtn smallBtn" onClick={()=>deleteProfessional(x)}>Eliminar</button>
             </div></td>
           </tr>)}
           {(data.management?.professionals||[]).length===0&&<tr><td colSpan="5"><div className="notice">No existe ninguna cuenta de Psicóloga registrada. Créala en el formulario superior y luego aparecerá aquí.</div></td></tr>}
