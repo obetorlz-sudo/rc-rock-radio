@@ -102,3 +102,20 @@ create index if not exists rc360_supervisors_rut_idx on rc360_supervisors(rut);
 create index if not exists rc360_assessments_company_idx on rc360_assessments(company_id);
 create index if not exists rc360_assessments_supervisor_idx on rc360_assessments(supervisor_id);
 create index if not exists rc360_team_assessment_idx on rc360_team_responses(assessment_id);
+
+
+create table if not exists rc360_final_reports(
+  assessment_id uuid primary key references rc360_assessments(id) on delete cascade,
+  author_id uuid references rc360_users(id) on delete set null,
+  strengths jsonb not null default '[]'::jsonb,
+  development_areas jsonb not null default '[]'::jsonb,
+  opportunities jsonb not null default '[]'::jsonb,
+  recommendations jsonb not null default '[]'::jsonb,
+  action_plan jsonb not null default '[]'::jsonb,
+  executive_summary text,
+  status text not null default 'draft' check(status in ('draft','finalized')),
+  finalized_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists rc360_final_reports_status_idx on rc360_final_reports(status);
