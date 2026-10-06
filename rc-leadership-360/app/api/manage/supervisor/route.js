@@ -40,6 +40,12 @@ export async function POST(req){
       return NextResponse.json(rows[0]||{});
     }
 
+    if(action==='delete'){
+      const {rows}=await query('delete from rc360_supervisors where id=$1 returning id,full_name,rut',[b.id]);
+      if(!rows[0])return NextResponse.json({error:'Supervisor no encontrado.'},{status:404});
+      return NextResponse.json({ok:true,deleted:rows[0]});
+    }
+
     return NextResponse.json({error:'Acción no válida.'},{status:400});
   }catch(e){
     console.error(e);
