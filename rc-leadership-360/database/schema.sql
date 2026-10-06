@@ -131,3 +131,19 @@ alter table rc360_final_reports add column if not exists objective_scope text;
 alter table rc360_final_reports add column if not exists indicators jsonb not null default '[]'::jsonb;
 alter table rc360_final_reports add column if not exists conclusion text;
 alter table rc360_final_reports add column if not exists evidence_matrix jsonb not null default '[]'::jsonb;
+
+create table if not exists rc360_questions(
+  id serial primary key,
+  mode text not null check(mode in ('self','team')),
+  text text not null,
+  disc text not null check(disc in ('D','I','S','C')),
+  competency text not null,
+  reverse boolean not null default false,
+  position int not null,
+  active boolean not null default true,
+  deleted_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(mode,position)
+);
+create index if not exists rc360_questions_mode_idx on rc360_questions(mode,active,position);
