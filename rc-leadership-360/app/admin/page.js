@@ -20,29 +20,56 @@ export default function AdminPage(){
   const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'});
   const [professional,setProfessional]=useState({fullName:'',username:'',password:''});
 
-  const load=async()=>{
+  const applyDashboard=d=>{
+    setData(d);
+    if(d?.session)setSession({role:d.session.role,full_name:d.session.name||'Usuario',company_id:d.session.companyId||null});
+  };
+  const load=async({silent=false}={})=>{
     try{
       const d=await jfetch('/api/dashboard');
-      setData(d);
-      if(!session&&d.session)setSession({role:d.session.role,full_name:d.session.name||'Usuario',company_id:d.session.companyId||null});
-    }catch(e){setMsg(e.message)}
+      applyDashboard(d);
+      if(!silent)setMsg('');
+      return d;
+    }catch(e){
+      if(!silent)setMsg(e.message);
+      return null;
+    }
   };
-  useEffect(()=>{load()},[]);
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try{
+        const r=await fetch('/api/dashboard',{cache:'no-store'});
+        if(!active||!r.ok)return;
+        const d=await r.json();
+        if(active)applyDashboard(d);
+      }catch{}
+    })();
+    return()=>{active=false};
+  },[]);
   const availableSup=useMemo(()=>data?.supervisors?.filter(x=>!sup.companyId||String(x.company_id)===String(sup.companyId))||[],[data,sup.companyId]);
 
   const doLogin=async e=>{
-    e.preventDefault();setMsg('');
-    try{const d=await jfetch('/api/auth/login',{method:'POST',body:JSON.stringify(login)});setSession(d)}
-    catch(e){setMsg(e.message)}
+    e.preventDefault();
+    setMsg('');
+    try{
+      const s=await jfetch('/api/auth/login',{method:'POST',body:JSON.stringify(login)});
+      setSession(s);
+      const d=await jfetch('/api/dashboard');
+      applyDashboard(d);
+    }catch(e){
+      setSession(null);
+      setData(null);
+      setMsg(e.message);
+    }
   };
-  const logout=async()=>{await fetch('/api/auth/logout',{method:'POST'});setSession(null);setData(null)};
+  const logout=async()=>{await fetch('/api/auth/logout',{method:'POST'});setSession(null);setData(null);setMsg('')};
   const send=async(url,body)=>{
     setMsg('');
     try{await jfetch(url,{method:'POST',body:JSON.stringify(body)});setMsg('Guardado correctamente.');await load()}
     catch(e){setMsg(e.message)}
   };
 
-  if(!session&&data===null&&msg==='')return <main className="shell"><div className="panel">Cargando acceso profesional…</div></main>;
   if(!session)return <main className="shell">
     <a className="link" href="/">← Volver al inicio</a>
     <section className="panel login">
@@ -58,7 +85,7 @@ export default function AdminPage(){
     </section>
   </main>;
 
-  if(!data)return <main className="shell"><p>{msg||'Cargando panel…'}</p></main>;
+  if(!data)return <main className="shell"><section className="panel centered"><h2>Preparando panel…</h2><p className="muted">Estamos cargando la información.</p>{msg&&<div className="notice">{msg}</div>}<button className="primary" onClick={()=>load()}>Reintentar</button></section></main>;
 
   const supervisors=data.supervisors||[];
   const assessments=data.assessments||[];
