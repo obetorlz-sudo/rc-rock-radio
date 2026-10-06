@@ -52,6 +52,12 @@ export async function POST(req){
       return NextResponse.json({ok:true,user:rows[0]});
     }
 
+    if(action==='delete'){
+      const {rows}=await query(`delete from rc360_companies where id=$1 returning id,name,rut`,[b.id]);
+      if(!rows[0])return NextResponse.json({error:'Empresa no encontrada.'},{status:404});
+      return NextResponse.json({ok:true,deleted:rows[0]});
+    }
+
     return NextResponse.json({error:'Acción no válida.'},{status:400});
   }catch(e){
     console.error(e);
