@@ -21,7 +21,7 @@ const DISC_INFO={
 
 function RadarChart({labels,self,team,title,labelMap,showExplanation=false}){
   const [active,setActive]=useState(labels[0]);
-  const cx=250,cy=225,R=165,n=labels.length;
+  const cx=250,cy=225,R=164,n=labels.length;
   const point=(i,pct)=>{
     const a=(-Math.PI/2)+(i*2*Math.PI/n);
     const r=R*Math.max(0,Math.min(100,Number(pct)||0))/100;
@@ -33,46 +33,81 @@ function RadarChart({labels,self,team,title,labelMap,showExplanation=false}){
   const gap=sv!=null&&tv!=null?Number(sv)-Number(tv):null;
   const activeName=labelMap?.[active]||DISC_INFO[active]?.name||active;
 
-  return <div className="radarBlock neonCard">
+  return <div className="radarBlock neonCard compactRadar">
     <div className="radarHeader">
-      <div><h3>{title}</h3><p className="muted">Selecciona una dimensión para ver su porcentaje y lectura.</p></div>
+      <div><h3>{title}</h3><p className="muted">Selecciona D, I, S o C para ver porcentajes y lectura.</p></div>
       <div className="trendLegend"><span><i className="legendSelf"/>Supervisor</span>{team&&<span><i className="legendTeam"/>Equipo</span>}</div>
     </div>
-    <div className="radarStage">
-      <div className="holoOrb holoOrbOne"/><div className="holoOrb holoOrbTwo"/>
-      <svg className="radarSvg" viewBox="0 0 500 470" role="img" aria-label={title}>
-        <defs>
-          <filter id="glowBlue"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          <filter id="glowGold"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
-        {[20,40,60,80,100].map(v=><polygon key={v} points={ring(v)} className="radarRing"/>)}
-        {labels.map((k,i)=>{
-          const [x,y]=point(i,100);
-          return <g key={k}>
-            <line x1={cx} y1={cy} x2={x} y2={y} className="radarAxis"/>
-            <circle cx={x} cy={y} r="25" className={active===k?'radarLabelHit active':'radarLabelHit'} onClick={()=>setActive(k)}/>
-            <text x={x} y={y+5} textAnchor="middle" className="radarLabel" onClick={()=>setActive(k)}>{k.length>14?k.slice(0,11)+'…':k}</text>
-          </g>
-        })}
-        {self&&<polygon points={poly(self)} className="radarSelfArea" filter="url(#glowBlue)"/>}
-        {team&&<polygon points={poly(team)} className="radarTeamArea" filter="url(#glowGold)"/>}
-        {labels.map((k,i)=>{
-          const [sx,sy]=point(i,self?.[k]||0),[tx,ty]=point(i,team?.[k]||0);
-          return <g key={'p-'+k}>
-            {self&&<circle cx={sx} cy={sy} r={active===k?8:5} className="radarSelfPoint" onClick={()=>setActive(k)}/>}
-            {team&&<circle cx={tx} cy={ty} r={active===k?8:5} className="radarTeamPoint" onClick={()=>setActive(k)}/>}
-          </g>
-        })}
-        <circle cx={cx} cy={cy} r="4" className="radarCenter"/>
-      </svg>
+
+    <div className="radarMainGrid">
+      <div className="radarStage">
+        <div className="holoOrb holoOrbOne"/><div className="holoOrb holoOrbTwo"/>
+        <svg className="radarSvg" viewBox="0 0 500 455" role="img" aria-label={title}>
+          <defs>
+            <filter id="glowBlue"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="glowGold"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          {[20,40,60,80,100].map(v=><polygon key={v} points={ring(v)} className="radarRing"/>)}
+          {labels.map((k,i)=>{
+            const [x,y]=point(i,100);
+            return <g key={k}>
+              <line x1={cx} y1={cy} x2={x} y2={y} className="radarAxis"/>
+              <circle cx={x} cy={y} r="25" className={active===k?'radarLabelHit active':'radarLabelHit'} onClick={()=>setActive(k)}/>
+              <text x={x} y={y+5} textAnchor="middle" className="radarLabel" onClick={()=>setActive(k)}>{k.length>14?k.slice(0,11)+'…':k}</text>
+            </g>
+          })}
+          {self&&<polygon points={poly(self)} className="radarSelfArea" filter="url(#glowBlue)"/>}
+          {team&&<polygon points={poly(team)} className="radarTeamArea" filter="url(#glowGold)"/>}
+          {labels.map((k,i)=>{
+            const [sx,sy]=point(i,self?.[k]||0),[tx,ty]=point(i,team?.[k]||0);
+            return <g key={'p-'+k}>
+              {self&&<circle cx={sx} cy={sy} r={active===k?8:5} className="radarSelfPoint" onClick={()=>setActive(k)}/>}
+              {team&&<circle cx={tx} cy={ty} r={active===k?8:5} className="radarTeamPoint" onClick={()=>setActive(k)}/>}
+              {active===k&&self&&<g className="radarValueTag">
+                <rect x={sx-28} y={sy-38} width="56" height="25" rx="10"/>
+                <text x={sx} y={sy-21} textAnchor="middle">{self[k]}%</text>
+              </g>}
+              {active===k&&team&&<g className="radarValueTag teamTag">
+                <rect x={tx-28} y={ty+13} width="56" height="25" rx="10"/>
+                <text x={tx} y={ty+30} textAnchor="middle">{team[k]}%</text>
+              </g>}
+            </g>
+          })}
+          <circle cx={cx} cy={cy} r="4" className="radarCenter"/>
+        </svg>
+      </div>
+
+      <aside className="radarSidePanel">
+        <div className="selectedDimension">
+          <span className="eyebrow">Dimensión seleccionada</span>
+          <h3>{activeName}</h3>
+          <div className="sideNumbers">
+            <div className="radarNumbers"><strong>{sv??'-'}%</strong><span>Supervisor</span></div>
+            {team&&<div className="radarNumbers team"><strong>{tv??'-'}%</strong><span>Equipo</span></div>}
+            <div className="radarNumbers gap"><strong>{gap==null?'—':(gap>0?'+':'')+gap}</strong><span>Brecha</span></div>
+          </div>
+        </div>
+        {showExplanation&&DISC_INFO[active]&&<div className="chartExplanation sideExplanation">
+          <b>¿Qué representa?</b>
+          <p>{DISC_INFO[active].text}</p>
+          <p><b>Lectura:</b> {gap==null?'Aún no existe una muestra suficiente del equipo para comparar.':Math.abs(gap)<10?'La percepción es bastante consistente entre supervisor y equipo.':gap>0?'El supervisor se percibe con mayor presencia de esta conducta que la observada por el equipo.':'El equipo observa una mayor presencia de esta conducta que la reconocida por el supervisor.'}</p>
+        </div>}
+      </aside>
     </div>
-    <div className="radarInsight">
-      <div><span className="eyebrow">Dimensión seleccionada</span><h3>{activeName}</h3></div>
-      <div className="radarNumbers"><strong>{sv??'-'}%</strong><span>Supervisor</span></div>
-      {team&&<div className="radarNumbers team"><strong>{tv??'-'}%</strong><span>Equipo</span></div>}
-      {gap!=null&&<div className="radarNumbers gap"><strong>{gap>0?'+':''}{gap}</strong><span>Brecha</span></div>}
-    </div>
-    {showExplanation&&DISC_INFO[active]&&<div className="chartExplanation"><b>¿Qué representa?</b><p>{DISC_INFO[active].text}</p>{gap!=null&&<p><b>Lectura:</b> {Math.abs(gap)<10?'La percepción es bastante consistente entre supervisor y equipo.':gap>0?'El supervisor se percibe con mayor presencia de esta conducta que la observada por el equipo.':'El equipo observa una mayor presencia de esta conducta que la reconocida por el supervisor.'}</p>}</div>}
+  </div>;
+}
+
+function DiscBars({self,team}){
+  if(!self)return <div className="privacy">Aún no hay resultados conductuales del supervisor.</div>;
+  return <div className="discBarGrid">
+    {['D','I','S','C'].map(k=>{
+      const s=Number(self[k]||0),t=team?Number(team[k]||0):null;
+      return <div className="discBarCard" key={k}>
+        <div className="discBarHead"><div><b>{k}</b><span>{DISC_INFO[k].name}</span></div><strong>{s}%</strong></div>
+        <div className="discBarLine"><span>Supervisor</span><div className="discTrack"><i className="discFill self" style={{width:s+'%'}}/></div><b>{s}%</b></div>
+        {team&&<div className="discBarLine"><span>Equipo</span><div className="discTrack"><i className="discFill team" style={{width:t+'%'}}/></div><b>{t}%</b></div>}
+      </div>
+    })}
   </div>;
 }
 
@@ -122,7 +157,7 @@ function ReportDocument({d,report,enough}){
   const issueDate=report.finalized_at||report.updated_at||new Date().toISOString();
   return <article className="reportDocument">
     <section className="reportCover">
-      <img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/>
+      <div className="reportLogoBox"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><div><b>INNOVA RC CAPACITA</b><span>Desarrollo organizacional</span></div></div>
       <div><span>RC LEADERSHIP 360</span><h1>Informe Final de Retroalimentación y Propuesta de Mejora</h1><p>Evaluación conductual y de competencias para desarrollo organizacional</p></div>
       <div className="coverPerson">
         <b>{d.supervisor.name}</b><span>RUT {d.supervisor.rut}</span>
@@ -130,6 +165,7 @@ function ReportDocument({d,report,enough}){
         <span>Estado: {report.status==='finalized'?'Informe finalizado':'Borrador'}</span>
       </div>
     </section>
+    <div className="reportMiniHeader"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><div><b>RC Leadership 360</b><span>{d.supervisor.name} · {d.company.name}</span></div></div>
 
     <section className="reportSection">
       <h2>1. Antecedentes generales</h2>
@@ -161,8 +197,13 @@ function ReportDocument({d,report,enough}){
       <p className="reportText">{d.self_analysis}</p>
     </section>
 
+    <section className="reportSection">
+      <h2>5. Comparación de conductas</h2>
+      <DiscBars self={d.self?.disc} team={enough?d.team.disc:null}/>
+    </section>
+
     <section className="reportSection reportPageBreak">
-      <h2>5. Competencias</h2>
+      <h2>6. Competencias</h2>
       <ComparativeBars self={d.self?.competencies} team={enough?d.team.competencies:null}/>
       <table className="reportTable competencyTable"><thead><tr><th>Competencia</th><th>Supervisor</th><th>Equipo</th><th>Brecha</th><th>Lectura</th></tr></thead><tbody>
         {(d.gap_rows?.length?d.gap_rows:COMP.map(k=>({competency:k,self:d.self?.competencies?.[k],team:null,gap:null,reading:'Sin muestra de equipo'}))).map((g,i)=><tr key={i}><td>{g.competency}</td><td>{g.self??'—'}{g.self!=null?'%':''}</td><td>{g.team??'—'}{g.team!=null?'%':''}</td><td>{g.gap==null?'—':(g.gap>0?'+':'')+g.gap}</td><td>{g.reading}</td></tr>)}
@@ -170,14 +211,14 @@ function ReportDocument({d,report,enough}){
     </section>
 
     <section className="reportSection">
-      <h2>6. Brechas prioritarias de percepción</h2>
+      <h2>7. Brechas prioritarias de percepción</h2>
       {gaps.length?<table className="reportTable"><thead><tr><th>Competencia</th><th>Brecha</th><th>Lectura</th></tr></thead><tbody>
         {gaps.map((g,i)=><tr key={i}><td>{g.competency}</td><td>{g.gap>0?'+':''}{g.gap} pts</td><td>{g.reading}</td></tr>)}
       </tbody></table>:<p className="reportText">No existe aún una muestra agregada suficiente del equipo para analizar brechas.</p>}
     </section>
 
     <section className="reportSection reportPageBreak">
-      <h2>7. Contexto del puesto y entrevista profesional</h2>
+      <h2>8. Contexto del puesto y entrevista profesional</h2>
       <table className="reportTable vertical"><tbody>
         <tr><th>Contexto del puesto</th><td>{d.professional_note?.context_position||'Sin antecedente registrado.'}</td></tr>
         <tr><th>Observaciones de entrevista</th><td>{d.professional_note?.interview_observations||'Sin antecedente registrado.'}</td></tr>
@@ -190,19 +231,19 @@ function ReportDocument({d,report,enough}){
     </section>
 
     <section className="reportSection">
-      <h2>8. Análisis integrado</h2>
+      <h2>9. Análisis integrado</h2>
       <p className="reportText">{d.integrated_summary}</p>
     </section>
 
     <section className="reportSection">
-      <h2>9. Matriz de fortalezas y áreas de desarrollo</h2>
+      <h2>10. Matriz de fortalezas y áreas de desarrollo</h2>
       <table className="reportTable"><thead><tr><th>Tipo</th><th>Foco</th><th>Evidencia</th><th>Impacto / utilidad</th></tr></thead><tbody>
         {(report.evidence_matrix||[]).map((x,i)=><tr key={i}><td>{x.type}</td><td>{x.focus}</td><td>{x.evidence}</td><td>{x.impact}</td></tr>)}
       </tbody></table>
     </section>
 
     <section className="reportSection">
-      <h2>10. Fortalezas, áreas de desarrollo y oportunidades</h2>
+      <h2>11. Fortalezas, áreas de desarrollo y oportunidades</h2>
       <div className="reportQuad">
         <div><h3>Fortalezas</h3><ul>{report.strengths?.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
         <div><h3>Áreas de desarrollo</h3><ul>{report.development_areas?.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
@@ -212,31 +253,31 @@ function ReportDocument({d,report,enough}){
     </section>
 
     <section className="reportSection reportPageBreak">
-      <h2>11. Propuesta de mejora</h2>
+      <h2>12. Propuesta de mejora</h2>
       <table className="reportTable improvementTable"><thead><tr><th>Foco</th><th>Objetivo</th><th>Acción propuesta</th><th>Responsable</th><th>Plazo</th><th>Indicador</th></tr></thead><tbody>
         {(report.action_plan||[]).map((p,i)=><tr key={i}><td>{p.focus||'—'}</td><td>{p.objective||'—'}</td><td>{p.action||'—'}</td><td>{p.responsible||'—'}</td><td>{p.deadline||p.horizon||'—'}</td><td>{p.indicator||'—'}</td></tr>)}
       </tbody></table>
     </section>
 
     <section className="reportSection">
-      <h2>12. Plan de desarrollo 30 / 60 / 90 días</h2>
+      <h2>13. Plan de desarrollo 30 / 60 / 90 días</h2>
       <div className="reportTimeline">{(report.action_plan||[]).slice(0,3).map((p,i)=><div key={i}><b>{p.deadline||p.horizon||['30 días','60 días','90 días'][i]}</b><h3>{p.focus||'Seguimiento'}</h3><p>{p.action}</p><small>{p.indicator}</small></div>)}</div>
     </section>
 
     <section className="reportSection">
-      <h2>13. Indicadores de seguimiento</h2>
+      <h2>14. Indicadores de seguimiento</h2>
       <table className="reportTable"><thead><tr><th>Indicador</th><th>Meta</th><th>Frecuencia</th></tr></thead><tbody>
         {(report.indicators||[]).map((x,i)=><tr key={i}><td>{x.indicator}</td><td>{x.target}</td><td>{x.frequency}</td></tr>)}
       </tbody></table>
     </section>
 
     <section className="reportSection">
-      <h2>14. Conclusión profesional</h2>
+      <h2>15. Conclusión profesional</h2>
       <p className="reportText">{report.conclusion}</p>
     </section>
 
     <section className="reportSection reportClosing">
-      <h2>15. Estado y cierre del informe</h2>
+      <h2>16. Estado y cierre del informe</h2>
       <div className="closingGrid">
         <div><span>Estado</span><b>{report.status==='finalized'?'FINALIZADO':'BORRADOR'}</b></div>
         <div><span>Fecha</span><b>{new Date(issueDate).toLocaleDateString('es-CL')}</b></div>
@@ -331,6 +372,12 @@ export default function AnalysisPage(){
         <p className="muted">El radar permite observar la intensidad relativa de las cuatro tendencias. Mientras más cerca del borde, mayor presencia relativa de la conducta.</p>
         <RadarChart title="Tendencias conductuales" labels={['D','I','S','C']} labelMap={{D:'Dominancia',I:'Influencia',S:'Estabilidad',C:'Cumplimiento'}} self={d.self?.disc} team={enough?d.team.disc:null} showExplanation/>
         {!enough&&<div className="privacy">La percepción del equipo se habilita con 3 o más respuestas. Actualmente hay {d.team?.respondent_count||0}.</div>}
+      </section>
+
+      <section className="panel conductPanel">
+        <div className="sectionTitle"><div><div className="eyebrow">Lectura complementaria</div><h2>Gráfico de conductas D · I · S · C</h2></div></div>
+        <p className="muted">Comparación directa de los porcentajes conductuales del supervisor y del equipo.</p>
+        <DiscBars self={d.self?.disc} team={enough?d.team.disc:null}/>
       </section>
 
       <section className="panel"><h2>Comparación de competencias</h2>
