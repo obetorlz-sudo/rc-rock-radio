@@ -153,141 +153,167 @@ function PsychForm({value,setValue,onSave}){
 
 function ReportDocument({d,report,enough}){
   if(!report)return null;
-  const gaps=(d.gap_rows||[]).slice(0,5);
   const issueDate=report.finalized_at||report.updated_at||new Date().toISOString();
-  return <article className="reportDocument">
-    <section className="reportCover">
-      <div className="reportLogoBox"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><div><b>INNOVA RC CAPACITA</b><span>Desarrollo organizacional</span></div></div>
-      <div><span>RC LEADERSHIP 360</span><h1>Informe Final de Retroalimentación y Propuesta de Mejora</h1><p>Evaluación conductual y de competencias para desarrollo organizacional</p></div>
-      <div className="coverPerson">
-        <b>{d.supervisor.name}</b><span>RUT {d.supervisor.rut}</span>
-        <span>{d.supervisor.position||'Cargo no informado'} · {d.company.name}</span>
-        <span>Estado: {report.status==='finalized'?'Informe finalizado':'Borrador'}</span>
+  const dateText=new Date(issueDate).toLocaleDateString('es-CL');
+  const strengths=(report.strengths||[]).slice(0,4);
+  const development=(report.development_areas||[]).slice(0,4);
+  const opportunities=(report.opportunities||[]).slice(0,4);
+  const gaps=(d.gap_rows||[]).slice(0,4);
+  const psych=d.professional_note||{};
+  const actionPlan=(report.action_plan||[]).slice(0,4);
+  const indicators=(report.indicators||[]).slice(0,4);
+  const Header=()=> <div className="finalReportHeader">
+    <div className="finalBrand">
+      <img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/>
+      <div className="brandDivider"/>
+      <div className="brandClaim">PERSONAS<br/>EQUIPOS<br/>ORGANIZACIONES<br/>CON MÁS POSIBILIDADES</div>
+    </div>
+    <div className="hexAccent"><span/><span/><span/></div>
+    <h1>Informe Final de Retroalimentación y Propuesta de Mejora</h1>
+    <p>Evaluación conductual y de competencias para desarrollo organizacional</p>
+  </div>;
+  const Footer=({page})=><div className="finalReportFooter">
+    <div><b>Innova RC Capacita</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div>
+    <div>{dateText} <b>|</b> Pág. {page} de 3</div>
+  </div>;
+  const SectionTitle=({n,children})=><div className="finalSectionTitle"><span>{n}</span><h2>{children}</h2><i/></div>;
+
+  return <article className="reportDocument finalThreePageReport">
+    <section className="reportPage reportPageOne">
+      <Header/>
+      <div className="personSummary">
+        <div><b>Nombre:</b><span>{d.supervisor.name}</span></div>
+        <div><b>Cargo:</b><span>{d.supervisor.position||'—'}</span></div>
+        <div><b>RUT:</b><span>{d.supervisor.rut}</span></div>
+        <div><b>Fecha:</b><span>{dateText}</span></div>
+        <div><b>Empresa:</b><span>{d.company.name}</span></div>
+        <div><b>Estado:</b><span className="reportStatus">{report.status==='finalized'?'Informe final':'Borrador'}</span></div>
       </div>
-    </section>
-    <div className="reportMiniHeader"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><div><b>RC Leadership 360</b><span>{d.supervisor.name} · {d.company.name}</span></div></div>
 
-    <section className="reportSection">
-      <h2>1. Antecedentes generales</h2>
-      <table className="reportTable"><tbody>
-        <tr><th>Nombre</th><td>{d.supervisor.name}</td><th>RUT</th><td>{d.supervisor.rut}</td></tr>
-        <tr><th>Empresa</th><td>{d.company.name}</td><th>Cargo</th><td>{d.supervisor.position||'—'}</td></tr>
-        <tr><th>Área</th><td>{d.supervisor.area||'—'}</td><th>Ciclo</th><td>{d.assessment.cycle}</td></tr>
-        <tr><th>Fecha autoevaluación</th><td>{d.self?.completed_at?new Date(d.self.completed_at).toLocaleDateString('es-CL'):'Pendiente'}</td><th>Respuestas equipo</th><td>{d.team?.respondent_count||0}</td></tr>
-        <tr><th>Psicóloga responsable</th><td>{d.professional_note?.author||'Pendiente'}</td><th>Fecha emisión</th><td>{new Date(issueDate).toLocaleDateString('es-CL')}</td></tr>
-      </tbody></table>
-    </section>
-
-    <section className="reportSection">
-      <h2>2. Objetivo y alcance</h2>
-      <p className="reportText">{report.objective_scope}</p>
-    </section>
-
-    <section className="reportSection">
-      <h2>3. Síntesis ejecutiva</h2>
-      <p className="reportText">{report.executive_summary}</p>
-    </section>
-
-    <section className="reportSection reportPageBreak">
-      <h2>4. Perfil conductual D · I · S · C</h2>
-      <RadarChart title="Perfil conductual" labels={['D','I','S','C']} labelMap={{D:'Dominancia',I:'Influencia',S:'Estabilidad',C:'Cumplimiento'}} self={d.self?.disc} team={enough?d.team.disc:null}/>
-      <table className="reportTable"><thead><tr><th>Dimensión</th><th>Supervisor</th><th>Equipo</th><th>Brecha</th></tr></thead><tbody>
-        {['D','I','S','C'].map(k=>{const a=d.self?.disc?.[k],b=enough?d.team?.disc?.[k]:null,g=a!=null&&b!=null?a-b:null;return <tr key={k}><td><b>{DISC_INFO[k].name}</b></td><td>{a??'—'}{a!=null?'%':''}</td><td>{b??'—'}{b!=null?'%':''}</td><td>{g==null?'—':(g>0?'+':'')+g+' pts'}</td></tr>})}
-      </tbody></table>
-      <p className="reportText">{d.self_analysis}</p>
-    </section>
-
-    <section className="reportSection">
-      <h2>5. Comparación de conductas</h2>
-      <DiscBars self={d.self?.disc} team={enough?d.team.disc:null}/>
-    </section>
-
-    <section className="reportSection reportPageBreak">
-      <h2>6. Competencias</h2>
-      <ComparativeBars self={d.self?.competencies} team={enough?d.team.competencies:null}/>
-      <table className="reportTable competencyTable"><thead><tr><th>Competencia</th><th>Supervisor</th><th>Equipo</th><th>Brecha</th><th>Lectura</th></tr></thead><tbody>
-        {(d.gap_rows?.length?d.gap_rows:COMP.map(k=>({competency:k,self:d.self?.competencies?.[k],team:null,gap:null,reading:'Sin muestra de equipo'}))).map((g,i)=><tr key={i}><td>{g.competency}</td><td>{g.self??'—'}{g.self!=null?'%':''}</td><td>{g.team??'—'}{g.team!=null?'%':''}</td><td>{g.gap==null?'—':(g.gap>0?'+':'')+g.gap}</td><td>{g.reading}</td></tr>)}
-      </tbody></table>
-    </section>
-
-    <section className="reportSection">
-      <h2>7. Brechas prioritarias de percepción</h2>
-      {gaps.length?<table className="reportTable"><thead><tr><th>Competencia</th><th>Brecha</th><th>Lectura</th></tr></thead><tbody>
-        {gaps.map((g,i)=><tr key={i}><td>{g.competency}</td><td>{g.gap>0?'+':''}{g.gap} pts</td><td>{g.reading}</td></tr>)}
-      </tbody></table>:<p className="reportText">No existe aún una muestra agregada suficiente del equipo para analizar brechas.</p>}
-    </section>
-
-    <section className="reportSection reportPageBreak">
-      <h2>8. Contexto del puesto y entrevista profesional</h2>
-      <table className="reportTable vertical"><tbody>
-        <tr><th>Contexto del puesto</th><td>{d.professional_note?.context_position||'Sin antecedente registrado.'}</td></tr>
-        <tr><th>Observaciones de entrevista</th><td>{d.professional_note?.interview_observations||'Sin antecedente registrado.'}</td></tr>
-        <tr><th>Fortalezas observadas</th><td>{d.professional_note?.strengths_observed||'Sin antecedente registrado.'}</td></tr>
-        <tr><th>Aspectos a desarrollar</th><td>{d.professional_note?.development_observed||'Sin antecedente registrado.'}</td></tr>
-        <tr><th>Factores del entorno laboral</th><td>{d.professional_note?.environment_factors||'Sin antecedente registrado.'}</td></tr>
-        <tr><th>Recomendaciones profesionales</th><td>{d.professional_note?.professional_recommendations||'Sin antecedente registrado.'}</td></tr>
-        <tr><th>Síntesis profesional</th><td>{d.professional_note?.note&&d.professional_note.note!=='Análisis profesional estructurado'?d.professional_note.note:'Sin síntesis adicional.'}</td></tr>
-      </tbody></table>
-    </section>
-
-    <section className="reportSection">
-      <h2>9. Análisis integrado</h2>
-      <p className="reportText">{d.integrated_summary}</p>
-    </section>
-
-    <section className="reportSection">
-      <h2>10. Matriz de fortalezas y áreas de desarrollo</h2>
-      <table className="reportTable"><thead><tr><th>Tipo</th><th>Foco</th><th>Evidencia</th><th>Impacto / utilidad</th></tr></thead><tbody>
-        {(report.evidence_matrix||[]).map((x,i)=><tr key={i}><td>{x.type}</td><td>{x.focus}</td><td>{x.evidence}</td><td>{x.impact}</td></tr>)}
-      </tbody></table>
-    </section>
-
-    <section className="reportSection">
-      <h2>11. Fortalezas, áreas de desarrollo y oportunidades</h2>
-      <div className="reportQuad">
-        <div><h3>Fortalezas</h3><ul>{report.strengths?.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-        <div><h3>Áreas de desarrollo</h3><ul>{report.development_areas?.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-        <div><h3>Oportunidades</h3><ul>{report.opportunities?.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-        <div><h3>Recomendaciones</h3><ul>{report.recommendations?.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+      <div className="finalSection compactSection">
+        <SectionTitle n="1">Antecedentes Generales</SectionTitle>
+        <p>El presente informe integra los resultados de la evaluación conductual y de competencias, la percepción agregada del equipo y los antecedentes profesionales disponibles para apoyar el desarrollo del supervisor en su contexto laboral.</p>
       </div>
-    </section>
 
-    <section className="reportSection reportPageBreak">
-      <h2>12. Propuesta de mejora</h2>
-      <table className="reportTable improvementTable"><thead><tr><th>Foco</th><th>Objetivo</th><th>Acción propuesta</th><th>Responsable</th><th>Plazo</th><th>Indicador</th></tr></thead><tbody>
-        {(report.action_plan||[]).map((p,i)=><tr key={i}><td>{p.focus||'—'}</td><td>{p.objective||'—'}</td><td>{p.action||'—'}</td><td>{p.responsible||'—'}</td><td>{p.deadline||p.horizon||'—'}</td><td>{p.indicator||'—'}</td></tr>)}
-      </tbody></table>
-    </section>
-
-    <section className="reportSection">
-      <h2>13. Plan de desarrollo 30 / 60 / 90 días</h2>
-      <div className="reportTimeline">{(report.action_plan||[]).slice(0,3).map((p,i)=><div key={i}><b>{p.deadline||p.horizon||['30 días','60 días','90 días'][i]}</b><h3>{p.focus||'Seguimiento'}</h3><p>{p.action}</p><small>{p.indicator}</small></div>)}</div>
-    </section>
-
-    <section className="reportSection">
-      <h2>14. Indicadores de seguimiento</h2>
-      <table className="reportTable"><thead><tr><th>Indicador</th><th>Meta</th><th>Frecuencia</th></tr></thead><tbody>
-        {(report.indicators||[]).map((x,i)=><tr key={i}><td>{x.indicator}</td><td>{x.target}</td><td>{x.frequency}</td></tr>)}
-      </tbody></table>
-    </section>
-
-    <section className="reportSection">
-      <h2>15. Conclusión profesional</h2>
-      <p className="reportText">{report.conclusion}</p>
-    </section>
-
-    <section className="reportSection reportClosing">
-      <h2>16. Estado y cierre del informe</h2>
-      <div className="closingGrid">
-        <div><span>Estado</span><b>{report.status==='finalized'?'FINALIZADO':'BORRADOR'}</b></div>
-        <div><span>Fecha</span><b>{new Date(issueDate).toLocaleDateString('es-CL')}</b></div>
-        <div><span>Profesional responsable</span><b>{d.professional_note?.author||'Psicología Laboral'}</b></div>
+      <div className="finalSection compactSection">
+        <SectionTitle n="2">Objetivo y Alcance</SectionTitle>
+        <div className="twoColText">
+          <p>{report.objective_scope}</p>
+          <div className="softInfoCard"><b>Alcance</b><p>La lectura considera autoevaluación, resultados conductuales, competencias, percepción del equipo cuando existe muestra suficiente y análisis de Psicología Laboral.</p></div>
+        </div>
       </div>
-      <div className="signatureGrid"><div><span>Firma Psicóloga</span></div><div><span>Constancia de recepción del supervisor</span></div></div>
-      <p className="reportDisclaimer">Documento confidencial para fines de desarrollo organizacional. La firma de recepción no implica necesariamente conformidad con la totalidad de las conclusiones.</p>
+
+      <div className="finalSection compactSection">
+        <SectionTitle n="3">Síntesis Ejecutiva</SectionTitle>
+        <p>{report.executive_summary}</p>
+      </div>
+
+      <div className="finalSection compactSection">
+        <SectionTitle n="4">Resumen del Perfil</SectionTitle>
+        <div className="profileSummaryGrid">
+          <div><span>Conducta predominante</span><b>{d.chart_summary?.dominant?.key||'—'} · {DISC_INFO[d.chart_summary?.dominant?.key]?.name||''}</b><strong>{d.chart_summary?.dominant?.value??'—'}%</strong></div>
+          <div><span>Fortaleza principal</span><b>{d.chart_summary?.strongest_competency?.key||'—'}</b><strong>{d.chart_summary?.strongest_competency?.value??'—'}%</strong></div>
+          <div><span>Foco de desarrollo</span><b>{d.chart_summary?.development_competency?.key||'—'}</b><strong>{d.chart_summary?.development_competency?.value??'—'}%</strong></div>
+          <div><span>Respuestas equipo</span><b>{enough?'Muestra habilitada':'Muestra pendiente'}</b><strong>{d.team?.respondent_count||0}</strong></div>
+        </div>
+      </div>
+
+      <div className="finalSection compactSection">
+        <SectionTitle n="5">Fortalezas / Áreas de Desarrollo / Oportunidades</SectionTitle>
+        <div className="triSummary">
+          <div className="strengthBox"><h3>Fortalezas</h3><ul>{strengths.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="developmentBox"><h3>Áreas de Desarrollo</h3><ul>{development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="opportunityBox"><h3>Oportunidades</h3><ul>{opportunities.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+        </div>
+      </div>
+      <Footer page="1"/>
     </section>
 
-    <footer className="reportFooter">INNOVA RC CAPACITA · RC Leadership 360 · Documento confidencial</footer>
+    <section className="reportPage reportPageTwo">
+      <Header/>
+
+      <div className="finalSection">
+        <SectionTitle n="5">Perfil Conductual D-I-S-C</SectionTitle>
+        <div className="discPrintGrid">
+          <div className="printRadarWrap">
+            <RadarChart title="Perfil comparativo D-I-S-C" labels={['D','I','S','C']} labelMap={{D:'Dominancia',I:'Influencia',S:'Estabilidad',C:'Cumplimiento'}} self={d.self?.disc} team={enough?d.team.disc:null}/>
+          </div>
+          <div className="discPrintSide">
+            <h3>Resultados por factor conductual</h3>
+            <DiscBars self={d.self?.disc} team={enough?d.team.disc:null}/>
+            <div className="softInfoCard interpretationCard"><b>Interpretación del perfil</b><p>{d.self_analysis||'Sin análisis disponible.'}</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="finalSection">
+        <SectionTitle n="6">Competencias Clave</SectionTitle>
+        <div className="competencyPrintGrid">
+          <div><h3>Resultados de competencias</h3><ComparativeBars self={d.self?.competencies} team={enough?d.team.competencies:null}/></div>
+          <div className="softInfoCard"><b>Lectura de competencias</b><p>{d.integrated_summary||d.self_analysis||'Sin síntesis disponible.'}</p></div>
+        </div>
+      </div>
+
+      <div className="finalSection">
+        <SectionTitle n="7">Brechas Prioritarias</SectionTitle>
+        <div className="triSummary">
+          <div className="strengthBox"><h3>Fortaleza observada</h3><ul>{strengths.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="developmentBox"><h3>Área de desarrollo</h3><ul>{development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="opportunityBox"><h3>Brecha / Oportunidad</h3><ul>{gaps.length?gaps.map((g,i)=><li key={i}>{g.competency}: {g.gap>0?'+':''}{g.gap} pts · {g.reading}</li>):<li>Sin muestra suficiente del equipo.</li>}</ul></div>
+        </div>
+      </div>
+      <Footer page="2"/>
+    </section>
+
+    <section className="reportPage reportPageThree">
+      <Header/>
+      <div className="personSummary compactPersonSummary">
+        <div><b>Nombre:</b><span>{d.supervisor.name}</span></div>
+        <div><b>Cargo:</b><span>{d.supervisor.position||'—'}</span></div>
+        <div><b>Empresa:</b><span>{d.company.name}</span></div>
+        <div><b>Estado:</b><span className="reportStatus">{report.status==='finalized'?'Informe final':'Borrador'}</span></div>
+      </div>
+
+      <div className="finalSection">
+        <SectionTitle n="8">Análisis de la Psicóloga Laboral</SectionTitle>
+        <div className="psychReportGrid">
+          <div><h3>Contexto del cargo</h3><p>{psych.context_position||'Sin antecedente registrado.'}</p></div>
+          <div><h3>Observaciones de entrevista</h3><p>{psych.interview_observations||'Sin antecedente registrado.'}</p></div>
+          <div><h3>Fortalezas observadas</h3><p>{psych.strengths_observed||'Sin antecedente registrado.'}</p></div>
+          <div><h3>Aspectos a desarrollar</h3><p>{psych.development_observed||'Sin antecedente registrado.'}</p></div>
+          <div><h3>Factores del entorno</h3><p>{psych.environment_factors||'Sin antecedente registrado.'}</p></div>
+          <div><h3>Síntesis profesional</h3><p>{psych.note&&psych.note!=='Análisis profesional estructurado'?psych.note:(psych.professional_recommendations||'Sin síntesis adicional.')}</p></div>
+        </div>
+      </div>
+
+      <div className="finalSection">
+        <SectionTitle n="9">Propuesta de Mejora</SectionTitle>
+        <table className="finalPlanTable"><thead><tr><th>Foco</th><th>Acción</th><th>Responsable</th><th>Plazo</th><th>Indicador</th></tr></thead><tbody>
+          {actionPlan.map((p,i)=><tr key={i}><td>{p.focus||'—'}</td><td>{p.action||p.objective||'—'}</td><td>{p.responsible||'—'}</td><td>{p.deadline||p.horizon||'—'}</td><td>{p.indicator||'—'}</td></tr>)}
+        </tbody></table>
+      </div>
+
+      <div className="finalSection">
+        <SectionTitle n="10">Plan 30 / 60 / 90 días</SectionTitle>
+        <div className="timelinePrint">{actionPlan.slice(0,3).map((p,i)=><div key={i}><b>{p.deadline||['30 días','60 días','90 días'][i]}</b><h3>{p.focus||'Seguimiento'}</h3><p>{p.action||p.objective}</p></div>)}</div>
+      </div>
+
+      <div className="finalSection">
+        <SectionTitle n="11">Indicadores de Seguimiento</SectionTitle>
+        <table className="finalIndicatorsTable"><thead><tr><th>Indicador</th><th>Meta</th><th>Frecuencia</th></tr></thead><tbody>
+          {indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td><td>{x.frequency||'—'}</td></tr>)}
+        </tbody></table>
+      </div>
+
+      <div className="finalSection closingSection">
+        <SectionTitle n="12">Conclusión Profesional y Cierre</SectionTitle>
+        <div className="closingPrintGrid">
+          <p>{report.conclusion}</p>
+          <div className="signatureArea"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
+        </div>
+      </div>
+      <Footer page="3"/>
+    </section>
   </article>;
 }
 
