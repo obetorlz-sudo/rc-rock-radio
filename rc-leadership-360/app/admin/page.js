@@ -133,7 +133,12 @@ export default function AdminPage(){
             <td>{statusPill(x.has_psychologist_note,'Ingresado','Pendiente')}</td>
             <td>{statusPill(x.final_report_status==='finalized','Finalizado','Pendiente')}</td>
             <td>{x.assessment_id
-              ?<a className="link" href={'/analysis?id='+x.assessment_id}>{session.role==='psychologist'?'Ingresar percepción / Ver ficha completa':'Ver ficha completa'}</a>
+              ?session.role==='psychologist'
+                ?<div className="actionStack">
+                  <a className="link" href={'/analysis?id='+x.assessment_id}>Ver ficha completa</a>
+                  <a className="psychAction" href={'/analysis?id='+x.assessment_id+'#percepcion'}>Ingresar percepción</a>
+                </div>
+                :<a className="link" href={'/analysis?id='+x.assessment_id}>Ver ficha completa</a>
               :<span className="muted">Sin ciclo abierto</span>}</td>
           </tr>)}
         </tbody>
@@ -197,7 +202,9 @@ export default function AdminPage(){
           <td>{x.self_done?'Completado':'Pendiente'}</td><td>{x.team_count}</td>
           <td>{x.has_psychologist_note?'Ingresada':'Pendiente'}</td>
           <td>{x.final_report_status==='finalized'?'Finalizado':'Pendiente'}</td>
-          <td><a className="link" href={'/analysis?id='+x.id}>{session.role==='psychologist'?'Ingresar percepción':'Ver análisis'}</a></td>
+          <td>{session.role==='psychologist'
+            ?<div className="actionStack"><a className="link" href={'/analysis?id='+x.id}>Ver ficha</a><a className="psychAction" href={'/analysis?id='+x.id+'#percepcion'}>Ingresar percepción</a></div>
+            :<a className="link" href={'/analysis?id='+x.id}>Ver análisis</a>}</td>
         </tr>)}</tbody>
       </table></div>
     </section>}
