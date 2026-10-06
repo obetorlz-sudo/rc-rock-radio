@@ -70,6 +70,46 @@ export default function AdminPage(){
     catch(e){setMsg(e.message)}
   };
 
+  const manage=async(url,body,success='Cambio guardado.')=>{
+    setMsg('');
+    try{
+      await jfetch(url,{method:'POST',body:JSON.stringify(body)});
+      setMsg(success);
+      await load();
+    }catch(e){setMsg(e.message)}
+  };
+
+  const editCompany=x=>{
+    const name=window.prompt('Nombre o razón social',x.name); if(name===null)return;
+    const rut=window.prompt('RUT empresa',x.rut); if(rut===null)return;
+    const email=window.prompt('Correo',x.email||''); if(email===null)return;
+    manage('/api/manage/company',{action:'update',id:x.id,name,rut,email},'Empresa actualizada.');
+  };
+  const resetCompanyPassword=x=>{
+    const password=window.prompt('Nueva contraseña para '+x.name);
+    if(!password)return;
+    manage('/api/manage/company',{action:'reset_password',id:x.id,password},'Contraseña de empresa restablecida.');
+  };
+  const editSupervisor=x=>{
+    const fullName=window.prompt('Nombre completo',x.full_name); if(fullName===null)return;
+    const rut=window.prompt('RUT supervisor',x.rut); if(rut===null)return;
+    const position=window.prompt('Cargo',x.position||''); if(position===null)return;
+    const area=window.prompt('Área',x.area||''); if(area===null)return;
+    const email=window.prompt('Correo',x.email||''); if(email===null)return;
+    const companyId=window.prompt('ID empresa (déjalo igual si no cambia)',x.company_id); if(companyId===null)return;
+    manage('/api/manage/supervisor',{action:'update',id:x.id,companyId,fullName,rut,position,area,email},'Supervisor actualizado.');
+  };
+  const editProfessional=x=>{
+    const fullName=window.prompt('Nombre completo',x.full_name); if(fullName===null)return;
+    const username=window.prompt('Usuario o RUT',x.rut); if(username===null)return;
+    manage('/api/manage/professional',{action:'update',id:x.id,fullName,username},'Profesional actualizado.');
+  };
+  const resetProfessionalPassword=x=>{
+    const password=window.prompt('Nueva contraseña para '+x.full_name);
+    if(!password)return;
+    manage('/api/manage/professional',{action:'reset_password',id:x.id,password},'Contraseña de profesional restablecida.');
+  };
+
   if(!session)return <main className="shell">
     <a className="link" href="/">← Volver al inicio</a>
     <section className="panel login">
@@ -189,6 +229,66 @@ export default function AdminPage(){
           <input value={cycle.cycleName} onChange={e=>setCycle({...cycle,cycleName:e.target.value})}/>
           <button className="primary" onClick={()=>send('/api/manage/assessment',cycle)}>Abrir evaluación</button>
         </article>
+      </div>
+    </section>}
+
+    {session.role==='admin'&&<section className="panel adminRegistry">
+      <div className="sectionTitle">
+        <div><div className="eyebrow">Mantenimiento</div><h2>Registros del sistema</h2></div>
+        <button className="ghost" onClick={()=>load()}>Actualizar registros</button>
+      </div>
+      <p className="muted">Aquí puedes revisar todo lo creado, corregir datos, activar/desactivar accesos y restablecer contraseñas.</p>
+
+      <div className="registryBlock">
+        <h3>Empresas</h3>
+        <div className="tablewrap"><table>
+          <thead><tr><th>Empresa</th><th>RUT / Usuario</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>{(data.management?.companies||[]).map(x=><tr key={x.id}>
+            <td><b>{x.name}</b></td><td>{x.rut}</td><td>{x.email||'—'}</td>
+            <td>{statusPill(x.active&&x.user_active,'Activa','Inactiva')}</td>
+            <td><div className="registryActions">
+              <button className="ghost smallBtn" onClick={()=>editCompany(x)}>Editar</button>
+              <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer clave</button>
+              <button className="ghost smallBtn" onClick={()=>manage('/api/manage/company',{action:'toggle',id:x.id},x.active?'Empresa desactivada.':'Empresa activada.')}>{x.active?'Desactivar':'Activar'}</button>
+            </div></td>
+          </tr>)}
+          {(data.management?.companies||[]).length===0&&<tr><td colSpan="5" className="muted">No hay empresas registradas.</td></tr>}
+          </tbody>
+        </table></div>
+      </div>
+
+      <div className="registryBlock">
+        <h3>Supervisores</h3>
+        <div className="tablewrap"><table>
+          <thead><tr><th>Empresa</th><th>Supervisor</th><th>RUT</th><th>Cargo / Área</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>{(data.management?.supervisors||[]).map(x=><tr key={x.id}>
+            <td>{x.company_name}</td><td><b>{x.full_name}</b><br/><span className="muted">{x.email||''}</span></td><td>{x.rut}</td>
+            <td>{x.position||'—'}{x.area?' · '+x.area:''}</td><td>{statusPill(x.active,'Activo','Inactivo')}</td>
+            <td><div className="registryActions">
+              <button className="ghost smallBtn" onClick={()=>editSupervisor(x)}>Editar</button>
+              <button className="ghost smallBtn" onClick={()=>manage('/api/manage/supervisor',{action:'toggle',id:x.id},x.active?'Supervisor desactivado.':'Supervisor activado.')}>{x.active?'Desactivar':'Activar'}</button>
+            </div></td>
+          </tr>)}
+          {(data.management?.supervisors||[]).length===0&&<tr><td colSpan="6" className="muted">No hay supervisores registrados.</td></tr>}
+          </tbody>
+        </table></div>
+      </div>
+
+      <div className="registryBlock professionalRegistry">
+        <h3>Profesionales / Psicología Laboral</h3>
+        <div className="tablewrap"><table>
+          <thead><tr><th>Profesional</th><th>Usuario / RUT</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>{(data.management?.professionals||[]).map(x=><tr key={x.id}>
+            <td><b>{x.full_name}</b></td><td><b>{x.rut}</b></td><td>Psicología Laboral</td><td>{statusPill(x.active,'Activo','Inactivo')}</td>
+            <td><div className="registryActions">
+              <button className="ghost smallBtn" onClick={()=>editProfessional(x)}>Editar</button>
+              <button className="primary smallBtn" onClick={()=>resetProfessionalPassword(x)}>Restablecer clave</button>
+              <button className="ghost smallBtn" onClick={()=>manage('/api/manage/professional',{action:'toggle',id:x.id},x.active?'Profesional desactivado.':'Profesional activado.')}>{x.active?'Desactivar':'Activar'}</button>
+            </div></td>
+          </tr>)}
+          {(data.management?.professionals||[]).length===0&&<tr><td colSpan="5"><div className="notice">No existe ninguna cuenta de Psicóloga registrada. Créala en el formulario superior y luego aparecerá aquí.</div></td></tr>}
+          </tbody>
+        </table></div>
       </div>
     </section>}
 
