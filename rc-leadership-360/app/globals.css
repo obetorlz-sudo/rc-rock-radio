@@ -37,3 +37,17 @@
   .reportDocument .compName{color:#172033}.reportDocument .compTrack{background:#edf1f5!important;border-color:#dbe2ea}.reportDocument .compFill.self{background:#2196d2!important;box-shadow:none}.reportDocument .compFill.team{background:#8c62b8!important;box-shadow:none}
   .reportFooter{text-align:center;color:#687788;font-size:8pt;padding-top:5mm}
 }
+
+/* Full report workflow */
+.editPlanTable textarea{width:100%;min-width:140px;min-height:90px;padding:10px;border-radius:10px;border:1px solid #294b70;background:#091a2d;color:#fff;resize:vertical}.compactTable textarea{min-height:64px}.editPlanTable th{white-space:nowrap}.reportTimeline{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.reportTimeline>div{padding:18px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(91,202,255,.14)}.reportTimeline b{color:#65e4ff}.reportTimeline small{color:#8fa8c2}.closingGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}.closingGrid>div{padding:16px;border-radius:16px;background:rgba(255,255,255,.035)}.closingGrid span{display:block;color:#8fa8c2;font-size:12px}.closingGrid b{display:block;margin-top:5px}.signatureGrid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px}.signatureGrid>div{min-height:80px;border-top:1px solid rgba(255,255,255,.35);padding-top:8px;text-align:center;color:#9fb1c5}.reportDisclaimer{font-size:12px;color:#8195aa;margin-top:24px}
+@media(max-width:900px){.reportTimeline,.closingGrid{grid-template-columns:1fr}.signatureGrid{grid-template-columns:1fr;gap:30px}}
+@media print{
+  .reportPageBreak{page-break-before:always}
+  .reportSection{break-inside:auto!important;page-break-inside:auto!important}
+  .reportSection table,.reportSection .reportQuad>div,.reportTimeline>div{break-inside:avoid;page-break-inside:avoid}
+  .competencyTable{font-size:8.5pt!important}.improvementTable{font-size:8pt!important}.improvementTable th,.improvementTable td{padding:2mm!important}
+  .reportTimeline{grid-template-columns:repeat(3,1fr)!important;gap:3mm}.reportTimeline>div{border:1px solid #dbe4ed!important;background:#f7fafc!important;padding:4mm!important;border-radius:2mm}.reportTimeline b{color:#175d88!important}.reportTimeline small{color:#5d6b78!important}
+  .closingGrid{grid-template-columns:repeat(3,1fr)!important;gap:3mm}.closingGrid>div{background:#f5f8fb!important;border:1px solid #dce4ed!important;padding:4mm!important}.closingGrid span{color:#647789!important}
+  .signatureGrid{grid-template-columns:1fr 1fr!important;gap:20mm;margin-top:20mm}.signatureGrid>div{border-top:1px solid #555!important;color:#555!important;min-height:15mm}
+  .reportDisclaimer{color:#6b7785!important;font-size:8pt!important}
+}
