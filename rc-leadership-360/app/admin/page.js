@@ -19,6 +19,8 @@ export default function AdminPage(){
   const [sup,setSup]=useState({companyId:'',fullName:'',rut:'',position:'',area:'',email:''});
   const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'});
   const [professional,setProfessional]=useState({fullName:'',username:'',password:''});
+  const [questionMode,setQuestionMode]=useState('self');
+  const [newQuestion,setNewQuestion]=useState({text:'',disc:'D',competency:'Comunicación'});
 
   const applyDashboard=d=>{
     setData(d);
@@ -110,6 +112,22 @@ export default function AdminPage(){
     manage('/api/manage/professional',{action:'reset_password',id:x.id,password},'Contraseña de profesional restablecida.');
   };
 
+  const saveNewQuestion=async()=>{
+    if(!newQuestion.text.trim())return setMsg('Escribe la nueva pregunta.');
+    await manage('/api/manage/questions',{action:'create',mode:questionMode,...newQuestion},'Pregunta agregada.');
+    setNewQuestion({text:'',disc:'D',competency:'Comunicación'});
+  };
+  const editQuestion=q=>{
+    const text=window.prompt('Editar pregunta',q.text); if(text===null)return;
+    const disc=window.prompt('Dimensión D, I, S o C',q.disc); if(disc===null)return;
+    const competency=window.prompt('Competencia',q.competency); if(competency===null)return;
+    manage('/api/manage/questions',{action:'update',id:q.id,text,disc,competency},'Pregunta actualizada.');
+  };
+  const deleteQuestion=q=>{
+    if(!window.confirm('¿Eliminar esta pregunta del banco? Los resultados históricos no se borrarán.'))return;
+    manage('/api/manage/questions',{action:'delete',id:q.id},'Pregunta eliminada.');
+  };
+
   const deleteProfessional=x=>{
     if(!window.confirm('¿Eliminar definitivamente a '+x.full_name+'? Esta acción no se puede deshacer.'))return;
     manage('/api/manage/professional',{action:'delete',id:x.id},'Profesional eliminado.');
@@ -145,6 +163,8 @@ export default function AdminPage(){
   const supervisors=data.supervisors||[];
   const assessments=data.assessments||[];
   const finalized=supervisors.filter(x=>x.final_report_status==='finalized').length;
+  const questionBank=(data.questions||[]).filter(q=>q.mode===questionMode);
+  const competencies=['Comunicación','Liderazgo','Toma de decisiones','Trabajo bajo presión','Trabajo en equipo','Adaptabilidad','Manejo de conflictos','Delegación','Orientación a resultados','Desarrollo de personas'];
 
   return <main className="shell wide">
     <div className="topline">
@@ -167,6 +187,48 @@ export default function AdminPage(){
     {session.role==='psychologist'&&<div className="privacy">
       Tienes acceso profesional al listado completo de supervisores, resultados DISC, percepción agregada del equipo, brechas e informes. En cada supervisor puedes ingresar tu percepción profesional y preparar el informe final.
     </div>}
+
+    {['admin','psychologist'].includes(session.role)&&<section className="panel questionBankPanel">
+      <div className="sectionTitle">
+        <div><div className="eyebrow">Instrumento</div><h2>Banco de Preguntas</h2></div>
+        <span className="pill good">{questionBank.filter(q=>q.active).length} activas</span>
+      </div>
+      <p className="muted">Administra las preguntas que responden supervisores y trabajadores. Los cambios se aplican a nuevas respuestas.</p>
+
+      <div className="questionTabs">
+        <button className={questionMode==='self'?'active':''} onClick={()=>setQuestionMode('self')}>Supervisor</button>
+        <button className={questionMode==='team'?'active':''} onClick={()=>setQuestionMode('team')}>Trabajador / Equipo 360°</button>
+      </div>
+
+      <div className="newQuestionCard">
+        <textarea placeholder="Escribe una nueva pregunta observable y clara..." value={newQuestion.text} onChange={e=>setNewQuestion({...newQuestion,text:e.target.value})}/>
+        <select value={newQuestion.disc} onChange={e=>setNewQuestion({...newQuestion,disc:e.target.value})}>
+          <option value="D">D · Dominancia</option><option value="I">I · Influencia</option><option value="S">S · Estabilidad</option><option value="C">C · Cumplimiento</option>
+        </select>
+        <select value={newQuestion.competency} onChange={e=>setNewQuestion({...newQuestion,competency:e.target.value})}>
+          {competencies.map(x=><option key={x}>{x}</option>)}
+        </select>
+        <button className="primary" onClick={saveNewQuestion}>Agregar pregunta</button>
+      </div>
+
+      <div className="questionList">
+        {questionBank.map((q,idx)=><article key={q.id} className={'questionItem '+(!q.active?'inactive':'')}>
+          <div className="questionNumber">{idx+1}</div>
+          <div className="questionContent">
+            <p>{q.text}</p>
+            <div className="questionMeta"><span>{q.disc}</span><span>{q.competency}</span><span>{q.active?'Activa':'Inactiva'}</span></div>
+          </div>
+          <div className="questionActions">
+            <button className="ghost smallBtn" disabled={idx===0} onClick={()=>manage('/api/manage/questions',{action:'move',id:q.id,direction:'up'},'Orden actualizado.')}>↑</button>
+            <button className="ghost smallBtn" disabled={idx===questionBank.length-1} onClick={()=>manage('/api/manage/questions',{action:'move',id:q.id,direction:'down'},'Orden actualizado.')}>↓</button>
+            <button className="ghost smallBtn" onClick={()=>editQuestion(q)}>Editar</button>
+            <button className="ghost smallBtn" onClick={()=>manage('/api/manage/questions',{action:'toggle',id:q.id},q.active?'Pregunta desactivada.':'Pregunta activada.')}>{q.active?'Desactivar':'Activar'}</button>
+            <button className="dangerBtn smallBtn" onClick={()=>deleteQuestion(q)}>Eliminar</button>
+          </div>
+        </article>)}
+        {questionBank.length===0&&<div className="notice">No hay preguntas en este banco.</div>}
+      </div>
+    </section>}
 
     <section className="panel">
       <div className="sectionTitle">
