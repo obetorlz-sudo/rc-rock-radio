@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {SELF,LABELS} from '../../lib/instrument';
+import {LABELS} from '../../lib/instrument';
 
 const api=async(url,opts={})=>{
   const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});
@@ -10,32 +10,45 @@ const api=async(url,opts={})=>{
 };
 
 function Questionnaire({ctx,onDone}){
-  const [i,setI]=useState(0),[ans,setAns]=useState(Array(SELF.length).fill(null)),[msg,setMsg]=useState('');
-  const q=SELF[i];
+  const questions=ctx.questions||[];
+  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[msg,setMsg]=useState('');
+  const q=questions[i];
+
+  const choose=v=>{
+    const a=[...ans];a[i]=v;setAns(a);setMsg('');
+  };
   const finish=async()=>{
     if(ans.some(x=>!x))return setMsg('Responde todas las preguntas.');
     try{
       await api('/api/public/submit',{method:'POST',body:JSON.stringify({
         mode:'self',assessmentId:ctx.assessment_id,rut:ctx.rut,
-        answers:SELF.map((item,j)=>({item_id:item.id,score:ans[j]}))
+        answers:questions.map((item,j)=>({item_id:item.id,score:ans[j]}))
       })});
       onDone();
     }catch(e){setMsg(e.message)}
   };
-  return <main className="shell publicSurvey">
-    <a className="link" href="/supervisor">← Salir</a>
-    <section className="panel questionPanel">
-      <div className="eyebrow">Evaluación del Supervisor</div>
-      <h1>Evaluación personal</h1>
-      <p className="muted">{ctx.company_name} · {ctx.cycle_name}</p>
-      <div className="progress"><div style={{width:`${Math.round(ans.filter(Boolean).length/SELF.length*100)}%`}}/></div>
-      <div className="qcount">Pregunta {i+1} de {SELF.length}</div>
-      <h2 className="question">{q.text}</h2>
-      <div className="scale">{[1,2,3,4,5].map(v=><button key={v} className={ans[i]===v?'selected':''} onClick={()=>{const a=[...ans];a[i]=v;setAns(a)}}><b>{v}</b><span>{LABELS[v-1]}</span></button>)}</div>
+  if(!q)return <main className="shell"><section className="panel centered"><h2>No hay preguntas disponibles.</h2></section></main>;
+  return <main className="publicSurvey surveyResponsive">
+    <div className="surveyTop"><a className="link" href="/supervisor">← Salir</a><span>{ctx.company_name}</span></div>
+    <section className="questionPanel modernQuestion">
+      <div className="questionHeader">
+        <div><div className="eyebrow">Evaluación del Supervisor</div><h1>Evaluación personal</h1><p>{ctx.cycle_name}</p></div>
+        <div className="questionCounter"><b>{i+1}</b><span>de {questions.length}</span></div>
+      </div>
+      <div className="progress"><div style={{width:`${Math.round(ans.filter(Boolean).length/questions.length*100)}%`}}/></div>
+      <div className="questionBody">
+        <span className="questionLabel">Pregunta {i+1}</span>
+        <h2 className="question">{q.text}</h2>
+      </div>
+      <div className="scale responsiveScale">
+        {[1,2,3,4,5].map(v=><button key={v} className={ans[i]===v?'selected':''} onClick={()=>choose(v)}>
+          <b>{v}</b><span>{LABELS[v-1]}</span>
+        </button>)}
+      </div>
       {msg&&<div className="notice">{msg}</div>}
-      <div className="actions">
+      <div className="actions surveyActions">
         <button className="ghost" disabled={i===0} onClick={()=>setI(i-1)}>Anterior</button>
-        {i<SELF.length-1?<button className="primary" disabled={!ans[i]} onClick={()=>setI(i+1)}>Siguiente</button>:<button className="primary" disabled={!ans[i]} onClick={finish}>Finalizar</button>}
+        {i<questions.length-1?<button className="primary" disabled={!ans[i]} onClick={()=>setI(i+1)}>Siguiente</button>:<button className="primary" disabled={!ans[i]} onClick={finish}>Finalizar</button>}
       </div>
     </section>
   </main>;
