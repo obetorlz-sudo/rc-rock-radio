@@ -331,7 +331,9 @@ export default function AnalysisPage(){
 
   const enough=(d.team?.respondent_count||0)>=3;
   const isPsych=d.session?.role==='psychologist';
+  const canEditReport=['admin','psychologist'].includes(d.session?.role);
   const finalized=report?.status==='finalized';
+  const canEditDraft=canEditReport&&!finalized;
   const setLines=(key,text)=>setReport({...report,[key]:textArr(text)});
   const setPlanField=(i,key,val)=>{const next=[...(report?.action_plan||[])];next[i]={...(next[i]||{}),[key]:val};setReport({...report,action_plan:next})};
   const setIndicatorField=(i,key,val)=>{const next=[...(report?.indicators||[])];next[i]={...(next[i]||{}),[key]:val};setReport({...report,indicators:next})};
@@ -346,7 +348,7 @@ export default function AnalysisPage(){
   const saveReport=async(status)=>{
     try{
       await api('/api/analysis/final-report',{method:'POST',body:JSON.stringify({...report,assessmentId:id,status})});
-      setMsg(status==='finalized'?'Informe finalizado correctamente.':'Borrador guardado.');
+      setMsg(status==='finalized'?'Informe finalizado correctamente.':finalized?'Informe reabierto como borrador.':'Borrador guardado correctamente.');
       await load();
     }catch(e){setMsg(e.message)}
   };
@@ -398,7 +400,7 @@ export default function AnalysisPage(){
       <section className="panel" id="percepcion">
         <div className="eyebrow">Entrevista profesional</div><h2>Análisis estructurado de la Psicóloga</h2>
         <p className="muted">Esta información se integra al informe final y permite considerar las características reales del puesto de trabajo y su contexto.</p>
-        {isPsych&&!finalized?<PsychForm value={psych} setValue={setPsych} onSave={savePsych}/>:<div className="psychRead">
+        {canEditDraft?<PsychForm value={psych} setValue={setPsych} onSave={savePsych}/>:<div className="psychRead">
           <div><b>Contexto del puesto</b><p>{d.professional_note?.context_position||'Pendiente'}</p></div>
           <div><b>Observaciones de entrevista</b><p>{d.professional_note?.interview_observations||'Pendiente'}</p></div>
           <div><b>Fortalezas observadas</b><p>{d.professional_note?.strengths_observed||'Pendiente'}</p></div>
@@ -411,40 +413,46 @@ export default function AnalysisPage(){
       {d.integrated_summary&&<section className="panel integratedPanel"><div className="eyebrow">Síntesis integrada</div><h2>Lectura para la Psicóloga</h2><p className="summaryParagraph">{d.integrated_summary}</p></section>}
 
       <section className="panel finalReport">
-        <div className="sectionTitle"><div><div className="eyebrow">Informe profesional</div><h2>Informe Final · Propuesta de Mejoras</h2></div><span className={'pill '+(finalized?'good':'warn')}>{finalized?'Finalizado':'Pendiente'}</span></div>
-        <p className="muted">La Psicóloga puede revisar y ajustar el contenido antes de finalizar. El PDF usa un diseño independiente de la pantalla.</p>
+        <div className="sectionTitle"><div><div className="eyebrow">Informe profesional</div><h2>Informe Final · Propuesta de Mejoras</h2></div><span className={'pill '+(finalized?'good':'warn')}>{finalized?'Finalizado':'Borrador editable'}</span></div>
+        <p className="muted">Administración y Psicología Laboral pueden revisar y corregir el borrador. Solo la Psicóloga puede finalizar el informe.</p>
         {report&&<>
           <h3>Objetivo y alcance</h3>
-          {isPsych&&!finalized?<textarea className="analysisText compact" value={report.objective_scope||''} onChange={e=>setReport({...report,objective_scope:e.target.value})}/>:<p className="summaryParagraph">{report.objective_scope}</p>}
+          {canEditDraft?<textarea className="analysisText compact" value={report.objective_scope||''} onChange={e=>setReport({...report,objective_scope:e.target.value})}/>:<p className="summaryParagraph">{report.objective_scope}</p>}
           <h3>Resumen ejecutivo</h3>
-          {isPsych&&!finalized?<textarea className="analysisText compact" value={report.executive_summary||''} onChange={e=>setReport({...report,executive_summary:e.target.value})}/>:<p className="summaryParagraph">{report.executive_summary}</p>}
+          {canEditDraft?<textarea className="analysisText compact" value={report.executive_summary||''} onChange={e=>setReport({...report,executive_summary:e.target.value})}/>:<p className="summaryParagraph">{report.executive_summary}</p>}
 
           <div className="reportGrid">
-            <div><h3>Fortalezas</h3>{isPsych&&!finalized?<textarea className="analysisText compact" value={arrText(report.strengths)} onChange={e=>setLines('strengths',e.target.value)}/>:<ul>{report.strengths?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
-            <div><h3>Áreas de desarrollo</h3>{isPsych&&!finalized?<textarea className="analysisText compact" value={arrText(report.development_areas)} onChange={e=>setLines('development_areas',e.target.value)}/>:<ul>{report.development_areas?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
-            <div><h3>Oportunidades</h3>{isPsych&&!finalized?<textarea className="analysisText compact" value={arrText(report.opportunities)} onChange={e=>setLines('opportunities',e.target.value)}/>:<ul>{report.opportunities?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
-            <div><h3>Recomendaciones</h3>{isPsych&&!finalized?<textarea className="analysisText compact" value={arrText(report.recommendations)} onChange={e=>setLines('recommendations',e.target.value)}/>:<ul>{report.recommendations?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
+            <div><h3>Fortalezas</h3>{canEditDraft?<textarea className="analysisText compact" value={arrText(report.strengths)} onChange={e=>setLines('strengths',e.target.value)}/>:<ul>{report.strengths?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
+            <div><h3>Áreas de desarrollo</h3>{canEditDraft?<textarea className="analysisText compact" value={arrText(report.development_areas)} onChange={e=>setLines('development_areas',e.target.value)}/>:<ul>{report.development_areas?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
+            <div><h3>Oportunidades</h3>{canEditDraft?<textarea className="analysisText compact" value={arrText(report.opportunities)} onChange={e=>setLines('opportunities',e.target.value)}/>:<ul>{report.opportunities?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
+            <div><h3>Recomendaciones</h3>{canEditDraft?<textarea className="analysisText compact" value={arrText(report.recommendations)} onChange={e=>setLines('recommendations',e.target.value)}/>:<ul>{report.recommendations?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
           </div>
 
           <h3>Propuesta de mejora</h3>
           <div className="tablewrap"><table className="editPlanTable"><thead><tr><th>Foco</th><th>Objetivo</th><th>Acción</th><th>Responsable</th><th>Plazo</th><th>Indicador</th></tr></thead><tbody>
             {(report.action_plan||[]).map((p,i)=><tr key={i}>
-              {['focus','objective','action','responsible','deadline','indicator'].map(k=><td key={k}>{isPsych&&!finalized?<textarea value={p[k]||''} onChange={e=>setPlanField(i,k,e.target.value)}/>:p[k]||'—'}</td>)}
+              {['focus','objective','action','responsible','deadline','indicator'].map(k=><td key={k}>{canEditDraft?<textarea value={p[k]||''} onChange={e=>setPlanField(i,k,e.target.value)}/>:p[k]||'—'}</td>)}
             </tr>)}
           </tbody></table></div>
 
           <h3>Indicadores de seguimiento</h3>
           <div className="tablewrap"><table className="editPlanTable compactTable"><thead><tr><th>Indicador</th><th>Meta</th><th>Frecuencia</th></tr></thead><tbody>
             {(report.indicators||[]).map((p,i)=><tr key={i}>
-              {['indicator','target','frequency'].map(k=><td key={k}>{isPsych&&!finalized?<textarea value={p[k]||''} onChange={e=>setIndicatorField(i,k,e.target.value)}/>:p[k]||'—'}</td>)}
+              {['indicator','target','frequency'].map(k=><td key={k}>{canEditDraft?<textarea value={p[k]||''} onChange={e=>setIndicatorField(i,k,e.target.value)}/>:p[k]||'—'}</td>)}
             </tr>)}
           </tbody></table></div>
 
           <h3>Conclusión profesional</h3>
-          {isPsych&&!finalized?<textarea className="analysisText" value={report.conclusion||''} onChange={e=>setReport({...report,conclusion:e.target.value})}/>:<p className="summaryParagraph">{report.conclusion}</p>}
+          {canEditDraft?<textarea className="analysisText" value={report.conclusion||''} onChange={e=>setReport({...report,conclusion:e.target.value})}/>:<p className="summaryParagraph">{report.conclusion}</p>}
 
-          {isPsych&&!finalized&&<div className="reportActions"><button className="ghost" onClick={()=>saveReport('draft')}>Guardar borrador</button><button className="primary" disabled={!d.professional_note} onClick={()=>saveReport('finalized')}>Finalizar informe</button></div>}
-          {isPsych&&!finalized&&!d.professional_note&&<div className="privacy">Antes de finalizar, guarda el análisis profesional de la entrevista y el puesto de trabajo.</div>}
+          {canEditDraft&&<div className="reportActions">
+            <button className="ghost" onClick={()=>saveReport('draft')}>Guardar cambios del borrador</button>
+            {isPsych&&<button className="primary" disabled={!d.professional_note} onClick={()=>saveReport('finalized')}>Finalizar informe</button>}
+          </div>}
+          {finalized&&canEditReport&&<div className="reportActions">
+            <button className="ghost" onClick={()=>saveReport('draft')}>Reabrir como borrador</button>
+          </div>}
+          {canEditDraft&&isPsych&&!d.professional_note&&<div className="privacy">Antes de finalizar, guarda el análisis profesional de la entrevista y el puesto de trabajo.</div>}
         </>}
         {msg&&<div className="notice">{msg}</div>}
       </section>
