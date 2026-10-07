@@ -156,169 +156,116 @@ function ReportDocument({d,report,enough}){
   const issueDate=report.finalized_at||report.updated_at||new Date().toISOString();
   const dateText=new Date(issueDate).toLocaleDateString('es-CL');
   const psych=d.professional_note||{};
-  const strengths=(report.strengths||[]).slice(0,4);
-  const development=(report.development_areas||[]).slice(0,4);
-  const opportunities=(report.opportunities||[]).slice(0,4);
-  const gaps=(d.gap_rows||[]).slice(0,4);
-  const actionPlan=(report.action_plan||[]).slice(0,4);
+  const strengths=(report.strengths||[]).slice(0,3);
+  const development=(report.development_areas||[]).slice(0,3);
+  const gaps=(d.gap_rows||[]).slice(0,3);
+  const actionPlan=(report.action_plan||[]).slice(0,3);
   const indicators=(report.indicators||[]).slice(0,4);
-  const Header=()=> <div className="pdfHeaderV4">
-    <div className="pdfBrandV4">
-      <img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/>
-    </div>
-    <div className="pdfHeaderTextV4">
-      <h1>Informe Final de Evaluación de Liderazgo</h1>
-      <p>Retroalimentación y Propuesta de Mejora</p>
-    </div>
-    <div className="pdfHeaderMetaV4">
-      <span><b>Fecha:</b> {dateText}</span>
-      <span><b>Evaluado:</b> {d.supervisor.name}</span>
-      <span><b>Cargo:</b> {d.supervisor.position||'—'}</span>
-      <span><b>Empresa:</b> {d.company.name}</span>
+  const radarKeys=['Comunicación','Liderazgo','Toma de decisiones','Trabajo bajo presión','Adaptabilidad','Delegación'].filter(k=>COMP.includes(k));
+  const compBrief={
+    'Comunicación':'Se comunica de forma clara, con oportunidades de mejorar la escucha activa.',
+    'Liderazgo':'Moviliza al equipo y orienta el logro de objetivos.',
+    'Toma de decisiones':'Decisiones oportunas y efectivas en contextos operativos.',
+    'Trabajo bajo presión':'Mantiene desempeño y foco ante exigencias.',
+    'Adaptabilidad':'Se adapta a cambios, con margen de mejora.',
+    'Delegación':'Puede fortalecer la delegación y confianza en el equipo.',
+    'Orientación a resultados':'Foco constante en el cumplimiento de metas.',
+    'Gestión de personas':'Buenas relaciones, con oportunidades en desarrollo del talento.'
+  };
+  const level=v=>Number(v)>=75?['Alto','high']:Number(v)>=55?['Medio','mid']:['A desarrollar','low'];
+  const discColor={D:'#ff4747',I:'#ffc428',S:'#39c965',C:'#168fe8'};
+  const Header=()=> <div className="pdfRefHeader">
+    <div className="pdfRefBrand"><img src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
+    <div className="pdfRefTitle"><h1>Informe Final de Evaluación de Liderazgo</h1><p>Retroalimentación y Propuesta de Mejora</p></div>
+    <div className="pdfRefMeta">
+      <span><b>Fecha:</b> {dateText}</span><span><b>Evaluado:</b> {d.supervisor.name}</span>
+      <span><b>Cargo:</b> {d.supervisor.position||'—'}</span><span><b>Empresa:</b> {d.company.name}</span>
     </div>
   </div>;
-  const Footer=({page})=><div className="pdfFooterV4">
-    <div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div>
-    <div>Pág. {page} de 4</div>
-  </div>;
-  const Title=({n,children})=><div className="pdfSectionTitleV4"><span>{n}</span><h2>{children}</h2><i/></div>;
+  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 4</strong></div>;
+  const Title=({n,children,icon='●'})=><div className="pdfRefSectionTitle"><span>{icon}</span><h2>{n}. {children}</h2></div>;
 
-  return <article className="reportDocument finalFourPageReport">
-    <section className="pdfPageV4">
-      <Header/>
-      <div className="pdfHeroV4">
-        <div><span>RC LEADERSHIP 360</span><h2>Desarrollando líderes para mejores equipos</h2></div>
+  return <article className="reportDocument finalFourPageReport refReport">
+    <section className="pdfRefPage pageOne">
+      <div className="pdfRefHero">
+        <div className="heroShade"/>
+        <div className="heroCopy"><i/><h2>Desarrollando<br/>líderes para<br/>mejores equipos</h2></div>
       </div>
-
-      <div className="pdfGrid2V4">
-        <section className="pdfBlockV4">
-          <Title n="1">Objetivo y alcance</Title>
-          <p>{report.objective_scope}</p>
-        </section>
-        <section className="pdfBlockV4">
-          <Title n="2">Antecedentes generales</Title>
-          <table className="pdfInfoTableV4"><tbody>
-            <tr><th>Nombre</th><td>{d.supervisor.name}</td></tr>
-            <tr><th>RUT</th><td>{d.supervisor.rut}</td></tr>
-            <tr><th>Cargo</th><td>{d.supervisor.position||'—'}</td></tr>
-            <tr><th>Área</th><td>{d.supervisor.area||'—'}</td></tr>
-            <tr><th>Empresa</th><td>{d.company.name}</td></tr>
-            <tr><th>Respuestas equipo</th><td>{d.team?.respondent_count||0}</td></tr>
-          </tbody></table>
-        </section>
-      </div>
-
-      <section className="pdfBlockV4">
-        <Title n="3">Síntesis ejecutiva</Title>
-        <p>{report.executive_summary}</p>
-      </section>
-
-      <div className="pdfGrid2V4">
-        <section className="pdfBlockV4">
-          <Title n="4">Resumen del perfil</Title>
-          <p>{d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}</p>
-        </section>
-        <section className="pdfSummaryCardsV4">
-          <div className="ok"><h3>Principales fortalezas</h3><ul>{strengths.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-          <div className="warn"><h3>Principales áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-        </section>
+      <div className="pageOneGrid">
+        <div className="pageOneLeft">
+          <section className="pdfRefBlock"><Title n="1" icon="◎">Objetivo y alcance</Title><p>{report.objective_scope}</p></section>
+          <section className="pdfRefBlock"><Title n="3" icon="▣">Síntesis ejecutiva</Title><p>{report.executive_summary}</p></section>
+          <section className="pdfRefBlock"><Title n="4" icon="▥">Resumen del perfil</Title><p>{d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}</p></section>
+        </div>
+        <div className="pageOneRight">
+          <section className="pdfRefBlock antecedentCard"><Title n="2" icon="●">Antecedentes generales</Title>
+            <table><tbody>
+              <tr><th>Nombre:</th><td>{d.supervisor.name}</td></tr><tr><th>RUT:</th><td>{d.supervisor.rut}</td></tr>
+              <tr><th>Cargo:</th><td>{d.supervisor.position||'—'}</td></tr><tr><th>Área:</th><td>{d.supervisor.area||'—'}</td></tr>
+              <tr><th>Empresa:</th><td>{d.company.name}</td></tr><tr><th>Fecha evaluación:</th><td>{dateText}</td></tr>
+              <tr><th>Instrumento:</th><td>Evaluación 360° Liderazgo</td></tr>
+            </tbody></table>
+          </section>
+          <div className="refSummaryCard success"><h3>★ &nbsp; Principales fortalezas</h3><ul>{strengths.map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="refSummaryCard warning"><h3>▲ &nbsp; Principales áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></div>
+        </div>
       </div>
       <Footer page="1"/>
     </section>
 
-    <section className="pdfPageV4">
+    <section className="pdfRefPage">
       <Header/>
-      <section className="pdfBlockV4">
-        <Title n="5">Perfil conductual D-I-S-C</Title>
-        <div className="pdfDiscLayoutV4">
-          <div className="pdfRadarV4"><RadarChart title="Perfil D-I-S-C" labels={['D','I','S','C']} labelMap={{D:'Dominancia',I:'Influencia',S:'Estabilidad',C:'Cumplimiento'}} self={d.self?.disc} team={enough?d.team.disc:null}/></div>
-          <div className="pdfDiscSideV4">
-            <DiscBars self={d.self?.disc} team={enough?d.team.disc:null}/>
-            <div className="pdfReadingCardV4"><h3>Interpretación del perfil</h3><p>{d.self_analysis||'Sin análisis disponible.'}</p></div>
+      <div className="pageTwoGrid">
+        <section className="pdfRefBlock discProfileBlock">
+          <Title n="5" icon="▥">Perfil DISC</Title>
+          <div className="discColumns">
+            {['D','I','S','C'].map(k=>{const v=Number(d.self?.disc?.[k]||0);return <div className="discCol" key={k}><strong>{v}%</strong><div className="discColTrack"><i style={{height:v+'%',background:discColor[k]}}/></div><b>{k}</b><span>{DISC_INFO[k].name}</span></div>})}
           </div>
-        </div>
-      </section>
-      <section className="pdfBlockV4">
-        <Title n="6">Comparación de percepciones</Title>
-        <div className="pdfRadarWideV4">
-          <RadarChart title="Supervisor y equipo" labels={['D','I','S','C']} labelMap={{D:'Dominancia',I:'Influencia',S:'Estabilidad',C:'Cumplimiento'}} self={d.self?.disc} team={enough?d.team.disc:null}/>
-          <div className="pdfReadingCardV4"><h3>Conclusión del perfil conductual</h3><p>{d.integrated_summary||d.self_analysis||'Sin síntesis disponible.'}</p></div>
-        </div>
-      </section>
+          <div className="refReading"><h3>Interpretación del perfil DISC</h3><p>{d.self_analysis||'Sin análisis disponible.'}</p></div>
+        </section>
+        <section className="pdfRefBlock perceptionBlock">
+          <Title n="6" icon="▥">Comparación de percepciones (Radar)</Title>
+          <div className="refRadarWrap"><RadarChart title="Comparación de percepciones" labels={radarKeys} self={d.self?.competencies} team={enough?d.team?.competencies:null}/></div>
+          <div className="refReading conclusion"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><p>{d.integrated_summary||d.self_analysis||'Sin síntesis disponible.'}</p></div>
+        </section>
+      </div>
       <Footer page="2"/>
     </section>
 
-    <section className="pdfPageV4">
+    <section className="pdfRefPage">
       <Header/>
-      <section className="pdfBlockV4 pdfCompetencySectionV4">
-        <Title n="7">Resultados de competencias clave</Title>
-        <div className="pdfCompetencyLayoutV4">
-          <div className="pdfCompetencyTableV4">
-            <div className="pdfCompHeaderV4"><span>Competencia</span><span>Resultado</span><span>Supervisor</span>{enough&&<span>Equipo</span>}</div>
-            {COMP.map(k=>{
-              const s=Number(d.self?.competencies?.[k]||0);
-              const t=enough?Number(d.team?.competencies?.[k]||0):null;
-              return <div className="pdfCompRowV4" key={k}>
-                <b>{k}</b>
-                <div className="pdfCompBarV4"><i style={{width:s+'%'}}/></div>
-                <strong>{s}%</strong>
-                {enough&&<em>{t}%</em>}
-              </div>;
-            })}
+      <section className="pdfRefBlock">
+        <Title n="7" icon="⚙">Resultados de competencias clave</Title>
+        <div className="pageThreeGrid">
+          <div className="refCompetencyTable">
+            <div className="refCompHead"><span>Competencia</span><span>Resultado</span><span>Nivel</span><span>Interpretación breve</span></div>
+            {COMP.map((k,i)=>{const v=Number(d.self?.competencies?.[k]||0);const [lab,cl]=level(v);return <div className="refCompRow" key={k}>
+              <b>{k}</b><div className="refResult"><div><i style={{width:v+'%',background:['#1596dd','#13ae68','#ff7b1a','#945bea','#f0bd17','#ff4e55','#11a8a7','#198bd5'][i%8]}}/></div><strong>{v}%</strong></div>
+              <span className={'refLevel '+cl}>{lab}</span><p>{compBrief[k]||'Competencia evaluada dentro del perfil de liderazgo.'}</p>
+            </div>})}
           </div>
-          <aside className="pdfCompetencySideV4">
-            <div className="pdfReadingCardV4"><h3>Lectura de competencias</h3><p>{d.integrated_summary||'Sin síntesis disponible.'}</p></div>
-            <div className="pdfGapCardV4"><h3>Brechas prioritarias</h3><ol>{gaps.length?gaps.map((g,i)=><li key={i}><b>{g.competency}</b><span>{g.gap>0?'+':''}{g.gap} pts</span></li>):<li>Sin muestra suficiente del equipo.</li>}</ol></div>
+          <aside className="pageThreeSide">
+            <div className="refReading"><h3>▤ &nbsp; Lectura de competencias</h3><p>{d.integrated_summary||'Los resultados permiten identificar fortalezas y focos prioritarios de desarrollo del liderazgo.'}</p></div>
+            <div className="refGapBox"><h3>▲ &nbsp; Brechas prioritarias</h3><ol>{gaps.length?gaps.map((g,i)=><li key={i}>{g.competency}</li>):development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ol></div>
           </aside>
-        </div>
-      </section>
-      <section className="pdfBlockV4">
-        <Title n="8">Fortalezas, desarrollo y oportunidades</Title>
-        <div className="pdfTriV4">
-          <div><h3>Fortalezas</h3><ul>{strengths.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-          <div><h3>Áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
-          <div><h3>Oportunidades</h3><ul>{opportunities.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul></div>
         </div>
       </section>
       <Footer page="3"/>
     </section>
 
-    <section className="pdfPageV4">
+    <section className="pdfRefPage pageFour">
       <Header/>
-      <section className="pdfBlockV4">
-        <Title n="9">Análisis de la Psicóloga Laboral</Title>
-        <div className="pdfPsychGridV4">
-          <div><h3>Contexto del cargo</h3><p>{psych.context_position||'Sin antecedente registrado.'}</p></div>
-          <div><h3>Observaciones de entrevista</h3><p>{psych.interview_observations||'Sin antecedente registrado.'}</p></div>
-          <div><h3>Fortalezas observadas</h3><p>{psych.strengths_observed||'Sin antecedente registrado.'}</p></div>
-          <div><h3>Aspectos a desarrollar</h3><p>{psych.development_observed||'Sin antecedente registrado.'}</p></div>
-        </div>
-      </section>
-      <div className="pdfGrid2V4">
-        <section className="pdfBlockV4">
-          <Title n="10">Propuesta de mejora</Title>
-          <ul className="pdfCheckListV4">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ul>
-        </section>
-        <section className="pdfBlockV4">
-          <Title n="11">Plan de desarrollo 30 / 60 / 90 días</Title>
-          <table className="pdfPlanTableV4"><thead><tr><th>Plazo</th><th>Acciones clave</th></tr></thead><tbody>
-            {actionPlan.slice(0,3).map((p,i)=><tr key={i}><td>{p.deadline||['30 días','60 días','90 días'][i]}</td><td>{p.action||p.objective||'—'}</td></tr>)}
-          </tbody></table>
-        </section>
+      <div className="psychTopGrid">
+        <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><p>{psych.note||psych.interview_observations||psych.context_position||'Sin antecedente profesional registrado.'}</p></section>
+        <aside className="psychIdentity"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></aside>
       </div>
-      <div className="pdfGrid2V4">
-        <section className="pdfBlockV4">
-          <Title n="12">Indicadores de seguimiento</Title>
-          <table className="pdfPlanTableV4"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>
-            {indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}
-          </tbody></table>
-        </section>
-        <section className="pdfBlockV4">
-          <Title n="13">Conclusión profesional</Title>
-          <p>{report.conclusion}</p>
-        </section>
+      <div className="pageFourGrid">
+        <section className="pdfRefBlock"><Title n="9" icon="◎">Propuesta de mejora</Title><ul className="refCheckList">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></section>
+        <section className="pdfRefBlock"><Title n="10" icon="▣">Plan de desarrollo 30/60/90 días</Title><table className="refPlanTable"><thead><tr><th>Plazo</th><th>Acciones clave</th></tr></thead><tbody>{actionPlan.map((p,i)=><tr key={i}><td>{p.deadline||['30 días','60 días','90 días'][i]}</td><td>{p.action||p.objective||'—'}</td></tr>)}</tbody></table></section>
+        <section className="pdfRefBlock"><Title n="11" icon="▥">Indicadores de seguimiento</Title><table className="refPlanTable"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>{indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}</tbody></table></section>
+        <section className="pdfRefBlock"><Title n="12" icon="▣">Conclusión profesional</Title><p>{report.conclusion}</p></section>
       </div>
-      <div className="pdfSignatureV4"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
+      <div className="pdfRefSignatures"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
       <Footer page="4"/>
     </section>
   </article>;
