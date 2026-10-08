@@ -58,7 +58,7 @@ export async function POST(req){
     const duplicate=await query(`select 1
       from rc360_team_responses tr
       join rc360_assessments a on a.id=tr.assessment_id
-      where a.company_id=$1 and tr.worker_hash=$2
+      where a.company_id=$1 and a.status='open' and a.team_survey_open=true and tr.worker_hash=$2
       limit 1`,[companyId,wh]);
     if(duplicate.rows.length) return NextResponse.json({error:'Ya existe una respuesta registrada para este trabajador en esta encuesta general.'},{status:409});
 
