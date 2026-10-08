@@ -202,6 +202,7 @@ export default function AdminPage(){
   if(session.role==='company'){
     const supervisors=data.supervisors||[];
     const companyName=supervisors[0]?.company_name||session.full_name||'Empresa';
+    const companyLogo=supervisors[0]?.company_logo||null;
     const statusOf=x=>{
       if(!x.assessment_id)return ['No iniciado','muted'];
       if(x.final_report_status==='finalized')return ['Finalizado','good'];
@@ -212,8 +213,11 @@ export default function AdminPage(){
     const inProgress=supervisors.filter(x=>x.assessment_id&&x.final_report_status!=='finalized'&&(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)).length;
     return <main className="shell wide companyPortal">
       <div className="appBrandBar"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
-      <div className="topline">
-        <div><div className="eyebrow">Portal Empresa</div><h1>{companyName}</h1><p className="muted">Consulta de resultados e informes de liderazgo</p></div>
+      <div className="topline companyPortalHead">
+        <div className="companyPortalIdentity">
+          {companyLogo&&<div className="companyLogoFrame"><img src={companyLogo} alt={'Logo '+companyName}/></div>}
+          <div><div className="eyebrow">Portal Empresa</div><h1>{companyName}</h1><p className="muted">Consulta de resultados e informes de liderazgo</p></div>
+        </div>
         <button className="ghost" onClick={logout}>Cerrar sesión</button>
       </div>
       <div className="kpis">
