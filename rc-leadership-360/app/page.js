@@ -39,6 +39,10 @@ export default function Home(){
           <b>Acceso Trabajador</b>
           <span>Responder encuesta de equipo</span>
         </a>
+        <a className="entryButton company" href="/admin">
+          <b>Acceso Empresa</b>
+          <span>Ver dashboard, análisis e informes PDF</span>
+        </a>
       </div>
     </section>
 
