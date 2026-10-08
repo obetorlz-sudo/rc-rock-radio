@@ -23,6 +23,7 @@ export default function AdminPage(){
   const [questionMode,setQuestionMode]=useState('self');
   const [activeTab,setActiveTab]=useState('seguimiento');
   const [newQuestion,setNewQuestion]=useState({text:'',disc:'D',competency:'Comunicación'});
+  const [companyLogo,setCompanyLogo]=useState('');
 
   const applyDashboard=d=>{
     setData(d);
