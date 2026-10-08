@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {LABELS} from '../../lib/instrument';
 
 const api=async(url,opts={})=>{
@@ -11,8 +11,40 @@ const api=async(url,opts={})=>{
 
 function Questionnaire({ctx,onDone}){
   const questions=ctx.questions||[];
-  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[comment,setComment]=useState(''),[msg,setMsg]=useState('');
+  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[comment,setComment]=useState(''),[msg,setMsg]=useState(''),[draftReady,setDraftReady]=useState(false),[draftMsg,setDraftMsg]=useState('');
   const q=questions[i];
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try{
+        const d=await api('/api/public/draft',{method:'POST',body:JSON.stringify({action:'load',mode:'team',assessmentId:ctx.assessment_id,workerRut:ctx.workerRut})});
+        if(!active)return;
+        if(d.draft){
+          const saved=Array.isArray(d.draft.answers)?d.draft.answers:[];
+          if(saved.length===questions.length)setAns(saved);
+          setI(Math.min(Number(d.draft.current_index)||0,Math.max(0,questions.length-1)));
+          if(typeof d.draft.extra?.comment==='string')setComment(d.draft.extra.comment);
+          setDraftMsg('Borrador recuperado automáticamente.');
+        }
+      }catch{}
+      if(active)setDraftReady(true);
+    })();
+    return()=>{active=false};
+  },[ctx.assessment_id,ctx.workerRut,questions.length]);
+
+  useEffect(()=>{
+    if(!draftReady)return;
+    const answered=ans.filter(Boolean).length;
+    if(answered===0||answered%5!==0)return;
+    const t=setTimeout(async()=>{
+      try{
+        await api('/api/public/draft',{method:'POST',body:JSON.stringify({mode:'team',assessmentId:ctx.assessment_id,workerRut:ctx.workerRut,answers:ans,currentIndex:i,extra:{comment}})});
+        setDraftMsg('Borrador guardado · '+answered+' respuestas');
+      }catch{}
+    },250);
+    return()=>clearTimeout(t);
+  },[ans,draftReady,i,ctx.assessment_id,ctx.workerRut]);
 
   const choose=v=>{const a=[...ans];a[i]=v;setAns(a);setMsg('')};
   const finish=async()=>{
@@ -38,6 +70,7 @@ function Questionnaire({ctx,onDone}){
       <div className="questionBody"><span className="questionLabel">Pregunta {i+1}</span><h2 className="question">{q.text}</h2></div>
       <div className="scale responsiveScale">{[1,2,3,4,5].map(v=><button key={v} className={ans[i]===v?'selected':''} onClick={()=>choose(v)}><b>{v}</b><span>{LABELS[v-1]}</span></button>)}</div>
       {i===questions.length-1&&<div className="formblock finishFields"><label>Comentario opcional<textarea value={comment} onChange={e=>setComment(e.target.value)}/></label></div>}
+      {draftMsg&&<div className="draftStatus">✓ {draftMsg}</div>}
       {msg&&<div className="notice">{msg}</div>}
       <div className="actions surveyActions">
         <button className="ghost" disabled={i===0} onClick={()=>setI(i-1)}>Anterior</button>
