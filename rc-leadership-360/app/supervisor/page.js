@@ -11,28 +11,57 @@ const api=async(url,opts={})=>{
 
 function Questionnaire({ctx,onDone}){
   const questions=ctx.questions||[];
-  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[msg,setMsg]=useState('');
+  const openQuestions=[
+    {key:'leadership',area:'Liderazgo',text:'Cuénteme cómo logró alinear y motivar a una cuadrilla con bajo rendimiento o agotada.'},
+    {key:'conflict_management',area:'Manejo de conflictos',text:'Describa un conflicto entre miembros de su equipo durante el turno y qué acciones tomó para resolverlo.'},
+    {key:'people_development',area:'Desarrollo de personas',text:'Describa una ocasión en que detectó un bajo desempeño en un trabajador. ¿Qué hizo para ayudarlo a mejorar?'}
+  ];
+  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[openStage,setOpenStage]=useState(false),[openAnswers,setOpenAnswers]=useState({leadership:'',conflict_management:'',people_development:''}),[msg,setMsg]=useState('');
   const q=questions[i];
 
-  const choose=v=>{
-    const a=[...ans];a[i]=v;setAns(a);setMsg('');
-  };
+  const choose=v=>{const a=[...ans];a[i]=v;setAns(a);setMsg('')};
   const finish=async()=>{
-    if(ans.some(x=>!x))return setMsg('Responde todas las preguntas.');
+    if(ans.some(x=>!x))return setMsg('Responde las 48 preguntas de escala.');
+    if(openQuestions.some(x=>!String(openAnswers[x.key]||'').trim()))return setMsg('Las 3 preguntas abiertas son obligatorias.');
     try{
       await api('/api/public/submit',{method:'POST',body:JSON.stringify({
         mode:'self',assessmentId:ctx.assessment_id,rut:ctx.rut,
-        answers:questions.map((item,j)=>({item_id:item.id,score:ans[j]}))
+        answers:questions.map((item,j)=>({item_id:item.id,score:ans[j]})),
+        openResponses:openAnswers
       })});
       onDone();
     }catch(e){setMsg(e.message)}
   };
+
+  if(openStage)return <main className="publicSurvey surveyResponsive">
+    <div className="surveyTop"><a className="link" href="/supervisor">← Salir</a><span>{ctx.company_name}</span></div>
+    <section className="questionPanel modernQuestion openQuestionPanel">
+      <div className="questionHeader">
+        <div><div className="eyebrow">Evaluación del Supervisor</div><h1>Preguntas abiertas obligatorias</h1><p>48 preguntas de escala completadas · ahora responde 3 preguntas abiertas</p></div>
+        <div className="questionCounter"><b>3</b><span>abiertas</span></div>
+      </div>
+      <div className="progress"><div style={{width:'100%'}}/></div>
+      <div className="openQuestionsGrid">
+        {openQuestions.map((item,idx)=><label className="openQuestionCard" key={item.key}>
+          <span className="openArea">{idx+1}. {item.area}</span>
+          <strong>{item.text}</strong>
+          <textarea value={openAnswers[item.key]} onChange={e=>{setOpenAnswers({...openAnswers,[item.key]:e.target.value});setMsg('')}} placeholder="Escriba una respuesta concreta, describiendo la situación y las acciones realizadas." rows={6}/>
+        </label>)}
+      </div>
+      {msg&&<div className="notice">{msg}</div>}
+      <div className="actions surveyActions">
+        <button className="ghost" onClick={()=>{setOpenStage(false);setI(questions.length-1);setMsg('')}}>← Volver a la pregunta 48</button>
+        <button className="primary" onClick={finish}>Finalizar evaluación</button>
+      </div>
+    </section>
+  </main>;
+
   if(!q)return <main className="shell"><section className="panel centered"><h2>No hay preguntas disponibles.</h2></section></main>;
   return <main className="publicSurvey surveyResponsive">
     <div className="surveyTop"><a className="link" href="/supervisor">← Salir</a><span>{ctx.company_name}</span></div>
     <section className="questionPanel modernQuestion">
       <div className="questionHeader">
-        <div><div className="eyebrow">Evaluación del Supervisor</div><h1>Evaluación personal</h1><p>{ctx.cycle_name}</p></div>
+        <div><div className="eyebrow">Evaluación del Supervisor</div><h1>Evaluación personal</h1><p>{ctx.cycle_name} · 48 preguntas de escala + 3 abiertas obligatorias</p></div>
         <div className="questionCounter"><b>{i+1}</b><span>de {questions.length}</span></div>
       </div>
       <div className="progress"><div style={{width:`${Math.round(ans.filter(Boolean).length/questions.length*100)}%`}}/></div>
@@ -48,7 +77,9 @@ function Questionnaire({ctx,onDone}){
       {msg&&<div className="notice">{msg}</div>}
       <div className="actions surveyActions">
         <button className="ghost" disabled={i===0} onClick={()=>setI(i-1)}>Anterior</button>
-        {i<questions.length-1?<button className="primary" disabled={!ans[i]} onClick={()=>setI(i+1)}>Siguiente</button>:<button className="primary" disabled={!ans[i]} onClick={finish}>Finalizar</button>}
+        {i<questions.length-1
+          ?<button className="primary" disabled={!ans[i]} onClick={()=>setI(i+1)}>Siguiente</button>
+          :<button className="primary" disabled={!ans[i]} onClick={()=>{setOpenStage(true);setMsg('')}}>Continuar a preguntas abiertas</button>}
       </div>
     </section>
   </main>;
