@@ -11,7 +11,7 @@ export async function GET(){
     const params=companyFilter?[s.companyId]:[];
 
     const assessmentsSql=`select a.id,a.cycle_name,a.status,a.self_completed_at,a.created_at,
-      s.id supervisor_id,s.full_name,s.rut,s.position,s.area,c.name company_name,c.id company_id,
+      s.id supervisor_id,s.full_name,s.rut,s.position,s.area,c.name company_name,c.id company_id,c.logo_url company_logo,
       (select count(*)::int from rc360_team_responses tr where tr.assessment_id=a.id) team_count,
       exists(select 1 from rc360_psychologist_notes pn where pn.assessment_id=a.id) has_psychologist_note,
       coalesce((select fr.status from rc360_final_reports fr where fr.assessment_id=a.id),'pending') final_report_status
@@ -21,7 +21,7 @@ export async function GET(){
       ${companyFilter?'where a.company_id=$1':''}
       order by a.created_at desc`;
 
-    const supervisorsSql=`select s.id,s.full_name,s.rut,s.position,s.area,s.email,s.active,s.company_id,c.name company_name,
+    const supervisorsSql=`select s.id,s.full_name,s.rut,s.position,s.area,s.email,s.active,s.company_id,c.name company_name,c.logo_url company_logo,
       la.id assessment_id,la.cycle_name,la.self_completed_at,
       coalesce((select count(*)::int from rc360_team_responses tr where tr.assessment_id=la.id),0) team_count,
       case when la.id is null then false else exists(select 1 from rc360_psychologist_notes pn where pn.assessment_id=la.id) end has_psychologist_note,
@@ -39,7 +39,7 @@ export async function GET(){
       order by c.name,s.full_name`;
 
     const managementCompanies=s.role==='admin'
-      ? query(`select c.id,c.name,c.rut,c.email,c.active,c.created_at,
+      ? query(`select c.id,c.name,c.rut,c.email,c.logo_url,c.active,c.created_at,
           u.id user_id,u.active user_active,u.rut login_user
         from rc360_companies c
         left join rc360_users u on u.company_id=c.id and u.role='company'
@@ -58,7 +58,7 @@ export async function GET(){
       : Promise.resolve({rows:[]});
 
     const companiesPromise=(s.role==='admin'||s.role==='psychologist')
-      ? query('select id,name,rut from rc360_companies where active=true order by name')
+      ? query('select id,name,rut,logo_url from rc360_companies where active=true order by name')
       : Promise.resolve({rows:[]});
 
     const questionsPromise=['admin','psychologist'].includes(s.role)
