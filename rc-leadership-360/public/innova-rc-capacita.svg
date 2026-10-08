@@ -5,6 +5,6 @@
   <polygon points="100,43 150,43 175,86 150,129 100,129 75,86" fill="#F4DE82"/>
   <polygon points="150,43 200,43 225,86 200,129 150,129 125,86" fill="#7A49F2"/>
 </g>
-<text x="285" y="122" fill="#000000" font-family="Arial,Helvetica,sans-serif" font-size="78" font-weight="800" letter-spacing="3">INNOVA RC</text>
-<text x="365" y="184" fill="#000000" font-family="Arial,Helvetica,sans-serif" font-size="42" font-weight="700" letter-spacing="18">CAPACITA</text>
+<text x="285" y="122" fill="#FFFFFF" font-family="Arial,Helvetica,sans-serif" font-size="78" font-weight="800" letter-spacing="3">INNOVA RC</text>
+<text x="365" y="184" fill="#FFFFFF" font-family="Arial,Helvetica,sans-serif" font-size="42" font-weight="700" letter-spacing="18">CAPACITA</text>
 </svg>
