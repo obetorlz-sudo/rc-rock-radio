@@ -278,3 +278,20 @@
   .refReport .refPlanTable th,.refReport .refPlanTable td{border:.3mm solid #b6c5d2!important}
   .refReport .pdfRefSignatures{bottom:18mm!important}
 }
+
+
+/* Supervisor open questions */
+.openQuestionPanel{max-width:980px;margin:0 auto}
+.openQuestionsGrid{display:grid;gap:16px;margin-top:18px}
+.openQuestionCard{display:grid;gap:10px;padding:18px;border:1px solid rgba(120,150,185,.28);border-radius:16px;background:rgba(255,255,255,.04)}
+.openQuestionCard .openArea{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#58aee7}
+.openQuestionCard strong{font-size:1rem;line-height:1.45}
+.openQuestionCard textarea{width:100%;box-sizing:border-box;min-height:120px;resize:vertical;border-radius:12px;border:1px solid rgba(120,150,185,.35);padding:12px 14px;background:rgba(255,255,255,.08);color:inherit;font:inherit;line-height:1.45}
+.openAnswerReviewGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+.openAnswerReviewGrid>div{padding:16px;border-radius:14px;border:1px solid rgba(120,150,185,.25);background:rgba(255,255,255,.04)}
+.openAnswerReviewGrid b{display:block;margin-bottom:8px;color:#5eb5ec}
+.openAnswerReviewGrid p{margin:0;line-height:1.5;white-space:pre-wrap}
+@media(max-width:820px){
+  .openAnswerReviewGrid{grid-template-columns:1fr}
+  .openQuestionCard{padding:14px}
+}
