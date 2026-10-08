@@ -38,6 +38,7 @@ export async function POST(req){
           on conflict(assessment_id) do update set leadership=excluded.leadership,conflict_management=excluded.conflict_management,people_development=excluded.people_development,updated_at=now()`,
           [aid,leadership.slice(0,5000),conflict.slice(0,5000),development.slice(0,5000)]);
         await c.query('update rc360_assessments set self_completed_at=now() where id=$1',[aid]);
+        await c.query(`delete from rc360_public_drafts where assessment_id=$1 and mode='self' and respondent_key=$2`,[aid,r]).catch(()=>{});
       });
       return NextResponse.json(result);
     }
@@ -48,6 +49,7 @@ export async function POST(req){
       await tx(async c=>{
         const ins=await c.query(`insert into rc360_team_responses(assessment_id,worker_hash,disc,competencies,comment) values($1,$2,$3,$4,$5) returning id`,[aid,wh,result.disc,result.competencies,(body.comment||'').slice(0,1500)||null]);
         for(let i=0;i<items.length;i++) await c.query('insert into rc360_team_answers(response_id,item_id,score) values($1,$2,$3)',[ins.rows[0].id,items[i].id,ordered[i]]);
+        await c.query(`delete from rc360_public_drafts where assessment_id=$1 and mode='team' and respondent_key=$2`,[aid,wh]).catch(()=>{});
       });
     }catch(e){ if(e.code==='23505') return NextResponse.json({error:'Ya existe una respuesta registrada para este trabajador en este ciclo.'},{status:409}); throw e; }
     return NextResponse.json({ok:true});
