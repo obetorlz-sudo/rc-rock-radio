@@ -161,37 +161,39 @@ export default function AdminPage(){
   if(!data)return <main className="shell"><section className="panel centered"><h2>Preparando panel…</h2><p className="muted">Estamos cargando la información.</p>{msg&&<div className="notice">{msg}</div>}<button className="primary" onClick={()=>load()}>Reintentar</button></section></main>;
 
   if(session.role==='company'){
-    const assessments=data.assessments||[];
-    const companyName=assessments[0]?.company_name||session.full_name||'Empresa';
+    const supervisors=data.supervisors||[];
+    const companyName=supervisors[0]?.company_name||session.full_name||'Empresa';
     const statusOf=x=>{
+      if(!x.assessment_id)return ['No iniciado','muted'];
       if(x.final_report_status==='finalized')return ['Finalizado','good'];
       if(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)return ['Análisis en curso','info'];
-      if(x.id)return ['Pendiente','warn'];
-      return ['No iniciado','muted'];
+      return ['Pendiente','warn'];
     };
-    const completed=assessments.filter(x=>x.final_report_status==='finalized').length;
-    const inProgress=assessments.filter(x=>x.final_report_status!=='finalized'&&(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)).length;
+    const completed=supervisors.filter(x=>x.final_report_status==='finalized').length;
+    const inProgress=supervisors.filter(x=>x.assessment_id&&x.final_report_status!=='finalized'&&(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)).length;
     return <main className="shell wide companyPortal">
       <div className="topline">
         <div><div className="eyebrow">Portal Empresa</div><h1>{companyName}</h1><p className="muted">Consulta de resultados e informes de liderazgo</p></div>
         <button className="ghost" onClick={logout}>Cerrar sesión</button>
       </div>
       <div className="kpis">
-        <div><b>{assessments.length}</b><span>Evaluaciones</span></div>
+        <div><b>{supervisors.length}</b><span>Supervisores</span></div>
         <div><b>{inProgress}</b><span>Análisis en curso</span></div>
         <div><b>{completed}</b><span>Informes finalizados</span></div>
-        <div><b>{assessments.reduce((n,x)=>n+Number(x.team_count||0),0)}</b><span>Respuestas de trabajadores</span></div>
+        <div><b>{supervisors.reduce((n,x)=>n+Number(x.team_count||0),0)}</b><span>Respuestas de trabajadores</span></div>
       </div>
       <section className="panel">
-        <div className="sectionTitle"><div><div className="eyebrow">Resumen</div><h2>Estado de evaluaciones</h2></div><button className="ghost" onClick={load}>Actualizar</button></div>
-        <p className="muted">Acceso solo de consulta. La empresa puede revisar el dashboard, gráficos, análisis disponible e informe PDF, sin modificar información.</p>
+        <div className="sectionTitle"><div><div className="eyebrow">Resumen</div><h2>Estado de supervisores</h2></div><button className="ghost" onClick={load}>Actualizar</button></div>
+        <p className="muted">Se muestra una tarjeta por supervisor, usando su evaluación más reciente. El acceso es solo de consulta.</p>
         <div className="companyAssessmentGrid">
-          {assessments.map(x=>{const [label,cl]=statusOf(x);return <article key={x.id} className="companyAssessmentCard">
-            <div className="companyAssessmentHead"><div><h3>{x.full_name}</h3><p>{x.position||'Supervisor'}{x.area?' · '+x.area:''}</p></div><span className={'pill '+cl}>{label}</span></div>
+          {supervisors.map(x=>{const [label,cl]=statusOf(x);return <article key={x.id} className="companyAssessmentCard">
+            <div className="companyAssessmentHead"><div><h3>{x.full_name}</h3><p>{x.position||'Supervisor'}{x.area?' · '+x.area:''}</p>{x.cycle_name&&<small>{x.cycle_name}</small>}</div><span className={'pill '+cl}>{label}</span></div>
             <div className="companyMiniStats"><div><b>{x.self_done?'Sí':'No'}</b><span>Autoevaluación</span></div><div><b>{x.team_count||0}</b><span>Equipo</span></div><div><b>{x.has_psychologist_note?'Sí':'No'}</b><span>Análisis previo</span></div></div>
-            <a className="primary companyViewBtn" href={'/analysis?id='+x.id}>Ver dashboard, análisis e informe PDF</a>
+            {x.assessment_id
+              ?<a className="primary companyViewBtn" href={'/analysis?id='+x.assessment_id}>Ver dashboard, análisis e informe PDF</a>
+              :<div className="privacy">Aún no existe una evaluación iniciada para este supervisor.</div>}
           </article>})}
-          {!assessments.length&&<div className="notice">No hay evaluaciones disponibles para esta empresa.</div>}
+          {!supervisors.length&&<div className="notice">No hay supervisores disponibles para esta empresa.</div>}
         </div>
       </section>
     </main>;
