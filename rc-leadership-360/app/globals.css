@@ -295,3 +295,224 @@
   .openAnswerReviewGrid{grid-template-columns:1fr}
   .openQuestionCard{padding:14px}
 }
+
+
+/* RC Leadership 360 — report polish v3 */
+@media print{
+  .refReport,.refReport *{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+
+  .refReport .pdfRefHero{
+    height:52mm!important;
+    margin:0 0 4mm!important;
+    border-radius:2.5mm!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-columns:1.08fr .92fr!important;
+    border:.35mm solid #9fb3c5!important;
+    box-shadow:none!important;
+    background:#0a2f52!important;
+  }
+  .refReport .heroCorporatePanel{
+    background:linear-gradient(135deg,#082d4f 0%,#0d4f80 100%)!important;
+    color:#fff!important;
+    padding:6mm 7mm!important;
+    display:grid!important;
+    grid-template-rows:auto auto 1fr auto!important;
+    align-content:center!important;
+    min-width:0!important;
+  }
+  .refReport .heroWhiteLogo{
+    width:39mm!important;
+    height:10mm!important;
+    object-fit:contain!important;
+    object-position:left center!important;
+    filter:brightness(0) invert(1)!important;
+    margin-bottom:2mm!important;
+    display:block!important;
+  }
+  .refReport .heroKicker{
+    font-size:5.7pt!important;
+    letter-spacing:.16em!important;
+    color:#9fd8ff!important;
+    font-weight:800!important;
+    margin-bottom:1.5mm!important;
+  }
+  .refReport .heroTitleRow{
+    display:grid!important;
+    grid-template-columns:1.6mm 1fr!important;
+    gap:3mm!important;
+    align-items:stretch!important;
+  }
+  .refReport .heroTitleRow i{
+    display:block!important;
+    background:#ff8b32!important;
+    border-radius:2mm!important;
+    min-height:24mm!important;
+  }
+  .refReport .heroTitleRow h2{
+    margin:0!important;
+    color:#fff!important;
+    font-size:17.5pt!important;
+    line-height:1.02!important;
+    max-width:76mm!important;
+    font-weight:800!important;
+  }
+  .refReport .heroCorporatePanel>p{
+    margin:2mm 0 0 4.6mm!important;
+    color:#e9f4fb!important;
+    font-size:6.4pt!important;
+    line-height:1.3!important;
+    max-width:74mm!important;
+  }
+  .refReport .heroMiningPanel{
+    position:relative!important;
+    overflow:hidden!important;
+    background:#173f61!important;
+  }
+  .refReport .heroMiningPanel .pdfHeroMiningImage{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center 38%!important;
+    display:block!important;
+    z-index:1!important;
+    opacity:1!important;
+    filter:none!important;
+  }
+  .refReport .heroImageOverlay{
+    position:absolute!important;
+    inset:0!important;
+    z-index:2!important;
+    background:linear-gradient(90deg,rgba(8,45,79,.28),rgba(8,45,79,0) 60%)!important;
+  }
+
+  .refReport .pageOneRight{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:3mm!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .refReport .refSummaryCard{
+    width:100%!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+    align-self:stretch!important;
+    display:block!important;
+    padding:3mm 3.5mm!important;
+    border-radius:2mm!important;
+    overflow:hidden!important;
+  }
+  .refReport .refSummaryCard.success{
+    background:#e6f6ee!important;
+    border:.4mm solid #8ec7aa!important;
+  }
+  .refReport .refSummaryCard.warning{
+    background:#fff1da!important;
+    border:.4mm solid #e0ae62!important;
+  }
+  .refReport .refSummaryCard h3{
+    display:flex!important;
+    align-items:center!important;
+    gap:1.5mm!important;
+    margin:0 0 1.4mm!important;
+    font-size:7.8pt!important;
+    line-height:1.15!important;
+    font-weight:800!important;
+  }
+  .refReport .refSummaryCard.success h3{color:#08774f!important}
+  .refReport .refSummaryCard.warning h3{color:#b85c00!important}
+  .refReport .refSummaryCard h3>span{
+    display:inline-grid!important;
+    place-items:center!important;
+    width:5mm!important;
+    height:5mm!important;
+    flex:0 0 5mm!important;
+    border-radius:50%!important;
+  }
+  .refReport .refSummaryCard.success h3>span{background:#d2efe0!important;color:#08774f!important}
+  .refReport .refSummaryCard.warning h3>span{background:#ffe0b0!important;color:#b85c00!important}
+  .refReport .refSummaryCard ul{
+    list-style:none!important;
+    padding:0!important;
+    margin:0!important;
+    display:grid!important;
+    gap:.7mm!important;
+  }
+  .refReport .refSummaryCard li{
+    display:grid!important;
+    grid-template-columns:4mm 1fr!important;
+    gap:1mm!important;
+    align-items:start!important;
+    font-size:6.3pt!important;
+    line-height:1.28!important;
+    color:#2f4962!important;
+    margin:0!important;
+    overflow-wrap:anywhere!important;
+  }
+  .refReport .refSummaryCard li>span{
+    color:#0d8a5c!important;
+    font-weight:900!important;
+  }
+  .refReport .refSummaryCard.warning li>span{color:#c3680a!important}
+
+  .refReport .discColumns{
+    height:94mm!important;
+    padding:7mm 5mm 4mm!important;
+    border:.4mm solid #aebfce!important;
+    background:#f9fbfd!important;
+    box-sizing:border-box!important;
+    align-items:end!important;
+  }
+  .refReport .discCol{
+    height:80mm!important;
+    grid-template-rows:7mm 1fr 6mm 6mm!important;
+    align-items:end!important;
+  }
+  .refReport .discCol>strong{
+    font-size:9pt!important;
+    font-weight:900!important;
+    color:#163955!important;
+    align-self:center!important;
+  }
+  .refReport .discColTrack{
+    height:58mm!important;
+    width:100%!important;
+    max-width:18mm!important;
+    justify-self:center!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    border-bottom:.45mm solid #9db1c2!important;
+    background:linear-gradient(to top,#eef3f7,#f8fafc)!important;
+    border-radius:1.5mm 1.5mm 0 0!important;
+    overflow:hidden!important;
+  }
+  .refReport .discColTrack i{
+    display:block!important;
+    width:100%!important;
+    min-height:2mm!important;
+    background:var(--disc-color)!important;
+    background-color:var(--disc-color)!important;
+    border-radius:1.5mm 1.5mm 0 0!important;
+    opacity:1!important;
+    box-shadow:inset 0 0 0 .25mm rgba(0,0,0,.08)!important;
+  }
+  .refReport .disc-D .discColTrack i{background:#ef4b4b!important}
+  .refReport .disc-I .discColTrack i{background:#f2c230!important}
+  .refReport .disc-S .discColTrack i{background:#35b96b!important}
+  .refReport .disc-C .discColTrack i{background:#258fd8!important}
+  .refReport .discCol>b{
+    font-size:8.8pt!important;
+    font-weight:900!important;
+    color:#0f3e6c!important;
+  }
+  .refReport .discCol>span{
+    font-size:6.3pt!important;
+    color:#405c76!important;
+  }
+}
