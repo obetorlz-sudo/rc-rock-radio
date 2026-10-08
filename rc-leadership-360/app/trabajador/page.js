@@ -51,7 +51,7 @@ function Questionnaire({ctx,onDone}){
     if(ans.some(x=>!x))return setMsg('Responde todas las preguntas.');
     try{
       await api('/api/public/submit',{method:'POST',body:JSON.stringify({
-        mode:'team',assessmentId:ctx.assessment_id,workerRut:ctx.workerRut,comment,
+        mode:'team',assessmentId:ctx.assessment_id,companyId:ctx.company_id,workerRut:ctx.workerRut,comment,
         answers:questions.map((item,j)=>({item_id:item.id,score:ans[j]}))
       })});
       onDone();
@@ -65,7 +65,7 @@ function Questionnaire({ctx,onDone}){
         <div><div className="eyebrow">Encuesta de Equipo</div><h1>Experiencia de trabajo</h1><p>{ctx.company_name}</p></div>
         <div className="questionCounter"><b>{i+1}</b><span>de {questions.length}</span></div>
       </div>
-      <div className="privacy compactPrivacy">Tus respuestas son confidenciales y solo se muestran de manera agregada con una muestra mínima.</div>
+      <div className="privacy compactPrivacy">Tus respuestas son confidenciales, se analizan de manera agregada y se utilizan como percepción general del equipo para todos los supervisores de la empresa.</div>
       <div className="progress"><div style={{width:`${Math.round(ans.filter(Boolean).length/questions.length*100)}%`}}/></div>
       <div className="questionBody"><span className="questionLabel">Pregunta {i+1}</span><h2 className="question">{q.text}</h2></div>
       <div className="scale responsiveScale">{[1,2,3,4,5].map(v=><button key={v} className={ans[i]===v?'selected':''} onClick={()=>choose(v)}><b>{v}</b><span>{LABELS[v-1]}</span></button>)}</div>
@@ -81,19 +81,19 @@ function Questionnaire({ctx,onDone}){
 }
 
 export default function TrabajadorPage(){
-  const [rut,setRut]=useState(''),[ctx,setCtx]=useState(null),[options,setOptions]=useState([]),[done,setDone]=useState(false),[msg,setMsg]=useState('');
+  const [rut,setRut]=useState(''),[ctx,setCtx]=useState(null),[companies,setCompanies]=useState([]),[done,setDone]=useState(false),[msg,setMsg]=useState('');
   const discover=async()=>{
     setMsg('');
     try{
       const d=await api('/api/public/start',{method:'POST',body:JSON.stringify({mode:'team',workerRut:rut})});
-      if(d.assessment_id){setCtx({...d,workerRut:rut});setOptions([]);return;}
-      setOptions(d.assessments||[]);
+      if(d.assessment_id){setCtx({...d,workerRut:rut});setCompanies([]);return;}
+      setCompanies(d.companies||[]);
     }catch(e){setMsg(e.message)}
   };
-  const chooseAssessment=async(assessmentId)=>{
+  const chooseCompany=async(companyId)=>{
     setMsg('');
     try{
-      const d=await api('/api/public/start',{method:'POST',body:JSON.stringify({mode:'team',workerRut:rut,assessmentId})});
+      const d=await api('/api/public/start',{method:'POST',body:JSON.stringify({mode:'team',workerRut:rut,companyId})});
       setCtx({...d,workerRut:rut});
     }catch(e){setMsg(e.message)}
   };
@@ -106,18 +106,18 @@ export default function TrabajadorPage(){
     <section className="publicAccessCard">
       <div className="eyebrow">Acceso Trabajador</div>
       <h1>Encuesta de equipo</h1>
-      <p>Ingresa tu RUT. No necesitas estar registrado previamente para participar.</p>
+      <p>Ingresa tu RUT para responder una encuesta general sobre la experiencia de trabajo. No se te mostrará ni pedirá seleccionar supervisores.</p>
       <input value={rut} onChange={e=>setRut(e.target.value)} placeholder="Tu RUT" onKeyDown={e=>e.key==='Enter'&&discover()}/>
       {msg&&<div className="notice">{msg}</div>}
-      {!options.length?<button className="primary" onClick={discover}>Continuar</button>:<>
+      {!companies.length?<button className="primary" onClick={discover}>Continuar</button>:<>
         <div className="workerSurveyPicker">
-          <h3>Selecciona la evaluación que debes responder</h3>
-          <p className="muted">Elige al supervisor o jefatura correspondiente.</p>
-          {options.map(x=><button key={x.assessment_id} className="surveyPick" onClick={()=>chooseAssessment(x.assessment_id)}>
-            <b>{x.supervisor_name}</b><span>{x.company_name} · {x.cycle_name}</span>
+          <h3>Selecciona tu empresa</h3>
+          <p className="muted">La encuesta es general sobre la experiencia de trabajo y no evalúa a un supervisor específico.</p>
+          {companies.map(x=><button key={x.company_id} className="surveyPick" onClick={()=>chooseCompany(x.company_id)}>
+            <b>{x.company_name}</b><span>Responder encuesta general del equipo</span>
           </button>)}
         </div>
-        <button className="ghost" onClick={()=>setOptions([])}>Cambiar RUT</button>
+        <button className="ghost" onClick={()=>setCompanies([])}>Cambiar RUT</button>
       </>}
     </section>
   </main>;
