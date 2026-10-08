@@ -147,3 +147,13 @@ create table if not exists rc360_questions(
   unique(mode,position)
 );
 create index if not exists rc360_questions_mode_idx on rc360_questions(mode,active,position);
+
+
+create table if not exists rc360_self_open_answers(
+  assessment_id uuid primary key references rc360_assessments(id) on delete cascade,
+  leadership text not null,
+  conflict_management text not null,
+  people_development text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
