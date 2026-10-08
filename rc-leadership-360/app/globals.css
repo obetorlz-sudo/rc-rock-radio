@@ -217,3 +217,64 @@
   .refReport .pageFourGrid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4mm!important;margin-top:4mm!important;align-items:start!important}.refReport .pageFourGrid>.pdfRefBlock{border:1px solid #dce7ef!important;border-radius:2mm!important;padding:3.3mm!important;min-height:57mm!important}.refReport .refCheckList{margin:0!important;padding:0!important;list-style:none!important}.refReport .refCheckList li{font-size:6.7pt!important;line-height:1.45!important;margin:1mm 0!important;color:#3b5369!important}.refReport .refCheckList li::first-letter{color:#0ca45f!important}.refReport .refPlanTable{width:100%!important;border-collapse:collapse!important;font-size:6.2pt!important}.refReport .refPlanTable th,.refReport .refPlanTable td{border:1px solid #d0dbe5!important;padding:1.45mm 1.6mm!important;text-align:left!important;vertical-align:top!important}.refReport .refPlanTable th{background:#dfe9f2!important;color:#173e6a!important}.refReport .refPlanTable td:first-child{font-weight:800!important;color:#143d69!important}
   .refReport .pdfRefSignatures{position:absolute!important;left:18mm!important;right:18mm!important;bottom:18mm!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:18mm!important}.refReport .pdfRefSignatures>div{border-top:.3mm solid #64788e!important;padding-top:2mm!important;text-align:center!important}.refReport .pdfRefSignatures span{display:block!important;font-size:7.2pt!important;font-weight:800!important;color:#163d69!important}.refReport .pdfRefSignatures small{font-size:6pt!important;color:#687a8e!important}
 }
+
+
+/* RC Leadership 360 — report refinement v2 */
+.workerSurveyPicker{display:grid;gap:10px;margin:18px 0 12px}
+.workerSurveyPicker h3{margin:0;font-size:1rem}
+.workerSurveyPicker .muted{margin:0 0 4px}
+.surveyPick{width:100%;text-align:left;border:1px solid rgba(120,150,185,.35);background:rgba(255,255,255,.08);border-radius:14px;padding:14px 15px;display:grid;gap:4px;cursor:pointer;color:inherit}
+.surveyPick:hover{border-color:#49a8e8;background:rgba(73,168,232,.1)}
+.surveyPick b{font-size:.95rem}.surveyPick span{font-size:.8rem;opacity:.75}
+
+@media print{
+  .refReport .pdfRefPage{padding:7mm 8mm 13mm!important}
+  .refReport .pageOne{padding:7mm 8mm 13mm!important}
+  .refReport .pageOne .pdfRefHeader{margin-bottom:3mm!important}
+  .refReport .pdfRefHeader{height:19mm!important;border-bottom:.5mm solid #1f75b7!important}
+  .refReport .pdfRefBrand img{width:58mm!important;height:18mm!important;transform:scale(1.16)!important}
+  .refReport .pdfRefTitle{border-left:.45mm solid #8aa4bc!important}
+  .refReport .pdfRefMeta{border-left:.45mm solid #8aa4bc!important}
+  .refReport .pdfRefMeta span{color:#263f59!important}
+  .refReport .pdfRefFooter{border-top:.4mm solid #1f75b7!important;color:#4e657b!important}
+
+  .refReport .pdfRefHero{height:50mm!important;margin:0 0 4mm!important;border-radius:2mm!important;background:none!important;position:relative!important;overflow:hidden!important}
+  .refReport .pdfHeroMiningImage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 38%!important;display:block!important;z-index:0!important}
+  .refReport .heroShade{z-index:1!important;background:linear-gradient(90deg,rgba(7,27,45,.93) 0%,rgba(10,44,70,.82) 38%,rgba(8,34,53,.25) 72%,rgba(8,34,53,.08) 100%)!important}
+  .refReport .heroCopy{left:8mm!important;top:8mm!important;z-index:2!important;display:grid!important;grid-template-columns:2mm 1fr!important;grid-template-areas:"tag tag" "bar title" "bar sub"!important;column-gap:4mm!important;row-gap:1.2mm!important;max-width:92mm!important}
+  .refReport .heroCopy>span{grid-area:tag!important;color:#bfe5ff!important;font-size:6pt!important;letter-spacing:.16em!important;font-weight:800!important}
+  .refReport .heroCopy>i{grid-area:bar!important;background:#ff8a2f!important}
+  .refReport .heroCopy>h2{grid-area:title!important;font-size:18pt!important;line-height:1.02!important;max-width:78mm!important;color:#fff!important}
+  .refReport .heroCopy>p{grid-area:sub!important;margin:0!important;font-size:6.8pt!important;line-height:1.25!important;color:#e8f3fb!important;max-width:80mm!important}
+
+  .refReport .pageOneGrid{grid-template-columns:1.08fr .92fr!important;gap:4mm!important;align-items:start!important}
+  .refReport .pageOneLeft,.refReport .pageOneRight{gap:3mm!important}
+  .refReport .pageOneLeft .pdfRefBlock{padding:0 0 2.7mm!important;border-bottom:.35mm solid #bccbd8!important}
+  .refReport .pageOneLeft .pdfRefBlock:last-child{border-bottom:0!important}
+  .refReport .pdfRefSectionTitle{margin-bottom:1.5mm!important}
+  .refReport .pdfRefSectionTitle h2{font-size:9.2pt!important;color:#07396f!important}
+  .refReport .pdfRefSectionTitle>span{background:#0b568f!important}
+  .refReport .pdfRefBlock p{font-size:6.9pt!important;line-height:1.34!important;color:#253f5a!important}
+  .refReport .antecedentCard{padding:2.5mm!important;background:#edf3f7!important;border:1px solid #bfcfdd!important}
+  .refReport .antecedentCard table{font-size:5.9pt!important}
+  .refReport .antecedentCard th,.refReport .antecedentCard td{padding:.55mm .9mm!important}
+  .refReport .antecedentCard th{background:#dbe6ef!important;color:#083b70!important}
+  .refReport .antecedentCard td{background:#f5f8fa!important;color:#263f57!important}
+
+  .refReport .refSummaryCard{padding:2.5mm 3mm!important;border-width:.35mm!important;overflow:hidden!important;min-height:0!important}
+  .refReport .refSummaryCard.success{background:#e7f6ee!important;border-color:#b7dac8!important}
+  .refReport .refSummaryCard.warning{background:#fff1d8!important;border-color:#e2bc7e!important}
+  .refReport .refSummaryCard h3{font-size:7.4pt!important;line-height:1.15!important;margin:0 0 1mm!important}
+  .refReport .refSummaryCard ul{padding:0!important;margin:0!important}
+  .refReport .refSummaryCard li{font-size:6.15pt!important;line-height:1.26!important;margin:.35mm 0!important;overflow-wrap:anywhere!important}
+
+  .refReport .discColumns{border:.35mm solid #aebfce!important}
+  .refReport .refReading{border:.35mm solid #c1d3e1!important}
+  .refReport .refGapBox{border:.35mm solid #d7aa67!important}
+  .refReport .refCompetencyTable{border:.35mm solid #aebfce!important}
+  .refReport .refCompRow{border-top:.3mm solid #cbd6df!important}
+  .refReport .pageFourGrid>.pdfRefBlock{border:.35mm solid #bccbd8!important}
+  .refReport .psychMain,.refReport .psychIdentity{border:.35mm solid #bccbd8!important}
+  .refReport .refPlanTable th,.refReport .refPlanTable td{border:.3mm solid #b6c5d2!important}
+  .refReport .pdfRefSignatures{bottom:18mm!important}
+}
