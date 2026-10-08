@@ -11,16 +11,15 @@ const api=async(url,opts={})=>{
 
 function Questionnaire({ctx,onDone}){
   const questions=ctx.questions||[];
-  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[workerRut,setWorkerRut]=useState(''),[comment,setComment]=useState(''),[msg,setMsg]=useState('');
+  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[comment,setComment]=useState(''),[msg,setMsg]=useState('');
   const q=questions[i];
 
   const choose=v=>{const a=[...ans];a[i]=v;setAns(a);setMsg('')};
   const finish=async()=>{
     if(ans.some(x=>!x))return setMsg('Responde todas las preguntas.');
-    if(!workerRut.trim())return setMsg('Ingresa tu RUT para evitar respuestas duplicadas.');
     try{
       await api('/api/public/submit',{method:'POST',body:JSON.stringify({
-        mode:'team',assessmentId:ctx.assessment_id,rut:ctx.rut,workerRut,comment,
+        mode:'team',assessmentId:ctx.assessment_id,workerRut:ctx.workerRut,comment,
         answers:questions.map((item,j)=>({item_id:item.id,score:ans[j]}))
       })});
       onDone();
@@ -38,7 +37,7 @@ function Questionnaire({ctx,onDone}){
       <div className="progress"><div style={{width:`${Math.round(ans.filter(Boolean).length/questions.length*100)}%`}}/></div>
       <div className="questionBody"><span className="questionLabel">Pregunta {i+1}</span><h2 className="question">{q.text}</h2></div>
       <div className="scale responsiveScale">{[1,2,3,4,5].map(v=><button key={v} className={ans[i]===v?'selected':''} onClick={()=>choose(v)}><b>{v}</b><span>{LABELS[v-1]}</span></button>)}</div>
-      {i===questions.length-1&&<div className="formblock finishFields"><label>Tu RUT<input value={workerRut} onChange={e=>setWorkerRut(e.target.value)} placeholder="RUT del trabajador"/></label><label>Comentario opcional<textarea value={comment} onChange={e=>setComment(e.target.value)}/></label></div>}
+      {i===questions.length-1&&<div className="formblock finishFields"><label>Comentario opcional<textarea value={comment} onChange={e=>setComment(e.target.value)}/></label></div>}
       {msg&&<div className="notice">{msg}</div>}
       <div className="actions surveyActions">
         <button className="ghost" disabled={i===0} onClick={()=>setI(i-1)}>Anterior</button>
