@@ -189,13 +189,15 @@ function ReportDocument({d,report,enough}){
     <section className="pdfRefPage pageOne">
       <Header/>
       <div className="pdfRefHero">
-        <img className="pdfHeroMiningImage" src="/leadership-team-hero.webp" alt="Operación minera y liderazgo"/>
-        <div className="heroShade"/>
-        <div className="heroCopy">
-          <span>RC LEADERSHIP 360</span>
-          <i/>
-          <h2>Desarrollando líderes para mejores equipos</h2>
+        <div className="heroCorporatePanel">
+          <img className="heroWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/>
+          <span className="heroKicker">RC LEADERSHIP 360</span>
+          <div className="heroTitleRow"><i/><h2>Desarrollando líderes para mejores equipos</h2></div>
           <p>Informe profesional de evaluación, retroalimentación y desarrollo del liderazgo</p>
+        </div>
+        <div className="heroMiningPanel">
+          <img className="pdfHeroMiningImage" src="/leadership-team-hero.webp" alt="Operación minera y liderazgo"/>
+          <div className="heroImageOverlay"/>
         </div>
       </div>
       <div className="pageOneGrid">
@@ -213,8 +215,8 @@ function ReportDocument({d,report,enough}){
               <tr><th>Instrumento:</th><td>Evaluación 360° Liderazgo</td></tr>
             </tbody></table>
           </section>
-          <div className="refSummaryCard success"><h3>★ &nbsp; Principales fortalezas</h3><ul>{strengths.map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></div>
-          <div className="refSummaryCard warning"><h3>▲ &nbsp; Principales áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="refSummaryCard success"><h3><span>★</span> Principales fortalezas</h3><ul>{strengths.map((x,i)=><li key={i}><span>✓</span>{typeof x==='string'?x:x.text}</li>)}</ul></div>
+          <div className="refSummaryCard warning"><h3><span>▲</span> Principales áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}><span>✓</span>{typeof x==='string'?x:x.text}</li>)}</ul></div>
         </div>
       </div>
       <Footer page="1"/>
@@ -226,7 +228,7 @@ function ReportDocument({d,report,enough}){
         <section className="pdfRefBlock discProfileBlock">
           <Title n="5" icon="▥">Perfil DISC</Title>
           <div className="discColumns">
-            {['D','I','S','C'].map(k=>{const v=Number(d.self?.disc?.[k]||0);return <div className="discCol" key={k}><strong>{v}%</strong><div className="discColTrack"><i style={{height:v+'%',background:discColor[k]}}/></div><b>{k}</b><span>{DISC_INFO[k].name}</span></div>})}
+            {['D','I','S','C'].map(k=>{const v=Number(d.self?.disc?.[k]||0);return <div className={'discCol disc-'+k} key={k}><strong>{v}%</strong><div className="discColTrack"><i style={{height:v+'%','--disc-color':discColor[k]}}/></div><b>{k}</b><span>{DISC_INFO[k].name}</span></div>})}
           </div>
           <div className="refReading"><h3>Interpretación del perfil DISC</h3><p>{d.self_analysis||'Sin análisis disponible.'}</p></div>
         </section>
