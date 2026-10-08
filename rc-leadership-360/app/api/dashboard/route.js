@@ -12,7 +12,10 @@ export async function GET(){
 
     const assessmentsSql=`select a.id,a.cycle_name,a.status,a.self_completed_at,a.created_at,
       s.id supervisor_id,s.full_name,s.rut,s.position,s.area,c.name company_name,c.id company_id,c.logo_url company_logo,
-      (select count(*)::int from rc360_team_responses tr where tr.assessment_id=a.id) team_count,
+      (select count(distinct tr.worker_hash)::int
+         from rc360_team_responses tr
+         join rc360_assessments ta on ta.id=tr.assessment_id
+        where ta.company_id=a.company_id and ta.status='open' and ta.team_survey_open=true) team_count,
       exists(select 1 from rc360_psychologist_notes pn where pn.assessment_id=a.id) has_psychologist_note,
       coalesce((select fr.status from rc360_final_reports fr where fr.assessment_id=a.id),'pending') final_report_status
       from rc360_assessments a
@@ -23,7 +26,10 @@ export async function GET(){
 
     const supervisorsSql=`select s.id,s.full_name,s.rut,s.position,s.area,s.email,s.active,s.company_id,c.name company_name,c.logo_url company_logo,
       la.id assessment_id,la.cycle_name,la.self_completed_at,
-      coalesce((select count(*)::int from rc360_team_responses tr where tr.assessment_id=la.id),0) team_count,
+      coalesce((select count(distinct tr.worker_hash)::int
+         from rc360_team_responses tr
+         join rc360_assessments ta on ta.id=tr.assessment_id
+        where ta.company_id=s.company_id and ta.status='open' and ta.team_survey_open=true),0) team_count,
       case when la.id is null then false else exists(select 1 from rc360_psychologist_notes pn where pn.assessment_id=la.id) end has_psychologist_note,
       coalesce((select fr.status from rc360_final_reports fr where fr.assessment_id=la.id),'pending') final_report_status
       from rc360_supervisors s
