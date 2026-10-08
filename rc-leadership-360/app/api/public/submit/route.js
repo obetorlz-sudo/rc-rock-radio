@@ -15,11 +15,28 @@ export async function POST(req){
     if(mode==='self'){
       const r=normalizeRut(body.rut); if(!validRut(r)||r!==a.supervisor_rut) return NextResponse.json({error:'RUT no corresponde a esta evaluación.'},{status:403});
       if(a.self_completed_at) return NextResponse.json({error:'La autoevaluación ya fue completada.'},{status:409});
+      const open=body.openResponses||{};
+      const leadership=String(open.leadership||'').trim();
+      const conflict=String(open.conflict_management||'').trim();
+      const development=String(open.people_development||'').trim();
+      if(!leadership||!conflict||!development) return NextResponse.json({error:'Las 3 preguntas abiertas son obligatorias.'},{status:400});
       await tx(async c=>{
+        await c.query(`create table if not exists rc360_self_open_answers(
+          assessment_id uuid primary key references rc360_assessments(id) on delete cascade,
+          leadership text not null,
+          conflict_management text not null,
+          people_development text not null,
+          created_at timestamptz not null default now(),
+          updated_at timestamptz not null default now()
+        )`);
         await c.query(`insert into rc360_self_results(assessment_id,disc,competencies,primary_profile,secondary_profile)
           values($1,$2,$3,$4,$5) on conflict(assessment_id) do update set disc=excluded.disc,competencies=excluded.competencies,primary_profile=excluded.primary_profile,secondary_profile=excluded.secondary_profile,completed_at=now()`,[aid,result.disc,result.competencies,result.primary,result.secondary]);
         await c.query('delete from rc360_self_answers where assessment_id=$1',[aid]);
         for(let i=0;i<items.length;i++) await c.query('insert into rc360_self_answers(assessment_id,item_id,score) values($1,$2,$3)',[aid,items[i].id,ordered[i]]);
+        await c.query(`insert into rc360_self_open_answers(assessment_id,leadership,conflict_management,people_development)
+          values($1,$2,$3,$4)
+          on conflict(assessment_id) do update set leadership=excluded.leadership,conflict_management=excluded.conflict_management,people_development=excluded.people_development,updated_at=now()`,
+          [aid,leadership.slice(0,5000),conflict.slice(0,5000),development.slice(0,5000)]);
         await c.query('update rc360_assessments set self_completed_at=now() where id=$1',[aid]);
       });
       return NextResponse.json(result);
