@@ -362,6 +362,16 @@ export default function AnalysisPage(){
         <ChartSummary summary={d.chart_summary} enough={enough}/>
       </section>
 
+      <section className="panel supervisorOpenAnswers">
+        <div className="eyebrow">Respuestas cualitativas obligatorias</div>
+        <h2>Experiencias relatadas por el supervisor</h2>
+        {d.supervisor_open_answers?<div className="openAnswerReviewGrid">
+          <div><b>Liderazgo</b><p>{d.supervisor_open_answers.leadership}</p></div>
+          <div><b>Manejo de conflictos</b><p>{d.supervisor_open_answers.conflict_management}</p></div>
+          <div><b>Desarrollo de personas</b><p>{d.supervisor_open_answers.people_development}</p></div>
+        </div>:<div className="privacy">Esta evaluación no contiene respuestas abiertas registradas.</div>}
+      </section>
+
       <section className="panel"><h2>Radar conductual D · I · S · C</h2>
         <p className="muted">El radar permite observar la intensidad relativa de las cuatro tendencias. Mientras más cerca del borde, mayor presencia relativa de la conducta.</p>
         <RadarChart title="Tendencias conductuales" labels={['D','I','S','C']} labelMap={{D:'Dominancia',I:'Influencia',S:'Estabilidad',C:'Cumplimiento'}} self={d.self?.disc} team={enough?d.team.disc:null} showExplanation/>
