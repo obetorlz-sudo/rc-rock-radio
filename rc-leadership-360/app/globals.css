@@ -592,3 +592,43 @@
     filter:none!important;
   }
 }
+
+
+/* Secondary pages: keep navigation left and white logo right */
+.appBrandBar{
+  justify-content:flex-end!important;
+  padding-left:18px!important;
+  padding-right:18px!important;
+}
+.publicAccessBrand{
+  left:auto!important;
+  right:28px!important;
+}
+.publicAccessBrand .appWhiteLogo{
+  width:190px!important;
+}
+.publicBack{
+  z-index:6!important;
+}
+.surveyTop{
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+}
+.surveyTop .link{order:1!important}
+.surveyTop>span{order:2!important}
+.surveyWhiteLogo{
+  order:3!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+  width:150px!important;
+}
+
+@media(max-width:820px){
+  .publicAccessBrand{
+    left:auto!important;
+    right:18px!important;
+  }
+  .publicAccessBrand .appWhiteLogo{width:145px!important}
+  .surveyWhiteLogo{width:120px!important}
+}
