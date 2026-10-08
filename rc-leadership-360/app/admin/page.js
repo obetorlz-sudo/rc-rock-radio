@@ -1,5 +1,6 @@
 'use client';
 import { useEffect,useMemo,useState } from 'react';
+import { OPEN_SELF } from '../../lib/instrument';
 
 const jfetch=async(url,opts={})=>{
   const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});
@@ -237,7 +238,7 @@ export default function AdminPage(){
     {((session.role==='psychologist')||(session.role==='admin'&&activeTab==='instrumento'))&&<section className="panel questionBankPanel">
       <div className="sectionTitle">
         <div><div className="eyebrow">Instrumento</div><h2>Banco de Preguntas</h2></div>
-        <span className="pill good">{questionBank.filter(q=>q.active).length} activas</span>
+        <span className="pill good">{questionMode==='self'?questionBank.filter(q=>q.active).length+' escala + '+OPEN_SELF.length+' abiertas':questionBank.filter(q=>q.active).length+' activas'}</span>
       </div>
       <p className="muted">Administra las preguntas que responden supervisores y trabajadores. Los cambios se aplican a nuevas respuestas.</p>
 
@@ -274,6 +275,20 @@ export default function AdminPage(){
         </article>)}
         {questionBank.length===0&&<div className="notice">No hay preguntas en este banco.</div>}
       </div>
+
+      {questionMode==='self'&&<div className="openBankSection">
+        <div className="sectionTitle">
+          <div><div className="eyebrow">Preguntas abiertas obligatorias</div><h3>3 preguntas cualitativas del supervisor</h3></div>
+          <span className="pill info">Obligatorias</span>
+        </div>
+        <p className="muted">Estas preguntas aparecen después de las 48 preguntas de escala y deben responderse antes de finalizar la evaluación.</p>
+        <div className="openBankGrid">
+          {OPEN_SELF.map((q,idx)=><article className="openBankCard" key={q.id}>
+            <div className="questionNumber">{idx+1}</div>
+            <div><b>{q.area}</b><p>{q.text}</p><span className="pill good">Respuesta abierta · Obligatoria</span></div>
+          </article>)}
+        </div>
+      </div>}
     </section>}
 
     {(session.role==='psychologist'||(session.role==='admin'&&activeTab==='seguimiento'))&&<section className="panel">
