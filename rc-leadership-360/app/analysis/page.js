@@ -187,9 +187,16 @@ function ReportDocument({d,report,enough}){
 
   return <article className="reportDocument finalFourPageReport refReport">
     <section className="pdfRefPage pageOne">
+      <Header/>
       <div className="pdfRefHero">
+        <img className="pdfHeroMiningImage" src="/leadership-team-hero.webp" alt="Operación minera y liderazgo"/>
         <div className="heroShade"/>
-        <div className="heroCopy"><i/><h2>Desarrollando<br/>líderes para<br/>mejores equipos</h2></div>
+        <div className="heroCopy">
+          <span>RC LEADERSHIP 360</span>
+          <i/>
+          <h2>Desarrollando líderes para mejores equipos</h2>
+          <p>Informe profesional de evaluación, retroalimentación y desarrollo del liderazgo</p>
+        </div>
       </div>
       <div className="pageOneGrid">
         <div className="pageOneLeft">
