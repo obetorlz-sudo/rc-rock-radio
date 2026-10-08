@@ -116,6 +116,20 @@ export default function AdminPage(){
     if(!window.confirm('¿Quitar el logo de '+x.name+'?'))return;
     manage('/api/manage/company-logo',{id:x.id,logoData:''},'Logo eliminado.');
   };
+
+  const createCompany=async()=>{
+    setMsg('');
+    try{
+      const created=await jfetch('/api/manage/company',{method:'POST',body:JSON.stringify(company)});
+      if(companyLogo&&created?.id){
+        await jfetch('/api/manage/company-logo',{method:'POST',body:JSON.stringify({id:created.id,logoData:companyLogo})});
+      }
+      setCompany({name:'',rut:'',email:'',password:'Recamespa.2026'});
+      setCompanyLogo('');
+      setMsg('Empresa creada correctamente.');
+      await load();
+    }catch(e){setMsg(e.message)}
+  };
   const editSupervisor=x=>{
     const fullName=window.prompt('Nombre completo',x.full_name); if(fullName===null)return;
     const rut=window.prompt('RUT supervisor',x.rut); if(rut===null)return;
