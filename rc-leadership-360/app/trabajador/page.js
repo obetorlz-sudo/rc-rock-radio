@@ -27,7 +27,7 @@ function Questionnaire({ctx,onDone}){
   };
   if(!q)return <main className="shell"><section className="panel centered"><h2>No hay preguntas disponibles.</h2></section></main>;
   return <main className="publicSurvey surveyResponsive">
-    <div className="surveyTop"><a className="link" href="/trabajador">← Salir</a><span>Encuesta confidencial</span></div>
+    <div className="surveyTop"><img className="surveyWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><a className="link" href="/trabajador">← Salir</a><span>Encuesta confidencial</span></div>
     <section className="questionPanel modernQuestion">
       <div className="questionHeader">
         <div><div className="eyebrow">Encuesta de Equipo</div><h1>Experiencia de trabajo</h1><p>{ctx.company_name}</p></div>
@@ -68,6 +68,7 @@ export default function TrabajadorPage(){
   if(ctx)return <Questionnaire ctx={ctx} onDone={()=>setDone(true)}/>;
   return <main className="publicAccessPage workerAccess">
     <div className="publicAccessBackdrop" aria-hidden="true"/>
+    <div className="publicAccessBrand"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
     <a className="publicBack" href="/">← Inicio</a>
     <section className="publicAccessCard">
       <div className="eyebrow">Acceso Trabajador</div>
