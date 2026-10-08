@@ -66,14 +66,26 @@ export async function GET(){
         from rc360_questions where deleted_at is null order by mode,position,id`)
       : Promise.resolve({rows:[]});
 
-    const [assessmentsRes,supervisorsRes,companiesRes,mc,ms,mp,mq]=await Promise.all([
+    const participationPromise=s.role==='admin'
+      ? query(`select p.assessment_id,p.worker_rut,p.completed_at,
+          a.cycle_name,a.supervisor_id,su.full_name supervisor_name,
+          c.id company_id,c.name company_name
+        from rc360_participation_log p
+        join rc360_assessments a on a.id=p.assessment_id
+        join rc360_supervisors su on su.id=a.supervisor_id
+        join rc360_companies c on c.id=a.company_id
+        order by p.completed_at desc`).catch(()=>({rows:[]}))
+      : Promise.resolve({rows:[]});
+
+    const [assessmentsRes,supervisorsRes,companiesRes,mc,ms,mp,mq,participationRes]=await Promise.all([
       query(assessmentsSql,params),
       query(supervisorsSql,params),
       companiesPromise,
       managementCompanies,
       managementSupervisors,
       managementProfessionals,
-      questionsPromise
+      questionsPromise,
+      participationPromise
     ]);
 
     return NextResponse.json({
@@ -84,7 +96,8 @@ export async function GET(){
       management:s.role==='admin'?{
         companies:mc.rows,
         supervisors:ms.rows,
-        professionals:mp.rows
+        professionals:mp.rows,
+        participation:participationRes.rows
       }:null,
       questions:mq.rows
     },{headers:{'Cache-Control':'no-store, max-age=0'}});
