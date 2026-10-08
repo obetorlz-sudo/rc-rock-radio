@@ -632,3 +632,7 @@
   .publicAccessBrand .appWhiteLogo{width:145px!important}
   .surveyWhiteLogo{width:120px!important}
 }
+
+
+/* Questionnaire autosave */
+.draftStatus{margin:10px 0 0;padding:9px 12px;border-radius:10px;background:rgba(24,149,95,.10);border:1px solid rgba(24,149,95,.24);color:#46c98c;font-size:.82rem;font-weight:700}
