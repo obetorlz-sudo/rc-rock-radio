@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {LABELS} from '../../lib/instrument';
+import {LABELS,OPEN_SELF} from '../../lib/instrument';
 
 const api=async(url,opts={})=>{
   const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});
@@ -11,11 +11,7 @@ const api=async(url,opts={})=>{
 
 function Questionnaire({ctx,onDone}){
   const questions=ctx.questions||[];
-  const openQuestions=[
-    {key:'leadership',area:'Liderazgo',text:'Cuénteme cómo logró alinear y motivar a una cuadrilla con bajo rendimiento o agotada.'},
-    {key:'conflict_management',area:'Manejo de conflictos',text:'Describa un conflicto entre miembros de su equipo durante el turno y qué acciones tomó para resolverlo.'},
-    {key:'people_development',area:'Desarrollo de personas',text:'Describa una ocasión en que detectó un bajo desempeño en un trabajador. ¿Qué hizo para ayudarlo a mejorar?'}
-  ];
+  const openQuestions=OPEN_SELF;
   const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[openStage,setOpenStage]=useState(false),[openAnswers,setOpenAnswers]=useState({leadership:'',conflict_management:'',people_development:''}),[msg,setMsg]=useState('');
   const q=questions[i];
 
