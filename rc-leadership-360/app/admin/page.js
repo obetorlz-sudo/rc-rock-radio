@@ -16,7 +16,7 @@ export default function AdminPage(){
   const [data,setData]=useState(null);
   const [msg,setMsg]=useState('');
   const [login,setLogin]=useState({rut:'',password:''});
-  const [company,setCompany]=useState({name:'',rut:'',email:'',password:'Recame.2026'});
+  const [company,setCompany]=useState({name:'',rut:'',email:'',password:'Recamespa.2026'});
   const [sup,setSup]=useState({companyId:'',fullName:'',rut:'',position:'',area:'',email:''});
   const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'});
   const [professional,setProfessional]=useState({fullName:'',username:'',password:''});
@@ -90,8 +90,8 @@ export default function AdminPage(){
     manage('/api/manage/company',{action:'update',id:x.id,name,rut,email},'Empresa actualizada.');
   };
   const resetCompanyPassword=x=>{
-    if(!window.confirm('¿Restablecer la clave de '+x.name+' a Recame.2026?'))return;
-    manage('/api/manage/company',{action:'reset_password',id:x.id,password:'Recame.2026'},'Contraseña de empresa restablecida a Recame.2026.');
+    if(!window.confirm('¿Restablecer la clave de '+x.name+' a Recamespa.2026?'))return;
+    manage('/api/manage/company',{action:'reset_password',id:x.id,password:'Recamespa.2026'},'Contraseña de empresa restablecida a Recamespa.2026.');
   };
   const editSupervisor=x=>{
     const fullName=window.prompt('Nombre completo',x.full_name); if(fullName===null)return;
@@ -336,7 +336,7 @@ export default function AdminPage(){
           <input placeholder="RUT empresa" value={company.rut} onChange={e=>setCompany({...company,rut:e.target.value})}/>
           <input placeholder="Correo" value={company.email} onChange={e=>setCompany({...company,email:e.target.value})}/>
           <input type="password" placeholder="Contraseña inicial" value={company.password} onChange={e=>setCompany({...company,password:e.target.value})}/>
-          <p className="muted">Clave inicial recomendada: <b>Recame.2026</b></p>
+          <p className="muted">Clave inicial recomendada: <b>Recamespa.2026</b></p>
           <button className="primary" onClick={()=>send('/api/manage/company',company)}>Crear empresa</button>
         </article>
 
@@ -390,7 +390,7 @@ export default function AdminPage(){
             <td>{statusPill(x.active&&x.user_active,'Activa','Inactiva')}</td>
             <td><div className="registryActions">
               <button className="ghost smallBtn" onClick={()=>editCompany(x)}>Editar</button>
-              <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer a Recame.2026</button>
+              <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer a Recamespa.2026</button>
               <button className="ghost smallBtn" onClick={()=>manage('/api/manage/company',{action:'toggle',id:x.id},x.active?'Empresa desactivada.':'Empresa activada.')}>{x.active?'Desactivar':'Activar'}</button>
               <button className="dangerBtn smallBtn" onClick={()=>deleteCompany(x)}>Eliminar</button>
             </div></td>
