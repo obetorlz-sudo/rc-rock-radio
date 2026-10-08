@@ -145,6 +145,7 @@ export default function AdminPage(){
   };
 
   if(!session)return <main className="shell">
+    <div className="appBrandBar"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
     <a className="link" href="/">← Volver al inicio</a>
     <section className="panel login">
       <div className="eyebrow">Acceso a plataforma</div>
@@ -173,6 +174,7 @@ export default function AdminPage(){
     const completed=supervisors.filter(x=>x.final_report_status==='finalized').length;
     const inProgress=supervisors.filter(x=>x.assessment_id&&x.final_report_status!=='finalized'&&(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)).length;
     return <main className="shell wide companyPortal">
+      <div className="appBrandBar"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
       <div className="topline">
         <div><div className="eyebrow">Portal Empresa</div><h1>{companyName}</h1><p className="muted">Consulta de resultados e informes de liderazgo</p></div>
         <button className="ghost" onClick={logout}>Cerrar sesión</button>
@@ -207,6 +209,7 @@ export default function AdminPage(){
   const competencies=['Comunicación','Liderazgo','Toma de decisiones','Trabajo bajo presión','Trabajo en equipo','Adaptabilidad','Manejo de conflictos','Delegación','Orientación a resultados','Desarrollo de personas'];
 
   return <main className="shell wide">
+    <div className="appBrandBar"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
     <div className="topline">
       <div>
         <div className="eyebrow">{session.role==='psychologist'?'Panel Psicología Laboral':'Panel de Administración'}</div>
