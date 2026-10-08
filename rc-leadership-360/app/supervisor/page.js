@@ -30,7 +30,7 @@ function Questionnaire({ctx,onDone}){
   };
 
   if(openStage)return <main className="publicSurvey surveyResponsive">
-    <div className="surveyTop"><a className="link" href="/supervisor">← Salir</a><span>{ctx.company_name}</span></div>
+    <div className="surveyTop"><img className="surveyWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/><a className="link" href="/supervisor">← Salir</a><span>{ctx.company_name}</span></div>
     <section className="questionPanel modernQuestion openQuestionPanel">
       <div className="questionHeader">
         <div><div className="eyebrow">Evaluación del Supervisor</div><h1>Preguntas abiertas obligatorias</h1><p>48 preguntas de escala completadas · ahora responde 3 preguntas abiertas</p></div>
@@ -94,6 +94,7 @@ export default function SupervisorPage(){
   if(ctx)return <Questionnaire ctx={ctx} onDone={()=>setDone(true)}/>;
   return <main className="publicAccessPage supervisorAccess">
     <div className="publicAccessBackdrop" aria-hidden="true"/>
+    <div className="publicAccessBrand"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
     <a className="publicBack" href="/">← Inicio</a>
     <section className="publicAccessCard">
       <div className="eyebrow">Acceso Supervisor</div>
