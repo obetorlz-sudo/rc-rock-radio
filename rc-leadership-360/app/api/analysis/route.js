@@ -129,13 +129,14 @@ function reportSuggestion(self,team,note){
 
 export async function GET(req){
   const s=await getSession();
-  if(!s||!['admin','psychologist'].includes(s.role)) return NextResponse.json({error:'Acceso reservado a administración y psicología laboral.'},{status:403});
+  if(!s||!['admin','psychologist','company'].includes(s.role)) return NextResponse.json({error:'Acceso no autorizado.'},{status:403});
   try{
     const id=new URL(req.url).searchParams.get('id');
     const {rows}=await query(`select a.id,a.cycle_name,a.company_id,a.created_at,su.full_name,su.rut,su.position,su.area,c.name company_name
       from rc360_assessments a join rc360_supervisors su on su.id=a.supervisor_id join rc360_companies c on c.id=a.company_id where a.id=$1`,[id]);
     const a=rows[0];
     if(!a)return NextResponse.json({error:'Evaluación no encontrada.'},{status:404});
+    if(s.role==='company'&&String(a.company_id)!==String(s.companyId)) return NextResponse.json({error:'No autorizado para esta evaluación.'},{status:403});
 
     await query(`create table if not exists rc360_self_open_answers(
       assessment_id uuid primary key references rc360_assessments(id) on delete cascade,
