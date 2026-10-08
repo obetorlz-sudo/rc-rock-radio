@@ -72,7 +72,12 @@ export async function POST(req){
         )`);
         for(const row of openAssessments.rows){
           const targetId=row.id;
-          const ins=await c.query(`insert into rc360_team_responses(assessment_id,worker_hash,disc,competencies,comment) values($1,$2,$3,$4,$5) returning id`,[targetId,wh,result.disc,result.competencies,(body.comment||'').slice(0,1500)||null]);
+          const ins=await c.query(`insert into rc360_team_responses(assessment_id,worker_hash,disc,competencies,comment)
+            values($1,$2,$3,$4,$5)
+            on conflict(assessment_id,worker_hash) do update
+            set disc=excluded.disc,competencies=excluded.competencies,comment=excluded.comment,created_at=now()
+            returning id`,[targetId,wh,result.disc,result.competencies,(body.comment||'').slice(0,1500)||null]);
+          await c.query('delete from rc360_team_answers where response_id=$1',[ins.rows[0].id]);
           for(let i=0;i<items.length;i++) await c.query('insert into rc360_team_answers(response_id,item_id,score) values($1,$2,$3)',[ins.rows[0].id,items[i].id,ordered[i]]);
           await c.query(`insert into rc360_participation_log(assessment_id,worker_rut,completed_at) values($1,$2,now())
             on conflict(assessment_id,worker_rut) do update set completed_at=excluded.completed_at`,[targetId,wr]);
