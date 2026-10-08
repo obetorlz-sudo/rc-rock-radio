@@ -89,9 +89,8 @@ export default function AdminPage(){
     manage('/api/manage/company',{action:'update',id:x.id,name,rut,email},'Empresa actualizada.');
   };
   const resetCompanyPassword=x=>{
-    const password=window.prompt('Nueva contraseña para '+x.name);
-    if(!password)return;
-    manage('/api/manage/company',{action:'reset_password',id:x.id,password},'Contraseña de empresa restablecida.');
+    if(!window.confirm('¿Restablecer la clave de '+x.name+' a Recame.2026?'))return;
+    manage('/api/manage/company',{action:'reset_password',id:x.id,password:'Recame.2026'},'Contraseña de empresa restablecida a Recame.2026.');
   };
   const editSupervisor=x=>{
     const fullName=window.prompt('Nombre completo',x.full_name); if(fullName===null)return;
@@ -147,9 +146,9 @@ export default function AdminPage(){
   if(!session)return <main className="shell">
     <a className="link" href="/">← Volver al inicio</a>
     <section className="panel login">
-      <div className="eyebrow">Acceso profesional</div>
+      <div className="eyebrow">Acceso a plataforma</div>
       <h1>RC Leadership 360</h1>
-      <p className="muted">Acceso para Administración y Psicología Laboral.</p>
+      <p className="muted">Acceso para Administración, Psicología Laboral y Empresas.</p>
       <form onSubmit={doLogin}>
         <label>Usuario<input value={login.rut} onChange={e=>setLogin({...login,rut:e.target.value})} required/></label>
         <label>Contraseña<input type="password" value={login.password} onChange={e=>setLogin({...login,password:e.target.value})} required/></label>
@@ -371,7 +370,7 @@ export default function AdminPage(){
             <td>{statusPill(x.active&&x.user_active,'Activa','Inactiva')}</td>
             <td><div className="registryActions">
               <button className="ghost smallBtn" onClick={()=>editCompany(x)}>Editar</button>
-              <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer clave</button>
+              <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer a Recame.2026</button>
               <button className="ghost smallBtn" onClick={()=>manage('/api/manage/company',{action:'toggle',id:x.id},x.active?'Empresa desactivada.':'Empresa activada.')}>{x.active?'Desactivar':'Activar'}</button>
               <button className="dangerBtn smallBtn" onClick={()=>deleteCompany(x)}>Eliminar</button>
             </div></td>
