@@ -148,7 +148,11 @@ export async function GET(req){
     )`);
     const self=(await query('select disc,competencies,primary_profile,secondary_profile,completed_at from rc360_self_results where assessment_id=$1',[id])).rows[0]||null;
     const openAnswers=(await query('select leadership,conflict_management,people_development,updated_at from rc360_self_open_answers where assessment_id=$1',[id])).rows[0]||null;
-    const teamRows=(await query('select disc,competencies from rc360_team_responses where assessment_id=$1',[id])).rows;
+    const teamRows=(await query(`select distinct on (tr.worker_hash) tr.disc,tr.competencies
+      from rc360_team_responses tr
+      join rc360_assessments ta on ta.id=tr.assessment_id
+      where ta.company_id=$1 and ta.status='open' and ta.team_survey_open=true
+      order by tr.worker_hash,tr.created_at desc`,[a.company_id])).rows;
     const count=teamRows.length;
     const team=count>=3?{respondent_count:count,disc:avgJson(teamRows,'disc'),competencies:avgJson(teamRows,'competencies')}:{respondent_count:count,disc:null,competencies:null};
     const note=(await query(`select n.note,n.context_position,n.interview_observations,n.strengths_observed,n.development_observed,n.environment_factors,n.professional_recommendations,n.created_at,u.full_name author
