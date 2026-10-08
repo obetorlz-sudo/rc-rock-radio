@@ -94,6 +94,28 @@ export default function AdminPage(){
     if(!window.confirm('¿Restablecer la clave de '+x.name+' a Recamespa.2026?'))return;
     manage('/api/manage/company',{action:'reset_password',id:x.id,password:'Recamespa.2026'},'Contraseña de empresa restablecida a Recamespa.2026.');
   };
+
+  const readLogo=file=>new Promise((resolve,reject)=>{
+    if(!file)return resolve('');
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type))return reject(new Error('Formato no permitido. Usa PNG, JPG o WEBP.'));
+    if(file.size>600*1024)return reject(new Error('El logo debe pesar máximo 600 KB.'));
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(new Error('No fue posible leer la imagen.'));
+    reader.readAsDataURL(file);
+  });
+
+  const changeCompanyLogo=async(x,file)=>{
+    try{
+      const logoData=await readLogo(file);
+      await manage('/api/manage/company-logo',{id:x.id,logoData},'Logo de empresa actualizado.');
+    }catch(e){setMsg(e.message)}
+  };
+
+  const removeCompanyLogo=x=>{
+    if(!window.confirm('¿Quitar el logo de '+x.name+'?'))return;
+    manage('/api/manage/company-logo',{id:x.id,logoData:''},'Logo eliminado.');
+  };
   const editSupervisor=x=>{
     const fullName=window.prompt('Nombre completo',x.full_name); if(fullName===null)return;
     const rut=window.prompt('RUT supervisor',x.rut); if(rut===null)return;
