@@ -14,7 +14,7 @@ export async function POST(req){
       const rut=normalizeRut(b.rut);
       if(!validRut(rut))return NextResponse.json({error:'RUT de empresa inválido.'},{status:400});
       if(!b.name)return NextResponse.json({error:'Nombre de empresa obligatorio.'},{status:400});
-      const initialPassword=String(b.password||'Recame.2026');
+      const initialPassword=String(b.password||'Recamespa.2026');
       const hash=await hashPassword(initialPassword);
       const out=await tx(async c=>{
         const co=await c.query('insert into rc360_companies(name,rut,email) values($1,$2,$3) returning id,name,rut',[String(b.name).trim(),rut,b.email||null]);
