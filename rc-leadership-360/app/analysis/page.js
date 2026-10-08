@@ -343,6 +343,7 @@ export default function AnalysisPage(){
   };
 
   return <main className="shell wide">
+    <div className="appBrandBar screenOnly"><img className="appWhiteLogo" src="/innova-rc-capacita.svg" alt="Innova RC Capacita"/></div>
     <div className="topline screenOnly">
       <a className="link" href="/admin">← Listado de supervisores</a>
       <button className="primary" onClick={()=>window.print()}>Generar informe PDF</button>
