@@ -15,11 +15,12 @@ export default function AdminPage(){
   const [data,setData]=useState(null);
   const [msg,setMsg]=useState('');
   const [login,setLogin]=useState({rut:'',password:''});
-  const [company,setCompany]=useState({name:'',rut:'',email:'',password:''});
+  const [company,setCompany]=useState({name:'',rut:'',email:'',password:'Recame.2026'});
   const [sup,setSup]=useState({companyId:'',fullName:'',rut:'',position:'',area:'',email:''});
   const [cycle,setCycle]=useState({supervisorId:'',cycleName:'Diagnóstico de liderazgo'});
   const [professional,setProfessional]=useState({fullName:'',username:'',password:''});
   const [questionMode,setQuestionMode]=useState('self');
+  const [activeTab,setActiveTab]=useState('seguimiento');
   const [newQuestion,setNewQuestion]=useState({text:'',disc:'D',competency:'Comunicación'});
 
   const applyDashboard=d=>{
@@ -160,6 +161,43 @@ export default function AdminPage(){
 
   if(!data)return <main className="shell"><section className="panel centered"><h2>Preparando panel…</h2><p className="muted">Estamos cargando la información.</p>{msg&&<div className="notice">{msg}</div>}<button className="primary" onClick={()=>load()}>Reintentar</button></section></main>;
 
+  if(session.role==='company'){
+    const assessments=data.assessments||[];
+    const companyName=assessments[0]?.company_name||session.full_name||'Empresa';
+    const statusOf=x=>{
+      if(x.final_report_status==='finalized')return ['Finalizado','good'];
+      if(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)return ['Análisis en curso','info'];
+      if(x.id)return ['Pendiente','warn'];
+      return ['No iniciado','muted'];
+    };
+    const completed=assessments.filter(x=>x.final_report_status==='finalized').length;
+    const inProgress=assessments.filter(x=>x.final_report_status!=='finalized'&&(x.has_psychologist_note||x.self_done||Number(x.team_count)>=3)).length;
+    return <main className="shell wide companyPortal">
+      <div className="topline">
+        <div><div className="eyebrow">Portal Empresa</div><h1>{companyName}</h1><p className="muted">Consulta de resultados e informes de liderazgo</p></div>
+        <button className="ghost" onClick={logout}>Cerrar sesión</button>
+      </div>
+      <div className="kpis">
+        <div><b>{assessments.length}</b><span>Evaluaciones</span></div>
+        <div><b>{inProgress}</b><span>Análisis en curso</span></div>
+        <div><b>{completed}</b><span>Informes finalizados</span></div>
+        <div><b>{assessments.reduce((n,x)=>n+Number(x.team_count||0),0)}</b><span>Respuestas de trabajadores</span></div>
+      </div>
+      <section className="panel">
+        <div className="sectionTitle"><div><div className="eyebrow">Resumen</div><h2>Estado de evaluaciones</h2></div><button className="ghost" onClick={load}>Actualizar</button></div>
+        <p className="muted">Acceso solo de consulta. La empresa puede revisar el dashboard, gráficos, análisis disponible e informe PDF, sin modificar información.</p>
+        <div className="companyAssessmentGrid">
+          {assessments.map(x=>{const [label,cl]=statusOf(x);return <article key={x.id} className="companyAssessmentCard">
+            <div className="companyAssessmentHead"><div><h3>{x.full_name}</h3><p>{x.position||'Supervisor'}{x.area?' · '+x.area:''}</p></div><span className={'pill '+cl}>{label}</span></div>
+            <div className="companyMiniStats"><div><b>{x.self_done?'Sí':'No'}</b><span>Autoevaluación</span></div><div><b>{x.team_count||0}</b><span>Equipo</span></div><div><b>{x.has_psychologist_note?'Sí':'No'}</b><span>Análisis previo</span></div></div>
+            <a className="primary companyViewBtn" href={'/analysis?id='+x.id}>Ver dashboard, análisis e informe PDF</a>
+          </article>})}
+          {!assessments.length&&<div className="notice">No hay evaluaciones disponibles para esta empresa.</div>}
+        </div>
+      </section>
+    </main>;
+  }
+
   const supervisors=data.supervisors||[];
   const assessments=data.assessments||[];
   const finalized=supervisors.filter(x=>x.final_report_status==='finalized').length;
@@ -183,12 +221,19 @@ export default function AdminPage(){
       <div><b>{finalized}</b><span>Informes finalizados</span></div>
     </div>
 
+    {session.role==='admin'&&<div className="adminTabs">
+      <button className={activeTab==='seguimiento'?'active':''} onClick={()=>setActiveTab('seguimiento')}>Seguimiento</button>
+      <button className={activeTab==='configuracion'?'active':''} onClick={()=>setActiveTab('configuracion')}>Configuración</button>
+      <button className={activeTab==='mantenimiento'?'active':''} onClick={()=>setActiveTab('mantenimiento')}>Mantenimiento</button>
+      <button className={activeTab==='instrumento'?'active':''} onClick={()=>setActiveTab('instrumento')}>Instrumento</button>
+    </div>}
+
     {msg&&<div className="notice">{msg}</div>}
     {session.role==='psychologist'&&<div className="privacy">
       Tienes acceso profesional al listado completo de supervisores, resultados DISC, percepción agregada del equipo, brechas e informes. En cada supervisor puedes ingresar tu percepción profesional y preparar el informe final.
     </div>}
 
-    {['admin','psychologist'].includes(session.role)&&<section className="panel questionBankPanel">
+    {((session.role==='psychologist')||(session.role==='admin'&&activeTab==='instrumento'))&&<section className="panel questionBankPanel">
       <div className="sectionTitle">
         <div><div className="eyebrow">Instrumento</div><h2>Banco de Preguntas</h2></div>
         <span className="pill good">{questionBank.filter(q=>q.active).length} activas</span>
@@ -230,7 +275,7 @@ export default function AdminPage(){
       </div>
     </section>}
 
-    <section className="panel">
+    {(session.role==='psychologist'||(session.role==='admin'&&activeTab==='seguimiento'))&&<section className="panel">
       <div className="sectionTitle">
         <div><div className="eyebrow">Seguimiento</div><h2>Estado de supervisores</h2></div>
         <button className="ghost" onClick={load}>Actualizar</button>
@@ -260,9 +305,9 @@ export default function AdminPage(){
           </tr>)}
         </tbody>
       </table></div>
-    </section>
+    </section>}
 
-    {session.role==='admin'&&<section className="panel">
+    {session.role==='admin'&&activeTab==='configuracion'&&<section className="panel">
       <div className="eyebrow">Configuración</div>
       <h2>Administrar empresas, usuarios y evaluaciones</h2>
       <div className="management">
@@ -272,6 +317,7 @@ export default function AdminPage(){
           <input placeholder="RUT empresa" value={company.rut} onChange={e=>setCompany({...company,rut:e.target.value})}/>
           <input placeholder="Correo" value={company.email} onChange={e=>setCompany({...company,email:e.target.value})}/>
           <input type="password" placeholder="Contraseña inicial" value={company.password} onChange={e=>setCompany({...company,password:e.target.value})}/>
+          <p className="muted">Clave inicial recomendada: <b>Recame.2026</b></p>
           <button className="primary" onClick={()=>send('/api/manage/company',company)}>Crear empresa</button>
         </article>
 
@@ -309,7 +355,7 @@ export default function AdminPage(){
       </div>
     </section>}
 
-    {session.role==='admin'&&<section className="panel adminRegistry">
+    {session.role==='admin'&&activeTab==='mantenimiento'&&<section className="panel adminRegistry">
       <div className="sectionTitle">
         <div><div className="eyebrow">Mantenimiento</div><h2>Registros del sistema</h2></div>
         <button className="ghost" onClick={()=>load()}>Actualizar registros</button>
@@ -372,7 +418,7 @@ export default function AdminPage(){
       </div>
     </section>}
 
-    {['admin','psychologist'].includes(session.role)&&<section className="panel">
+    {((session.role==='psychologist')||(session.role==='admin'&&activeTab==='seguimiento'))&&<section className="panel">
       <h2>Historial de evaluaciones</h2>
       <p className="muted">Consulta todos los ciclos y accede a la ficha completa de cada supervisor.</p>
       <div className="tablewrap"><table>
