@@ -429,18 +429,21 @@ export default function AdminPage(){
       <div className="registryBlock">
         <h3>Empresas</h3>
         <div className="tablewrap"><table>
-          <thead><tr><th>Empresa</th><th>RUT / Usuario</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Logo</th><th>Empresa</th><th>RUT / Usuario</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
           <tbody>{(data.management?.companies||[]).map(x=><tr key={x.id}>
+            <td><div className="registryCompanyLogo">{x.logo_url?<img src={x.logo_url} alt={'Logo '+x.name}/>:<span>Sin logo</span>}</div></td>
             <td><b>{x.name}</b></td><td>{x.rut}</td><td>{x.email||'—'}</td>
             <td>{statusPill(x.active&&x.user_active,'Activa','Inactiva')}</td>
             <td><div className="registryActions">
               <button className="ghost smallBtn" onClick={()=>editCompany(x)}>Editar</button>
+              <label className="ghost smallBtn fileAction">Subir / cambiar logo<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>changeCompanyLogo(x,e.target.files?.[0])}/></label>
+              {x.logo_url&&<button className="ghost smallBtn" onClick={()=>removeCompanyLogo(x)}>Quitar logo</button>}
               <button className="ghost smallBtn" onClick={()=>resetCompanyPassword(x)}>Restablecer a Recamespa.2026</button>
               <button className="ghost smallBtn" onClick={()=>manage('/api/manage/company',{action:'toggle',id:x.id},x.active?'Empresa desactivada.':'Empresa activada.')}>{x.active?'Desactivar':'Activar'}</button>
               <button className="dangerBtn smallBtn" onClick={()=>deleteCompany(x)}>Eliminar</button>
             </div></td>
           </tr>)}
-          {(data.management?.companies||[]).length===0&&<tr><td colSpan="5" className="muted">No hay empresas registradas.</td></tr>}
+          {(data.management?.companies||[]).length===0&&<tr><td colSpan="6" className="muted">No hay empresas registradas.</td></tr>}
           </tbody>
         </table></div>
       </div>
