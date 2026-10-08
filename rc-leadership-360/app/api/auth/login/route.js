@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '../../../../lib/db';
 import { normalizeRut } from '../../../../lib/rut';
-import { verifyPassword, createSession } from '../../../../lib/security';
+import { verifyPassword, hashPassword, createSession } from '../../../../lib/security';
 
 export async function POST(req){
   try{
@@ -25,7 +25,24 @@ export async function POST(req){
     );
     const u=rows[0];
 
-    if(!u||!(await verifyPassword(String(password||''),u.password_hash))){
+    if(!u){
+      return NextResponse.json({error:'Credenciales incorrectas.'},{status:401});
+    }
+
+    const supplied=String(password||'');
+    let valid=await verifyPassword(supplied,u.password_hash);
+
+    // Migra de forma transparente las cuentas empresa que todavía usan la clave estándar anterior.
+    if(!valid&&u.role==='company'&&supplied==='Recamespa.2026'){
+      const stillOld=await verifyPassword('Recame.2026',u.password_hash);
+      if(stillOld){
+        const newHash=await hashPassword('Recamespa.2026');
+        await query('update rc360_users set password_hash=$2 where id=$1',[u.id,newHash]);
+        valid=true;
+      }
+    }
+
+    if(!valid){
       return NextResponse.json({error:'Credenciales incorrectas.'},{status:401});
     }
 
