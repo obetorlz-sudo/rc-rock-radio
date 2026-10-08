@@ -45,6 +45,23 @@ export async function POST(req){
     if(!a.team_survey_open) return NextResponse.json({error:'Encuesta 360° cerrada.'},{status:409});
     const wr=normalizeRut(body.workerRut); if(!validRut(wr)) return NextResponse.json({error:'RUT del trabajador inválido.'},{status:400});
     const wh=hashRut(wr);
+    const companyId=body.companyId;
+    if(!companyId) return NextResponse.json({error:'Empresa no identificada.'},{status:400});
+
+    const openAssessments=await query(`select a.id
+      from rc360_assessments a
+      join rc360_supervisors s on s.id=a.supervisor_id
+      where a.company_id=$1 and a.status='open' and a.team_survey_open=true and s.active=true
+      order by a.created_at desc`,[companyId]);
+    if(!openAssessments.rows.length) return NextResponse.json({error:'No hay evaluaciones abiertas para esta empresa.'},{status:404});
+
+    const duplicate=await query(`select 1
+      from rc360_team_responses tr
+      join rc360_assessments a on a.id=tr.assessment_id
+      where a.company_id=$1 and tr.worker_hash=$2
+      limit 1`,[companyId,wh]);
+    if(duplicate.rows.length) return NextResponse.json({error:'Ya existe una respuesta registrada para este trabajador en esta encuesta general.'},{status:409});
+
     try{
       await tx(async c=>{
         await c.query(`create table if not exists rc360_participation_log(
@@ -53,13 +70,16 @@ export async function POST(req){
           completed_at timestamptz not null default now(),
           primary key(assessment_id,worker_rut)
         )`);
-        const ins=await c.query(`insert into rc360_team_responses(assessment_id,worker_hash,disc,competencies,comment) values($1,$2,$3,$4,$5) returning id`,[aid,wh,result.disc,result.competencies,(body.comment||'').slice(0,1500)||null]);
-        for(let i=0;i<items.length;i++) await c.query('insert into rc360_team_answers(response_id,item_id,score) values($1,$2,$3)',[ins.rows[0].id,items[i].id,ordered[i]]);
-        await c.query(`insert into rc360_participation_log(assessment_id,worker_rut,completed_at) values($1,$2,now())
-          on conflict(assessment_id,worker_rut) do update set completed_at=excluded.completed_at`,[aid,wr]);
+        for(const row of openAssessments.rows){
+          const targetId=row.id;
+          const ins=await c.query(`insert into rc360_team_responses(assessment_id,worker_hash,disc,competencies,comment) values($1,$2,$3,$4,$5) returning id`,[targetId,wh,result.disc,result.competencies,(body.comment||'').slice(0,1500)||null]);
+          for(let i=0;i<items.length;i++) await c.query('insert into rc360_team_answers(response_id,item_id,score) values($1,$2,$3)',[ins.rows[0].id,items[i].id,ordered[i]]);
+          await c.query(`insert into rc360_participation_log(assessment_id,worker_rut,completed_at) values($1,$2,now())
+            on conflict(assessment_id,worker_rut) do update set completed_at=excluded.completed_at`,[targetId,wr]);
+        }
         await c.query(`delete from rc360_public_drafts where assessment_id=$1 and mode='team' and respondent_key=$2`,[aid,wh]).catch(()=>{});
       });
-    }catch(e){ if(e.code==='23505') return NextResponse.json({error:'Ya existe una respuesta registrada para este trabajador en este ciclo.'},{status:409}); throw e; }
-    return NextResponse.json({ok:true});
+    }catch(e){ if(e.code==='23505') return NextResponse.json({error:'Ya existe una respuesta registrada para este trabajador en esta encuesta general.'},{status:409}); throw e; }
+    return NextResponse.json({ok:true,applied_to:openAssessments.rows.length});
   }catch(e){console.error(e);return NextResponse.json({error:e.message||'No fue posible guardar la evaluación.'},{status:500});}
 }
