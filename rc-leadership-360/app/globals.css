@@ -556,3 +556,39 @@
 .openBankCard .questionNumber{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(72,157,215,.16);color:#5eb5ec;font-weight:800}
 .openBankCard b{display:block;margin-bottom:6px}
 .openBankCard p{margin:0 0 10px;line-height:1.45}
+
+
+/* Global white brand logo */
+.appBrandBar{display:flex;align-items:center;min-height:58px;margin:0 0 14px;padding:8px 12px;border-radius:14px;background:linear-gradient(135deg,rgba(7,36,63,.96),rgba(12,70,111,.92));border:1px solid rgba(120,170,210,.2)}
+.appWhiteLogo{display:block;width:220px;max-width:52vw;height:auto;object-fit:contain}
+.publicAccessBrand{position:absolute;top:22px;left:28px;z-index:4}
+.publicAccessBrand .appWhiteLogo{width:210px}
+.surveyWhiteLogo{width:160px;height:auto;object-fit:contain;display:block;margin-right:auto}
+.surveyTop{gap:14px;align-items:center}
+.brandLogo img{filter:none!important}
+
+@media(max-width:820px){
+  .appWhiteLogo{width:180px;max-width:65vw}
+  .publicAccessBrand{top:18px;left:18px}
+  .publicAccessBrand .appWhiteLogo{width:170px}
+  .surveyWhiteLogo{width:130px}
+}
+
+@media print{
+  .refReport .pdfRefBrand{
+    background:#0a3459!important;
+    border-radius:2mm!important;
+    padding:1.5mm 2mm!important;
+    box-sizing:border-box!important;
+  }
+  .refReport .pdfRefBrand img{
+    filter:none!important;
+    transform:none!important;
+    width:54mm!important;
+    height:15mm!important;
+    object-fit:contain!important;
+  }
+  .refReport .heroWhiteLogo{
+    filter:none!important;
+  }
+}
