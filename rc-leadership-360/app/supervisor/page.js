@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {LABELS,OPEN_SELF} from '../../lib/instrument';
 
 const api=async(url,opts={})=>{
@@ -12,8 +12,52 @@ const api=async(url,opts={})=>{
 function Questionnaire({ctx,onDone}){
   const questions=ctx.questions||[];
   const openQuestions=OPEN_SELF;
-  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[openStage,setOpenStage]=useState(false),[openAnswers,setOpenAnswers]=useState({leadership:'',conflict_management:'',people_development:''}),[msg,setMsg]=useState('');
+  const [i,setI]=useState(0),[ans,setAns]=useState(Array(questions.length).fill(null)),[openStage,setOpenStage]=useState(false),[openAnswers,setOpenAnswers]=useState({leadership:'',conflict_management:'',people_development:''}),[msg,setMsg]=useState(''),[draftReady,setDraftReady]=useState(false),[draftMsg,setDraftMsg]=useState('');
   const q=questions[i];
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try{
+        const d=await api('/api/public/draft',{method:'POST',body:JSON.stringify({action:'load',mode:'self',assessmentId:ctx.assessment_id,rut:ctx.rut})});
+        if(!active)return;
+        if(d.draft){
+          const saved=Array.isArray(d.draft.answers)?d.draft.answers:[];
+          if(saved.length===questions.length)setAns(saved);
+          setI(Math.min(Number(d.draft.current_index)||0,Math.max(0,questions.length-1)));
+          if(d.draft.extra?.openResponses)setOpenAnswers({...openAnswers,...d.draft.extra.openResponses});
+          if(d.draft.extra?.openStage)setOpenStage(true);
+          setDraftMsg('Borrador recuperado automáticamente.');
+        }
+      }catch{}
+      if(active)setDraftReady(true);
+    })();
+    return()=>{active=false};
+  },[ctx.assessment_id,ctx.rut,questions.length]);
+
+  useEffect(()=>{
+    if(!draftReady)return;
+    const answered=ans.filter(Boolean).length;
+    if(answered===0||answered%5!==0)return;
+    const t=setTimeout(async()=>{
+      try{
+        await api('/api/public/draft',{method:'POST',body:JSON.stringify({mode:'self',assessmentId:ctx.assessment_id,rut:ctx.rut,answers:ans,currentIndex:i,extra:{openResponses:openAnswers,openStage}})});
+        setDraftMsg('Borrador guardado · '+answered+' respuestas');
+      }catch{}
+    },250);
+    return()=>clearTimeout(t);
+  },[ans,draftReady,i,ctx.assessment_id,ctx.rut]);
+
+  useEffect(()=>{
+    if(!draftReady||!openStage)return;
+    const t=setTimeout(async()=>{
+      try{
+        await api('/api/public/draft',{method:'POST',body:JSON.stringify({mode:'self',assessmentId:ctx.assessment_id,rut:ctx.rut,answers:ans,currentIndex:i,extra:{openResponses:openAnswers,openStage:true}})});
+        setDraftMsg('Borrador de preguntas abiertas guardado.');
+      }catch{}
+    },700);
+    return()=>clearTimeout(t);
+  },[openAnswers,openStage,draftReady]);
 
   const choose=v=>{const a=[...ans];a[i]=v;setAns(a);setMsg('')};
   const finish=async()=>{
@@ -44,6 +88,7 @@ function Questionnaire({ctx,onDone}){
           <textarea value={openAnswers[item.key]} onChange={e=>{setOpenAnswers({...openAnswers,[item.key]:e.target.value});setMsg('')}} placeholder="Escriba una respuesta concreta, describiendo la situación y las acciones realizadas." rows={6}/>
         </label>)}
       </div>
+      {draftMsg&&<div className="draftStatus">✓ {draftMsg}</div>}
       {msg&&<div className="notice">{msg}</div>}
       <div className="actions surveyActions">
         <button className="ghost" onClick={()=>{setOpenStage(false);setI(questions.length-1);setMsg('')}}>← Volver a la pregunta 48</button>
@@ -70,6 +115,7 @@ function Questionnaire({ctx,onDone}){
           <b>{v}</b><span>{LABELS[v-1]}</span>
         </button>)}
       </div>
+      {draftMsg&&<div className="draftStatus">✓ {draftMsg}</div>}
       {msg&&<div className="notice">{msg}</div>}
       <div className="actions surveyActions">
         <button className="ghost" disabled={i===0} onClick={()=>setI(i-1)}>Anterior</button>
