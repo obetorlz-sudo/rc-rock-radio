@@ -137,7 +137,16 @@ export async function GET(req){
     const a=rows[0];
     if(!a)return NextResponse.json({error:'Evaluación no encontrada.'},{status:404});
 
+    await query(`create table if not exists rc360_self_open_answers(
+      assessment_id uuid primary key references rc360_assessments(id) on delete cascade,
+      leadership text not null,
+      conflict_management text not null,
+      people_development text not null,
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    )`);
     const self=(await query('select disc,competencies,primary_profile,secondary_profile,completed_at from rc360_self_results where assessment_id=$1',[id])).rows[0]||null;
+    const openAnswers=(await query('select leadership,conflict_management,people_development,updated_at from rc360_self_open_answers where assessment_id=$1',[id])).rows[0]||null;
     const teamRows=(await query('select disc,competencies from rc360_team_responses where assessment_id=$1',[id])).rows;
     const count=teamRows.length;
     const team=count>=3?{respondent_count:count,disc:avgJson(teamRows,'disc'),competencies:avgJson(teamRows,'competencies')}:{respondent_count:count,disc:null,competencies:null};
@@ -155,6 +164,7 @@ export async function GET(req){
       supervisor:{name:a.full_name,rut:a.rut,position:a.position,area:a.area},
       assessment:{id:a.id,cycle:a.cycle_name,created_at:a.created_at},
       self:selfOut,
+      supervisor_open_answers:openAnswers,
       self_analysis:selfBrief(selfOut),
       chart_summary:chartSummary(selfOut,team),
       gap_rows:gapRows(selfOut,team),
