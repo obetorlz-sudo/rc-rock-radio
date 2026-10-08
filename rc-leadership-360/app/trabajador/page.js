@@ -49,12 +49,20 @@ function Questionnaire({ctx,onDone}){
 }
 
 export default function TrabajadorPage(){
-  const [rut,setRut]=useState(''),[ctx,setCtx]=useState(null),[done,setDone]=useState(false),[msg,setMsg]=useState('');
-  const start=async()=>{
+  const [rut,setRut]=useState(''),[ctx,setCtx]=useState(null),[options,setOptions]=useState([]),[done,setDone]=useState(false),[msg,setMsg]=useState('');
+  const discover=async()=>{
     setMsg('');
     try{
-      const d=await api('/api/public/start',{method:'POST',body:JSON.stringify({mode:'team',rut})});
-      setCtx({...d,rut});
+      const d=await api('/api/public/start',{method:'POST',body:JSON.stringify({mode:'team',workerRut:rut})});
+      if(d.assessment_id){setCtx({...d,workerRut:rut});setOptions([]);return;}
+      setOptions(d.assessments||[]);
+    }catch(e){setMsg(e.message)}
+  };
+  const chooseAssessment=async(assessmentId)=>{
+    setMsg('');
+    try{
+      const d=await api('/api/public/start',{method:'POST',body:JSON.stringify({mode:'team',workerRut:rut,assessmentId})});
+      setCtx({...d,workerRut:rut});
     }catch(e){setMsg(e.message)}
   };
   if(done)return <main className="shell"><section className="panel centered"><div className="success">✓</div><h1>Respuesta registrada</h1><p>Gracias por participar. Tu respuesta se incorpora de manera confidencial al análisis agregado del equipo.</p><a className="primary actionLink" href="/">Volver al inicio</a></section></main>;
@@ -65,10 +73,19 @@ export default function TrabajadorPage(){
     <section className="publicAccessCard">
       <div className="eyebrow">Acceso Trabajador</div>
       <h1>Encuesta de equipo</h1>
-      <p>Ingresa el RUT o código de acceso del supervisor informado por tu empresa.</p>
-      <input value={rut} onChange={e=>setRut(e.target.value)} placeholder="RUT o código de acceso" onKeyDown={e=>e.key==='Enter'&&start()}/>
+      <p>Ingresa tu RUT. No necesitas estar registrado previamente para participar.</p>
+      <input value={rut} onChange={e=>setRut(e.target.value)} placeholder="Tu RUT" onKeyDown={e=>e.key==='Enter'&&discover()}/>
       {msg&&<div className="notice">{msg}</div>}
-      <button className="primary" onClick={start}>Comenzar encuesta</button>
+      {!options.length?<button className="primary" onClick={discover}>Continuar</button>:<>
+        <div className="workerSurveyPicker">
+          <h3>Selecciona la evaluación que debes responder</h3>
+          <p className="muted">Elige al supervisor o jefatura correspondiente.</p>
+          {options.map(x=><button key={x.assessment_id} className="surveyPick" onClick={()=>chooseAssessment(x.assessment_id)}>
+            <b>{x.supervisor_name}</b><span>{x.company_name} · {x.cycle_name}</span>
+          </button>)}
+        </div>
+        <button className="ghost" onClick={()=>setOptions([])}>Cambiar RUT</button>
+      </>}
     </section>
   </main>;
 }
