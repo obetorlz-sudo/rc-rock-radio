@@ -157,3 +157,19 @@ create table if not exists rc360_self_open_answers(
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+
+create table if not exists rc360_workers(
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references rc360_companies(id) on delete cascade,
+  rut text not null,
+  full_name text,
+  area text,
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique(company_id,rut)
+);
+create index if not exists rc360_workers_company_idx on rc360_workers(company_id,active);
+
+alter table rc360_team_responses add column if not exists worker_rut text;
+create index if not exists rc360_team_worker_rut_idx on rc360_team_responses(assessment_id,worker_rut);
