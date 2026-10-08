@@ -516,3 +516,34 @@
     color:#405c76!important;
   }
 }
+
+
+/* Admin tabs + company read-only portal */
+.adminTabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 20px;padding:8px;border:1px solid rgba(120,150,185,.22);border-radius:14px;background:rgba(255,255,255,.04);position:sticky;top:8px;z-index:30;backdrop-filter:blur(16px)}
+.adminTabs button{border:0;border-radius:10px;padding:10px 16px;background:transparent;color:inherit;font-weight:800;cursor:pointer}
+.adminTabs button:hover{background:rgba(73,168,232,.1)}
+.adminTabs button.active{background:linear-gradient(135deg,#0f72b6,#184f87);color:#fff;box-shadow:0 8px 22px rgba(10,77,130,.22)}
+
+.companyPortal .topline{margin-bottom:18px}
+.companyAssessmentGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+.companyAssessmentCard{border:1px solid rgba(120,150,185,.24);border-radius:16px;padding:18px;background:rgba(255,255,255,.04);display:grid;gap:16px}
+.companyAssessmentHead{display:flex;gap:16px;align-items:flex-start;justify-content:space-between}
+.companyAssessmentHead h3{margin:0 0 5px;font-size:1.05rem}
+.companyAssessmentHead p{margin:0;color:var(--muted,#7c8ea3);font-size:.86rem}
+.companyMiniStats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.companyMiniStats>div{border:1px solid rgba(120,150,185,.18);border-radius:12px;padding:10px;background:rgba(255,255,255,.03);display:grid;gap:3px}
+.companyMiniStats b{font-size:1.05rem}
+.companyMiniStats span{font-size:.72rem;opacity:.75}
+.companyViewBtn{text-align:center;text-decoration:none}
+.pill.info{background:rgba(43,142,205,.16);color:#56b6f1;border-color:rgba(86,182,241,.28)}
+.pill.muted{background:rgba(120,130,145,.12);color:#8fa0b2;border-color:rgba(143,160,178,.25)}
+
+.entryButton.company{border-color:rgba(64,155,210,.28)}
+.entryButton.company:hover{border-color:#4ca9df}
+
+@media(max-width:820px){
+  .adminTabs{position:static}
+  .adminTabs button{flex:1 1 45%}
+  .companyAssessmentGrid{grid-template-columns:1fr}
+  .companyMiniStats{grid-template-columns:1fr}
+}
