@@ -47,8 +47,16 @@ export async function POST(req){
     const wh=hashRut(wr);
     try{
       await tx(async c=>{
+        await c.query(`create table if not exists rc360_participation_log(
+          assessment_id uuid not null references rc360_assessments(id) on delete cascade,
+          worker_rut text not null,
+          completed_at timestamptz not null default now(),
+          primary key(assessment_id,worker_rut)
+        )`);
         const ins=await c.query(`insert into rc360_team_responses(assessment_id,worker_hash,disc,competencies,comment) values($1,$2,$3,$4,$5) returning id`,[aid,wh,result.disc,result.competencies,(body.comment||'').slice(0,1500)||null]);
         for(let i=0;i<items.length;i++) await c.query('insert into rc360_team_answers(response_id,item_id,score) values($1,$2,$3)',[ins.rows[0].id,items[i].id,ordered[i]]);
+        await c.query(`insert into rc360_participation_log(assessment_id,worker_rut,completed_at) values($1,$2,now())
+          on conflict(assessment_id,worker_rut) do update set completed_at=excluded.completed_at`,[aid,wr]);
         await c.query(`delete from rc360_public_drafts where assessment_id=$1 and mode='team' and respondent_key=$2`,[aid,wh]).catch(()=>{});
       });
     }catch(e){ if(e.code==='23505') return NextResponse.json({error:'Ya existe una respuesta registrada para este trabajador en este ciclo.'},{status:409}); throw e; }
