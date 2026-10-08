@@ -373,8 +373,12 @@ export default function AdminPage(){
           <input placeholder="RUT empresa" value={company.rut} onChange={e=>setCompany({...company,rut:e.target.value})}/>
           <input placeholder="Correo" value={company.email} onChange={e=>setCompany({...company,email:e.target.value})}/>
           <input type="password" placeholder="Contraseña inicial" value={company.password} onChange={e=>setCompany({...company,password:e.target.value})}/>
-          <p className="muted">Clave inicial recomendada: <b>Recamespa.2026</b></p>
-          <button className="primary" onClick={()=>send('/api/manage/company',company)}>Crear empresa</button>
+          <label className="logoUploadField">Logo empresa
+            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={async e=>{try{setCompanyLogo(await readLogo(e.target.files?.[0]))}catch(err){setMsg(err.message);e.target.value=''}}}/>
+          </label>
+          {companyLogo&&<div className="companyLogoPreview"><img src={companyLogo} alt="Vista previa logo empresa"/><button className="ghost smallBtn" onClick={()=>setCompanyLogo('')}>Quitar</button></div>}
+          <p className="muted">PNG, JPG o WEBP · máximo 600 KB. Clave inicial recomendada: <b>Recamespa.2026</b></p>
+          <button className="primary" onClick={createCompany}>Crear empresa</button>
         </article>
 
         <article>
