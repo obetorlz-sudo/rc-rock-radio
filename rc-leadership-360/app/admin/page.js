@@ -245,6 +245,7 @@ export default function AdminPage(){
 
   const supervisors=data.supervisors||[];
   const assessments=data.assessments||[];
+  const currentAssessments=Array.from(new Map(assessments.map(x=>[x.supervisor_id,x])).values());
   const finalized=supervisors.filter(x=>x.final_report_status==='finalized').length;
   const questionBank=(data.questions||[]).filter(q=>q.mode===questionMode);
   const competencies=['Comunicación','Liderazgo','Toma de decisiones','Trabajo bajo presión','Trabajo en equipo','Adaptabilidad','Manejo de conflictos','Delegación','Orientación a resultados','Desarrollo de personas'];
@@ -486,11 +487,11 @@ export default function AdminPage(){
     </section>}
 
     {((session.role==='psychologist')||(session.role==='admin'&&activeTab==='seguimiento'))&&<section className="panel">
-      <h2>Historial de evaluaciones</h2>
-      <p className="muted">Consulta todos los ciclos y accede a la ficha completa de cada supervisor.</p>
+      <h2>Evaluaciones vigentes</h2>
+      <p className="muted">Se muestra una sola evaluación vigente por supervisor para evitar duplicados en el seguimiento.</p>
       <div className="tablewrap"><table>
         <thead><tr><th>Empresa</th><th>Supervisor</th><th>Ciclo</th><th>DISC</th><th>Equipo</th><th>Entrevista</th><th>Informe</th><th>Acción</th></tr></thead>
-        <tbody>{assessments.map(x=><tr key={x.id}>
+        <tbody>{currentAssessments.map(x=><tr key={x.id}>
           <td>{x.company_name}</td><td>{x.full_name}</td><td>{x.cycle_name}</td>
           <td>{x.self_done?'Completado':'Pendiente'}</td><td>{x.team_count}</td>
           <td>{x.has_psychologist_note?'Ingresada':'Pendiente'}</td>
