@@ -248,6 +248,22 @@ export default function AdminPage(){
   const currentAssessments=Array.from(new Map(assessments.map(x=>[x.supervisor_id,x])).values());
   const finalized=supervisors.filter(x=>x.final_report_status==='finalized').length;
   const questionBank=(data.questions||[]).filter(q=>q.mode===questionMode);
+  const participationUnique=Array.from((data.management?.participation||[]).reduce((map,row)=>{
+    const key=String(row.worker_rut||'').replace(/[^0-9kK]/g,'').toUpperCase();
+    if(!key) return map;
+    const prev=map.get(key);
+    if(!prev||new Date(row.completed_at)>new Date(prev.completed_at)) map.set(key,row);
+    return map;
+  },new Map()).values()).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));
+  const formatWorkerRut=value=>{
+    const raw=String(value||'').replace(/[^0-9kK]/g,'').toUpperCase();
+    if(raw.length<2) return raw;
+    const body=raw.slice(0,-1),dv=raw.slice(-1);
+    const formatted=body.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+    return formatted+'-'+dv;
+  };
+  const formatParticipationDate=value=>value?new Date(value).toLocaleDateString('es-CL',{timeZone:'America/Santiago'}):'—';
+  const formatParticipationTime=value=>value?new Date(value).toLocaleTimeString('es-CL',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit'}):'—';
   const competencies=['Comunicación','Liderazgo','Toma de decisiones','Trabajo bajo presión','Trabajo en equipo','Adaptabilidad','Manejo de conflictos','Delegación','Orientación a resultados','Desarrollo de personas'];
 
   return <main className="shell wide">
@@ -363,6 +379,30 @@ export default function AdminPage(){
                 </div>
                 :<a className="link" href={'/analysis?id='+x.assessment_id}>Ver ficha completa</a>
               :<span className="muted">Sin ciclo abierto</span>}</td>
+          </tr>)}
+        </tbody>
+      </table></div>
+    </section>}
+
+    {session.role==='admin'&&activeTab==='seguimiento'&&<section className="panel">
+      <div className="sectionTitle">
+        <div>
+          <div className="eyebrow">Participación trabajadores</div>
+          <h2>RUT de trabajadores que respondieron</h2>
+          <p className="muted">Listado único de participantes. Cada RUT se muestra una sola vez con su respuesta más reciente.</p>
+        </div>
+        <span className="pill good">{participationUnique.length} trabajador{participationUnique.length===1?'':'es'}</span>
+      </div>
+      <div className="tablewrap"><table>
+        <thead><tr><th>N°</th><th>RUT</th><th>Empresa</th><th>Fecha de respuesta</th><th>Hora</th></tr></thead>
+        <tbody>
+          {participationUnique.length===0&&<tr><td colSpan="5" className="muted">Aún no hay respuestas de trabajadores registradas.</td></tr>}
+          {participationUnique.map((x,idx)=><tr key={String(x.worker_rut)+'-'+idx}>
+            <td>{idx+1}</td>
+            <td><b>{formatWorkerRut(x.worker_rut)}</b></td>
+            <td>{x.company_name||'—'}</td>
+            <td>{formatParticipationDate(x.completed_at)}</td>
+            <td>{formatParticipationTime(x.completed_at)}</td>
           </tr>)}
         </tbody>
       </table></div>
