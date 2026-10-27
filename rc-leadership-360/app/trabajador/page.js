@@ -106,7 +106,7 @@ export default function TrabajadorPage(){
     <section className="publicAccessCard">
       <div className="eyebrow">Acceso Trabajador</div>
       <h1>Encuesta de equipo</h1>
-      <p>Ingresa tu RUT para responder una encuesta general sobre la experiencia de trabajo. No se te mostrará ni pedirá seleccionar supervisores.</p>
+      <p>Ingresa tu RUT para responder la encuesta. La encuesta es confidencial.</p>
       <input value={rut} onChange={e=>setRut(e.target.value)} placeholder="Tu RUT" onKeyDown={e=>e.key==='Enter'&&discover()}/>
       {msg&&<div className="notice">{msg}</div>}
       {!companies.length?<button className="primary" onClick={discover}>Continuar</button>:<>
