@@ -254,7 +254,7 @@ export default function AdminPage(){
     const prev=map.get(key);
     if(!prev||new Date(row.completed_at)>new Date(prev.completed_at)) map.set(key,row);
     return map;
-  },new Map()).values()).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));
+  },new Map()).values()).sort((a,b)=>(Date.parse(b.completed_at)||0)-(Date.parse(a.completed_at)||0));
   const formatWorkerRut=value=>{
     const raw=String(value||'').replace(/[^0-9kK]/g,'').toUpperCase();
     if(raw.length<2) return raw;
@@ -389,7 +389,7 @@ export default function AdminPage(){
         <div>
           <div className="eyebrow">Participación trabajadores</div>
           <h2>RUT de trabajadores que respondieron</h2>
-          <p className="muted">Listado único de participantes. Cada RUT se muestra una sola vez con su respuesta más reciente.</p>
+          <p className="muted">Listado único de participantes, ordenado por fecha y hora de respuesta desde la más reciente a la más antigua. Cada RUT se muestra una sola vez.</p>
         </div>
         <span className="pill good">{participationUnique.length} trabajador{participationUnique.length===1?'':'es'}</span>
       </div>
