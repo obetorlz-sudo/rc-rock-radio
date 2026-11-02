@@ -108,8 +108,8 @@ function reportSuggestion(self,team,note){
   const focus2=development[1]?.split(':')[0]||'Delegación';
   const action_plan=[
     {focus:focus1,objective:'Mejorar una conducta observable asociada al foco prioritario.',action:'Acordar la conducta esperada y aplicarla de forma planificada en situaciones reales de trabajo.',responsible:'Supervisor',deadline:'30 días',indicator:'Conducta definida, aplicada y revisada en una instancia de feedback.'},
-    {focus:focus2,objective:'Fortalecer la consistencia entre la intención del supervisor y la experiencia del equipo.',action:'Solicitar retroalimentación estructurada y ajustar la forma de coordinación o comunicación.',responsible:'Supervisor / Psicóloga',deadline:'60 días',indicator:'Registro de feedback y evidencia de ajustes implementados.'},
-    {focus:'Seguimiento',objective:'Consolidar avances y definir continuidad del desarrollo.',action:'Revisar resultados, evidencias y percepción del equipo para acordar nuevos compromisos.',responsible:'Supervisor / Psicóloga',deadline:'90 días',indicator:'Revisión de cierre realizada y continuidad definida.'}
+    {focus:focus2,objective:'Fortalecer la consistencia entre la intención del supervisor y la experiencia del equipo.',action:'Solicitar retroalimentación estructurada y ajustar la forma de coordinación o comunicación.',responsible:'Supervisor / Jefatura',deadline:'60 días',indicator:'Registro de feedback y evidencia de ajustes implementados.'},
+    {focus:'Seguimiento',objective:'Consolidar avances y definir continuidad del desarrollo.',action:'Revisar resultados, evidencias y percepción del equipo para acordar nuevos compromisos.',responsible:'Supervisor / Jefatura',deadline:'90 días',indicator:'Revisión de cierre realizada y continuidad definida.'}
   ];
   const indicators=[
     {indicator:'Acciones de mejora ejecutadas',target:'≥ 80% de las acciones comprometidas',frequency:'Mensual'},
