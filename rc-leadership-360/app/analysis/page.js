@@ -1,5 +1,5 @@
 'use client';
-import { useEffect,useMemo,useState } from 'react';
+import { useEffect,useMemo,useRef,useState } from 'react';
 import { DISC,COMP } from '../../lib/instrument';
 import { gapLabel } from '../../lib/scoring';
 
@@ -33,6 +33,103 @@ const api=async(url,opts={})=>{
 };
 const arrText=a=>(a||[]).join('\n');
 const textArr=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean);
+
+const renderInline=text=>{
+  const parts=String(text||'').split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  return parts.map((part,i)=>part.startsWith('**')&&part.endsWith('**')
+    ?<strong key={i}>{part.slice(2,-2)}</strong>
+    :<span key={i}>{part}</span>);
+};
+
+function FormattedText({text,className=''}) {
+  const lines=String(text||'').replace(/\r/g,'').split('\n');
+  const blocks=[];
+  let i=0;
+  while(i<lines.length){
+    const line=lines[i];
+    if(!line.trim()){i++;continue;}
+    const bullet=line.match(/^\s*[•*-]\s+(.+)$/);
+    const number=line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if(bullet){
+      const items=[];
+      while(i<lines.length){
+        const m=lines[i].match(/^\s*[•*-]\s+(.+)$/);
+        if(!m)break;
+        items.push(m[1]);i++;
+      }
+      blocks.push(<ul key={'ul-'+i}>{items.map((x,j)=><li key={j}>{renderInline(x)}</li>)}</ul>);
+      continue;
+    }
+    if(number){
+      const items=[];
+      while(i<lines.length){
+        const m=lines[i].match(/^\s*\d+[.)]\s+(.+)$/);
+        if(!m)break;
+        items.push(m[1]);i++;
+      }
+      blocks.push(<ol key={'ol-'+i}>{items.map((x,j)=><li key={j}>{renderInline(x)}</li>)}</ol>);
+      continue;
+    }
+    const paragraph=[];
+    while(i<lines.length&&lines[i].trim()&&!/^\s*[•*-]\s+/.test(lines[i])&&!/^\s*\d+[.)]\s+/.test(lines[i])){
+      paragraph.push(lines[i].trim());i++;
+    }
+    blocks.push(<p key={'p-'+i}>{paragraph.map((x,j)=><span key={j}>{j>0&&<br/>}{renderInline(x)}</span>)}</p>);
+  }
+  return <div className={'formattedText '+className}>{blocks.length?blocks:<p>—</p>}</div>;
+}
+
+function RichTextEditor({value,onChange,placeholder='',compact=false}){
+  const ref=useRef(null);
+  const apply=(type)=>{
+    const el=ref.current;
+    if(!el)return;
+    const start=el.selectionStart??0,end=el.selectionEnd??start;
+    const current=String(value||'');
+    const selected=current.slice(start,end);
+    let replacement='',caretStart=start,caretEnd=start;
+    if(type==='paragraph'){
+      replacement='\n\n';
+      caretStart=caretEnd=start+2;
+    }else if(type==='bold'){
+      if(selected){
+        replacement='**'+selected+'**';
+        caretStart=start+2;caretEnd=start+2+selected.length;
+      }else{
+        replacement='****';
+        caretStart=caretEnd=start+2;
+      }
+    }else if(type==='bullet'){
+      if(selected){
+        replacement=selected.split('\n').map(x=>x.trim()?('• '+x.replace(/^\s*[•*-]\s+/,'').replace(/^\s*\d+[.)]\s+/,'')):x).join('\n');
+        caretStart=start;caretEnd=start+replacement.length;
+      }else{
+        replacement='• ';
+        caretStart=caretEnd=start+2;
+      }
+    }else if(type==='number'){
+      if(selected){
+        replacement=selected.split('\n').map((x,i)=>x.trim()?((i+1)+'. '+x.replace(/^\s*[•*-]\s+/,'').replace(/^\s*\d+[.)]\s+/,'')):x).join('\n');
+        caretStart=start;caretEnd=start+replacement.length;
+      }else{
+        replacement='1. ';
+        caretStart=caretEnd=start+3;
+      }
+    }
+    const next=current.slice(0,start)+replacement+current.slice(end);
+    onChange(next);
+    requestAnimationFrame(()=>{el.focus();el.setSelectionRange(caretStart,caretEnd)});
+  };
+  return <div className={'richTextEditor '+(compact?'compact':'')}>
+    <div className="richToolbar" aria-label="Formato de texto">
+      <button type="button" title="Negrita" onClick={()=>apply('bold')}><b>B</b></button>
+      <button type="button" title="Viñetas" onClick={()=>apply('bullet')}>• Lista</button>
+      <button type="button" title="Lista numerada" onClick={()=>apply('number')}>1. Lista</button>
+      <button type="button" title="Nuevo párrafo" onClick={()=>apply('paragraph')}>¶ Párrafo</button>
+    </div>
+    <textarea ref={ref} className="analysisText" value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>
+  </div>;
+}
 
 const DISC_INFO={
   D:{name:'Dominancia',text:'Refleja iniciativa, rapidez para decidir, desafío, empuje y orientación al logro.'},
@@ -160,7 +257,7 @@ function ChartSummary({summary,enough}){
 }
 
 function PsychForm({value,setValue,onSave}){
-  const field=(key,label,placeholder)=><label className="psychField"><span>{label}</span><textarea value={value[key]||''} onChange={e=>setValue({...value,[key]:e.target.value})} placeholder={placeholder}/></label>;
+  const field=(key,label,placeholder)=><label className="psychField"><span>{label}</span><RichTextEditor value={value[key]||''} onChange={v=>setValue({...value,[key]:v})} placeholder={placeholder} compact/></label>;
   return <div className="psychForm">
     {field('context_position','Contexto del puesto de trabajo','Funciones principales, responsabilidades, exigencias, nivel de autonomía, relación con equipo y jefaturas…')}
     {field('interview_observations','Observaciones de entrevista','Aspectos relevantes observados o declarados durante la entrevista…')}
@@ -224,9 +321,9 @@ function ReportDocument({d,report,enough}){
       </div>
       <div className="pageOneGrid">
         <div className="pageOneLeft">
-          <section className="pdfRefBlock"><Title n="1" icon="◎">Objetivo y alcance</Title><p>{report.objective_scope}</p></section>
-          <section className="pdfRefBlock"><Title n="3" icon="▣">Síntesis ejecutiva</Title><p>{report.executive_summary}</p></section>
-          <section className="pdfRefBlock"><Title n="4" icon="▥">Resumen del perfil</Title><p>{d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}</p></section>
+          <section className="pdfRefBlock"><Title n="1" icon="◎">Objetivo y alcance</Title><FormattedText text={report.objective_scope}/></section>
+          <section className="pdfRefBlock"><Title n="3" icon="▣">Síntesis ejecutiva</Title><FormattedText text={report.executive_summary}/></section>
+          <section className="pdfRefBlock"><Title n="4" icon="▥">Resumen del perfil</Title><FormattedText text={d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}/></section>
         </div>
         <div className="pageOneRight">
           <section className="pdfRefBlock antecedentCard"><Title n="2" icon="●">Antecedentes generales</Title>
@@ -276,7 +373,7 @@ function ReportDocument({d,report,enough}){
             </div>})}
           </div>
           <aside className="pageThreeSide">
-            <div className="refReading"><h3>▤ &nbsp; Lectura de competencias</h3><p>{d.integrated_summary||'Los resultados permiten identificar fortalezas y focos prioritarios de desarrollo del liderazgo.'}</p></div>
+            <div className="refReading"><h3>▤ &nbsp; Lectura de competencias</h3><FormattedText text={d.integrated_summary||'Los resultados permiten identificar fortalezas y focos prioritarios de desarrollo del liderazgo.'}/></div>
             <div className="refGapBox"><h3>▲ &nbsp; Brechas prioritarias</h3><ol>{gaps.length?gaps.map((g,i)=><li key={i}>{g.competency}</li>):development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ol></div>
           </aside>
         </div>
@@ -287,14 +384,14 @@ function ReportDocument({d,report,enough}){
     <section className="pdfRefPage pageFour">
       <Header/>
       <div className="psychTopGrid">
-        <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><p>{psych.note||psych.interview_observations||psych.context_position||'Sin antecedente profesional registrado.'}</p></section>
+        <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={psych.note||psych.interview_observations||psych.context_position||'Sin antecedente profesional registrado.'}/></section>
         <aside className="psychIdentity"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></aside>
       </div>
       <div className="pageFourGrid">
         <section className="pdfRefBlock"><Title n="9" icon="◎">Propuesta de mejora</Title><ul className="refCheckList">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></section>
         <section className="pdfRefBlock"><Title n="10" icon="▣">Plan de desarrollo 30/60/90 días</Title><table className="refPlanTable"><thead><tr><th>Plazo</th><th>Acciones clave</th></tr></thead><tbody>{actionPlan.map((p,i)=><tr key={i}><td>{p.deadline||['30 días','60 días','90 días'][i]}</td><td>{p.action||p.objective||'—'}</td></tr>)}</tbody></table></section>
         <section className="pdfRefBlock"><Title n="11" icon="▥">Indicadores de seguimiento</Title><table className="refPlanTable"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>{indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}</tbody></table></section>
-        <section className="pdfRefBlock"><Title n="12" icon="▣">Conclusión profesional</Title><p>{report.conclusion}</p></section>
+        <section className="pdfRefBlock"><Title n="12" icon="▣">Conclusión profesional</Title><FormattedText text={report.conclusion}/></section>
       </div>
       <div className="pdfRefSignatures"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
       <Footer page="4"/>
@@ -448,25 +545,25 @@ export default function AnalysisPage(){
         <div className="eyebrow">Entrevista profesional</div><h2>Análisis estructurado de la Psicóloga</h2>
         <p className="muted">Esta información se integra al informe final y permite considerar las características reales del puesto de trabajo y su contexto.</p>
         {canEditDraft?<PsychForm value={psych} setValue={setPsych} onSave={savePsych}/>:<div className="psychRead">
-          <div><b>Contexto del puesto</b><p>{d.professional_note?.context_position||'Pendiente'}</p></div>
-          <div><b>Observaciones de entrevista</b><p>{d.professional_note?.interview_observations||'Pendiente'}</p></div>
-          <div><b>Fortalezas observadas</b><p>{d.professional_note?.strengths_observed||'Pendiente'}</p></div>
-          <div><b>Aspectos a desarrollar</b><p>{d.professional_note?.development_observed||'Pendiente'}</p></div>
-          <div><b>Factores del entorno</b><p>{d.professional_note?.environment_factors||'Pendiente'}</p></div>
-          <div><b>Recomendaciones</b><p>{d.professional_note?.professional_recommendations||'Pendiente'}</p></div>
+          <div><b>Contexto del puesto</b><FormattedText text={d.professional_note?.context_position||'Pendiente'}/></div>
+          <div><b>Observaciones de entrevista</b><FormattedText text={d.professional_note?.interview_observations||'Pendiente'}/></div>
+          <div><b>Fortalezas observadas</b><FormattedText text={d.professional_note?.strengths_observed||'Pendiente'}/></div>
+          <div><b>Aspectos a desarrollar</b><FormattedText text={d.professional_note?.development_observed||'Pendiente'}/></div>
+          <div><b>Factores del entorno</b><FormattedText text={d.professional_note?.environment_factors||'Pendiente'}/></div>
+          <div><b>Recomendaciones</b><FormattedText text={d.professional_note?.professional_recommendations||'Pendiente'}/></div>
         </div>}
       </section>
 
-      {d.integrated_summary&&<section className="panel integratedPanel"><div className="eyebrow">Síntesis integrada</div><h2>Lectura para la Psicóloga</h2><p className="summaryParagraph">{d.integrated_summary}</p></section>}
+      {d.integrated_summary&&<section className="panel integratedPanel"><div className="eyebrow">Síntesis integrada</div><h2>Síntesis general del trabajador</h2><FormattedText text={d.integrated_summary} className="summaryParagraph"/></section>}
 
       <section className="panel finalReport">
         <div className="sectionTitle"><div><div className="eyebrow">Informe profesional</div><h2>Informe Final · Propuesta de Mejoras</h2></div><span className={'pill '+(finalized?'good':'warn')}>{finalized?'Finalizado':'Borrador editable'}</span></div>
         <p className="muted">Administración y Psicología Laboral pueden revisar y corregir el borrador. Solo la Psicóloga puede finalizar el informe.</p>
         {report&&<>
           <h3>Objetivo y alcance</h3>
-          {canEditDraft?<textarea className="analysisText compact" value={report.objective_scope||''} onChange={e=>setReport({...report,objective_scope:e.target.value})}/>:<p className="summaryParagraph">{report.objective_scope}</p>}
+          {canEditDraft?<RichTextEditor compact value={report.objective_scope||''} onChange={v=>setReport({...report,objective_scope:v})}/>:<FormattedText text={report.objective_scope} className="summaryParagraph"/>}
           <h3>Resumen ejecutivo</h3>
-          {canEditDraft?<textarea className="analysisText compact" value={report.executive_summary||''} onChange={e=>setReport({...report,executive_summary:e.target.value})}/>:<p className="summaryParagraph">{report.executive_summary}</p>}
+          {canEditDraft?<RichTextEditor compact value={report.executive_summary||''} onChange={v=>setReport({...report,executive_summary:v})}/>:<FormattedText text={report.executive_summary} className="summaryParagraph"/>}
 
           <div className="reportGrid">
             <div><h3>Fortalezas</h3>{canEditDraft?<textarea className="analysisText compact" value={arrText(report.strengths)} onChange={e=>setLines('strengths',e.target.value)}/>:<ul>{report.strengths?.map((x,i)=><li key={i}>{x}</li>)}</ul>}</div>
@@ -490,7 +587,7 @@ export default function AnalysisPage(){
           </tbody></table></div>
 
           <h3>Conclusión profesional</h3>
-          {canEditDraft?<textarea className="analysisText" value={report.conclusion||''} onChange={e=>setReport({...report,conclusion:e.target.value})}/>:<p className="summaryParagraph">{report.conclusion}</p>}
+          {canEditDraft?<RichTextEditor value={report.conclusion||''} onChange={v=>setReport({...report,conclusion:v})}/>:<FormattedText text={report.conclusion} className="summaryParagraph"/>}
 
           {canEditDraft&&<div className="reportActions">
             <button className="ghost" onClick={()=>saveReport('draft')}>Guardar cambios del borrador</button>
