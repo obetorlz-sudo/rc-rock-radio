@@ -3,11 +3,33 @@ import { useEffect,useMemo,useState } from 'react';
 import { DISC,COMP } from '../../lib/instrument';
 import { gapLabel } from '../../lib/scoring';
 
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const api=async(url,opts={})=>{
-  const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(d.error||'Error');
-  return d;
+  let lastError=null;
+  for(let attempt=0;attempt<3;attempt++){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),20000);
+    try{
+      const r=await fetch(url,{
+        ...opts,
+        cache:'no-store',
+        credentials:'same-origin',
+        signal:controller.signal,
+        headers:{'Content-Type':'application/json',...(opts.headers||{})}
+      });
+      clearTimeout(timer);
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(d.error||'No fue posible completar la operación.');
+      return d;
+    }catch(e){
+      clearTimeout(timer);
+      lastError=e;
+      const connectionError=e?.name==='TypeError'||e?.name==='AbortError'||String(e?.message||'').toLowerCase().includes('fetch');
+      if(!connectionError)throw e;
+      if(attempt<2)await sleep(700*(attempt+1));
+    }
+  }
+  throw new Error('No fue posible conectar con el servidor. Revisa la conexión e inténtalo nuevamente; el borrador se conservará en este equipo.');
 };
 const arrText=a=>(a||[]).join('\n');
 const textArr=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean);
@@ -287,7 +309,7 @@ export default function AnalysisPage(){
 
   const load=()=>id&&api('/api/analysis?id='+id).then(x=>{
     setD(x);
-    setPsych({
+    const serverPsych={
       note:x.professional_note?.note==='Análisis profesional estructurado'?'':x.professional_note?.note||'',
       context_position:x.professional_note?.context_position||'',
       interview_observations:x.professional_note?.interview_observations||'',
@@ -295,14 +317,27 @@ export default function AnalysisPage(){
       development_observed:x.professional_note?.development_observed||'',
       environment_factors:x.professional_note?.environment_factors||'',
       professional_recommendations:x.professional_note?.professional_recommendations||''
-    });
+    };
+    let recoveredPsych=null;
+    if(typeof window!=='undefined'&&!x.professional_note){
+      try{recoveredPsych=JSON.parse(localStorage.getItem('rc360_psych_draft_'+id)||'null')}catch{}
+    }
+    setPsych(recoveredPsych||serverPsych);
     const r=x.final_report||x.report_suggestion;
-    if(r)setReport({
-      strengths:r.strengths||[],development_areas:r.development_areas||[],opportunities:r.opportunities||[],
-      recommendations:r.recommendations||[],action_plan:r.action_plan||[],executive_summary:r.executive_summary||'',
-      objective_scope:r.objective_scope||'',indicators:r.indicators||[],conclusion:r.conclusion||'',
-      evidence_matrix:r.evidence_matrix||[],status:x.final_report?.status||'draft',finalized_at:x.final_report?.finalized_at||null
-    });
+    if(r){
+      const serverReport={
+        strengths:r.strengths||[],development_areas:r.development_areas||[],opportunities:r.opportunities||[],
+        recommendations:r.recommendations||[],action_plan:r.action_plan||[],executive_summary:r.executive_summary||'',
+        objective_scope:r.objective_scope||'',indicators:r.indicators||[],conclusion:r.conclusion||'',
+        evidence_matrix:r.evidence_matrix||[],status:x.final_report?.status||'draft',finalized_at:x.final_report?.finalized_at||null
+      };
+      let recoveredReport=null;
+      if(typeof window!=='undefined'&&!x.final_report){
+        try{recoveredReport=JSON.parse(localStorage.getItem('rc360_report_draft_'+id)||'null')}catch{}
+      }
+      setReport(recoveredReport?{...serverReport,...recoveredReport,status:'draft'}:serverReport);
+      if(recoveredPsych||recoveredReport)setMsg('Se recuperó un borrador guardado localmente en este equipo.');
+    }
   }).catch(e=>setMsg(e.message));
 
   useEffect(load,[id]);
@@ -328,18 +363,30 @@ export default function AnalysisPage(){
   const setIndicatorField=(i,key,val)=>{const next=[...(report?.indicators||[])];next[i]={...(next[i]||{}),[key]:val};setReport({...report,indicators:next})};
 
   const savePsych=async()=>{
+    const localKey='rc360_psych_draft_'+id;
     try{
+      if(typeof window!=='undefined')localStorage.setItem(localKey,JSON.stringify(psych));
       await api('/api/analysis/notes',{method:'POST',body:JSON.stringify({assessmentId:id,...psych})});
+      if(typeof window!=='undefined')localStorage.removeItem(localKey);
       setMsg('Análisis profesional guardado.');
       await load();
-    }catch(e){setMsg(e.message)}
+    }catch(e){
+      if(typeof window!=='undefined')localStorage.setItem(localKey,JSON.stringify(psych));
+      setMsg(e.message);
+    }
   };
   const saveReport=async(status)=>{
+    const localKey='rc360_report_draft_'+id;
     try{
+      if(typeof window!=='undefined')localStorage.setItem(localKey,JSON.stringify(report));
       await api('/api/analysis/final-report',{method:'POST',body:JSON.stringify({...report,assessmentId:id,status})});
+      if(typeof window!=='undefined')localStorage.removeItem(localKey);
       setMsg(status==='finalized'?'Informe finalizado correctamente.':finalized?'Informe reabierto como borrador.':'Borrador guardado correctamente.');
       await load();
-    }catch(e){setMsg(e.message)}
+    }catch(e){
+      if(typeof window!=='undefined')localStorage.setItem(localKey,JSON.stringify(report));
+      setMsg(e.message);
+    }
   };
 
   return <main className="shell wide">
