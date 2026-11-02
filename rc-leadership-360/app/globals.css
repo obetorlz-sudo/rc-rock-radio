@@ -656,3 +656,26 @@
   .companyLogoFrame{width:96px;height:60px}
   .registryCompanyLogo{width:68px;height:46px}
 }
+
+
+.richTextEditor{display:grid;gap:0;margin:10px 0 14px;border:1px solid #2c4565;border-radius:14px;overflow:hidden;background:#0b1728}
+.richTextEditor.compact .analysisText{min-height:120px}
+.richTextEditor .analysisText{margin:0;border:0;border-radius:0;background:transparent;min-height:180px}
+.richToolbar{display:flex;gap:7px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid rgba(145,183,230,.16);background:rgba(255,255,255,.035)}
+.richToolbar button{border:1px solid rgba(145,183,230,.22);background:#11253e;color:#dce9fa;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:700;cursor:pointer}
+.richToolbar button:hover{background:#17395f;border-color:#4aa8ff}
+.formattedText{color:inherit;line-height:1.65}
+.formattedText p{margin:0 0 .65em}
+.formattedText p:last-child{margin-bottom:0}
+.formattedText ul,.formattedText ol{margin:.35em 0 .85em 1.35em;padding:0}
+.formattedText li{margin:.22em 0;padding-left:.12em}
+.formattedText strong{color:inherit}
+.psychRead .formattedText{color:#c3d1e1}
+.summaryParagraph.formattedText{font-size:18px;line-height:1.75;color:#dbe8f8}
+@media print{
+  .richToolbar{display:none!important}
+  .formattedText{font-size:inherit;line-height:1.45;color:inherit!important}
+  .formattedText p{margin:0 0 2.2mm}
+  .formattedText ul,.formattedText ol{margin:1.5mm 0 2.5mm 5mm;padding-left:3mm}
+  .formattedText li{margin:.7mm 0}
+}
