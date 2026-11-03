@@ -679,3 +679,85 @@
   .formattedText ul,.formattedText ol{margin:1.5mm 0 2.5mm 5mm;padding-left:3mm}
   .formattedText li{margin:.7mm 0}
 }
+
+
+/* RC Leadership 360 — PDF typography and overflow fix */
+@media print{
+  .refReport .pdfRefPage{overflow:hidden!important}
+  .refReport .formattedText,
+  .refReport .formattedText p,
+  .refReport .formattedText li{
+    font-size:6.15pt!important;
+    line-height:1.28!important;
+    color:#334c68!important;
+  }
+  .refReport .formattedText p{margin:0 0 1.5mm!important}
+  .refReport .formattedText ul,
+  .refReport .formattedText ol{
+    margin:1mm 0 1.8mm 4.2mm!important;
+    padding-left:2.2mm!important;
+  }
+  .refReport .summaryParagraph.formattedText,
+  .refReport .summaryParagraph.formattedText p,
+  .refReport .summaryParagraph.formattedText li{
+    font-size:6.35pt!important;
+    line-height:1.3!important;
+  }
+  .refReport .pageThreeSide .refReading{
+    min-height:0!important;
+    padding:3mm!important;
+  }
+  .refReport .pageThreeSide .refReading h3,
+  .refReport .refGapBox h3{
+    font-size:7.6pt!important;
+    margin-bottom:1.5mm!important;
+  }
+  .refReport .refGapBox{
+    min-height:0!important;
+    padding:3mm!important;
+  }
+  .refReport .refGapBox li{
+    font-size:6.15pt!important;
+    line-height:1.28!important;
+    margin:.65mm 0!important;
+  }
+  .refReport .psychMain{
+    min-height:0!important;
+    max-height:52mm!important;
+    overflow:hidden!important;
+  }
+  .refReport .psychMain .formattedText,
+  .refReport .psychMain .formattedText p,
+  .refReport .psychMain .formattedText li{
+    font-size:6.05pt!important;
+    line-height:1.28!important;
+  }
+  .refReport .pageFourGrid{
+    gap:3mm!important;
+    margin-top:3mm!important;
+  }
+  .refReport .pageFourGrid>.pdfRefBlock{
+    min-height:0!important;
+    padding:2.7mm!important;
+  }
+  .refReport .refCheckList li{
+    font-size:6.05pt!important;
+    line-height:1.28!important;
+    margin:.6mm 0!important;
+  }
+  .refReport .refPlanTable{
+    font-size:5.85pt!important;
+  }
+  .refReport .refPlanTable th,
+  .refReport .refPlanTable td{
+    padding:1mm 1.25mm!important;
+    line-height:1.22!important;
+  }
+  .refReport .pdfRefSignatures{
+    bottom:15.5mm!important;
+  }
+  .refReport .pdfRefFooter{
+    z-index:100!important;
+    background:#fff!important;
+  }
+}
