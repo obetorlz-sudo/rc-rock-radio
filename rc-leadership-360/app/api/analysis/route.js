@@ -100,9 +100,9 @@ function reportSuggestion(self,team,note){
   if(note?.environment_factors)opportunities.push('Considerar factores del entorno laboral: '+note.environment_factors);
   if(!opportunities.length)opportunities.push('Profundizar los focos de desarrollo mediante seguimiento y retroalimentación periódica.');
   const recommendations=[
-    note?.professional_recommendations||'Definir conductas observables y metas concretas para los focos prioritarios.',
-    'Solicitar retroalimentación estructurada del equipo y revisar avances con la Psicóloga.',
-    'Aplicar las acciones de mejora en situaciones reales del puesto y revisar evidencias de cambio.'
+    note?.professional_recommendations||'Priorizar dos o tres conductas observables de alto impacto, vinculadas directamente con las exigencias del cargo, definiendo para cada una una meta concreta, una situación de aplicación y una evidencia verificable de avance.',
+    'Instalar una rutina de retroalimentación periódica con la jefatura y el equipo, orientada a contrastar la intención del supervisor con el efecto real de su conducta en coordinación, comunicación, delegación y clima de trabajo.',
+    'Aplicar las acciones de mejora en situaciones reales del puesto, registrar ejemplos concretos de cambio y revisar los avances en hitos 30/60/90 días para ajustar el plan y consolidar nuevas prácticas de liderazgo.'
   ];
   const focus1=development[0]?.split(':')[0]||'Comunicación';
   const focus2=development[1]?.split(':')[0]||'Delegación';
@@ -117,7 +117,7 @@ function reportSuggestion(self,team,note){
     {indicator:'Evidencias de conducta observada',target:'Registro de ejemplos concretos de avance',frequency:'30/60/90 días'}
   ];
   const objective_scope='Integrar la autoevaluación del supervisor, la percepción agregada del equipo y la entrevista profesional para identificar fortalezas, brechas y prioridades de desarrollo vinculadas al puesto de trabajo. Este informe es de carácter formativo y de desarrollo organizacional; no corresponde a un diagnóstico clínico ni a un instrumento de selección.';
-  const conclusion=`Se recomienda concentrar el proceso de desarrollo en un número acotado de conductas prioritarias, vinculadas a las exigencias reales del puesto y revisadas mediante evidencia observable y retroalimentación periódica. El seguimiento 30/60/90 días permitirá verificar avances, ajustar las acciones y consolidar prácticas efectivas.`;
+  const conclusion=`Se recomienda focalizar el proceso de desarrollo en un número acotado de conductas prioritarias que tengan impacto directo en la gestión del equipo y en las exigencias reales del puesto. Cada foco debe traducirse en comportamientos observables, metas concretas y evidencias verificables, evitando recomendaciones generales difíciles de medir. El seguimiento 30/60/90 días debe utilizarse para contrastar avances con la percepción de la jefatura y del equipo, identificar obstáculos del entorno, ajustar las acciones cuando sea necesario y consolidar prácticas sostenibles. La propuesta de mejora debe entenderse como un proceso progresivo de desarrollo, donde el supervisor asume un rol activo y la jefatura facilita condiciones, retroalimentación y seguimiento para sostener los cambios.`;
   return {
     strengths,development_areas:development,opportunities,recommendations,action_plan,indicators,
     evidence_matrix:evidenceMatrix(self,team,note),
