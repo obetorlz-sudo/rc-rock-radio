@@ -845,3 +845,78 @@
     margin-top:3mm!important;
   }
 }
+
+
+/* RC Leadership 360 — alineación de resúmenes + tipografía PDF +15% */
+@media print{
+  /* Alinear exactamente viñetas y texto en ambos cuadros */
+  .refReport .refSummaryCard ul{
+    margin:0!important;
+    padding:0!important;
+    list-style:none!important;
+  }
+  .refReport .refSummaryCard li{
+    display:grid!important;
+    grid-template-columns:4.5mm 1fr!important;
+    column-gap:1.6mm!important;
+    align-items:start!important;
+    margin:.55mm 0!important;
+    padding:0!important;
+    text-indent:0!important;
+  }
+  .refReport .refSummaryCard li>span{
+    display:block!important;
+    width:4.5mm!important;
+    text-align:center!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:1.28!important;
+  }
+
+  /* Aumento aproximado del 15% en la tipografía del cuerpo del informe */
+  .refReport .pdfRefBlock p{font-size:7.95pt!important;line-height:1.42!important}
+  .refReport .formattedText,
+  .refReport .formattedText p,
+  .refReport .formattedText li{font-size:7.05pt!important;line-height:1.34!important}
+  .refReport .summaryParagraph.formattedText,
+  .refReport .summaryParagraph.formattedText p,
+  .refReport .summaryParagraph.formattedText li{font-size:7.3pt!important;line-height:1.36!important}
+
+  .refReport .refSummaryCard li{font-size:7.45pt!important;line-height:1.38!important}
+  .refReport .refSummaryCard h3{font-size:9.1pt!important}
+
+  .refReport .antecedentCard table{font-size:6.8pt!important}
+  .refReport .pdfRefMeta span{font-size:6.8pt!important}
+  .refReport .pdfRefTitle p{font-size:8.3pt!important}
+
+  .refReport .refReading p{font-size:8pt!important;line-height:1.48!important}
+  .refReport .refReading h3{font-size:9.3pt!important}
+  .refReport .conductConclusionWide .formattedText,
+  .refReport .conductConclusionWide .formattedText p,
+  .refReport .conductConclusionWide .formattedText li{font-size:7.2pt!important;line-height:1.34!important}
+
+  .refReport .refCompHead{font-size:7.1pt!important}
+  .refReport .refCompRow>b{font-size:7.35pt!important}
+  .refReport .refCompRow>p{font-size:6.65pt!important;line-height:1.32!important}
+  .refReport .refResult strong{font-size:7.45pt!important}
+  .refReport .refLevel{font-size:6.55pt!important}
+  .refReport .refGapBox li{font-size:7.05pt!important;line-height:1.34!important}
+
+  .refReport .psychMain .formattedText,
+  .refReport .psychMain .formattedText p,
+  .refReport .psychMain .formattedText li{font-size:6.65pt!important;line-height:1.3!important}
+
+  .refReport .refCheckList li{font-size:6.95pt!important;line-height:1.34!important}
+  .refReport .refPlanTable{font-size:6.7pt!important}
+  .refReport .psychIdentity b{font-size:8.35pt!important}
+  .refReport .psychIdentity span{font-size:7.25pt!important}
+  .refReport .psychIdentity small{font-size:6.65pt!important}
+
+  .refReport .pdfRefFooter{font-size:6.7pt!important}
+  .refReport .pdfRefSignatures span{font-size:8.2pt!important}
+  .refReport .pdfRefSignatures small{font-size:6.9pt!important}
+
+  /* Pequeño ajuste de espacio para absorber el aumento sin cortes */
+  .refReport .pageOneLeft,.refReport .pageOneRight{gap:2.5mm!important}
+  .refReport .pageFourGrid{gap:2.5mm!important;margin-top:2.5mm!important}
+}
