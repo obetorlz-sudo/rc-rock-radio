@@ -473,13 +473,6 @@ function ReportDocument({d,report,enough}){
       <Footer page="5"/>
     </section>
 
-    <section className="pdfRefPage pageSix">
-      <Header/>
-      <section className="pdfRefBlock indicatorsFullPage"><Title n="11" icon="▥">Indicadores de seguimiento</Title><table className="refPlanTable"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>{indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}</tbody></table></section>
-      <section className="pdfRefBlock conclusionFullPage"><Title n="12" icon="▣">Conclusión profesional</Title><FormattedText text={report.conclusion}/></section>
-      <div className="pdfRefSignatures"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
-      <Footer page="6"/>
-    </section>
   </article>;
 }
 
