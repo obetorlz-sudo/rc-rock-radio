@@ -363,7 +363,7 @@ function ReportDocument({d,report,enough}){
       <span><b>Cargo:</b> {d.supervisor.position||'—'}</span><span><b>Empresa:</b> {d.company.name}</span>
     </div>
   </div>;
-  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 6</strong></div>;
+  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 5</strong></div>;
   const Title=({n,children,icon='●'})=><div className="pdfRefSectionTitle"><span>{icon}</span><h2>{n}. {children}</h2></div>;
 
   return <article className="reportDocument finalFourPageReport refReport">
