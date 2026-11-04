@@ -329,12 +329,28 @@ function buildProfessionalAnalysis(d,psych){
   return parts.length?parts.join('\n\n'):'Sin antecedente profesional registrado.';
 }
 
+function buildProfessionalConclusion(base,d){
+  const original=String(base||'').trim();
+  const focus=(d?.gap_rows||[]).slice(0,3).map(x=>x.competency).filter(Boolean);
+  const paragraphs=[
+    original,
+    'En términos de desarrollo, se recomienda mantener un seguimiento sistemático de las conductas priorizadas, utilizando evidencias observables del desempeño y retroalimentación periódica de la jefatura y del equipo.',
+    focus.length
+      ? 'Los principales focos que requieren seguimiento son '+focus.join(', ')+', procurando traducir cada uno en acciones concretas, metas verificables y situaciones reales de aplicación en el puesto de trabajo.'
+      : 'Las oportunidades de mejora identificadas deben traducirse en acciones concretas, metas verificables y situaciones reales de aplicación en el puesto de trabajo.',
+    'El propósito del proceso no es modificar el estilo personal del supervisor, sino ampliar su repertorio de liderazgo, fortalecer su capacidad de adaptación y consolidar prácticas que favorezcan la coordinación, la confianza y el desempeño sostenible del equipo.',
+    'Se sugiere revisar los avances en hitos 30/60/90 días, ajustar las acciones cuando sea necesario y registrar ejemplos concretos que permitan evidenciar cambios progresivos y sostenibles.'
+  ];
+  return paragraphs.filter(Boolean).join('\n\n');
+}
+
 function ReportDocument({d,report,enough}){
   if(!report)return null;
   const issueDate=report.finalized_at||report.updated_at||new Date().toISOString();
   const dateText=new Date(issueDate).toLocaleDateString('es-CL');
   const psych=d.professional_note||{};
   const professionalAnalysis=buildProfessionalAnalysis(d,psych);
+  const professionalConclusion=buildProfessionalConclusion(report.conclusion,d);
   const conductConclusion=buildConductConclusion(d);
   const competencyReading=buildCompetencyReading(d);
   const strengths=(report.strengths||[]).slice(0,3);
