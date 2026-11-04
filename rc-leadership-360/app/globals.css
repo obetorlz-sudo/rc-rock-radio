@@ -1479,3 +1479,43 @@
     margin:.8mm 0 1.1mm 4mm!important;
   }
 }
+
+
+/* RC Leadership 360 — regla global definitiva para Punto 8 */
+@media print{
+  .refReport .pageFour{
+    padding-bottom:24mm!important;
+  }
+  .refReport .pageFour .psychFullPage{
+    width:100%!important;
+    box-sizing:border-box!important;
+    min-height:0!important;
+    max-height:none!important;
+    height:auto!important;
+    overflow:visible!important;
+    padding:3.5mm!important;
+    margin-bottom:3mm!important;
+  }
+  .refReport .pageFour .psychFullPage .formattedText{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+  .refReport .pageFour .psychFullPage .formattedText p,
+  .refReport .pageFour .psychFullPage .formattedText li{
+    text-align:justify!important;
+    text-justify:inter-word!important;
+    hyphens:auto!important;
+  }
+  .refReport .pageFour .psychFullPage .formattedText p{
+    margin:0 0 1.05mm!important;
+  }
+  .refReport .pageFour .psychFullPage .formattedText ul,
+  .refReport .pageFour .psychFullPage .formattedText ol{
+    margin:.8mm 0 1.1mm 4mm!important;
+  }
+  .refReport .pageFour .psychIdentityBottom{
+    margin-top:1.5mm!important;
+    margin-bottom:0!important;
+  }
+}
