@@ -270,6 +270,30 @@ function PsychForm({value,setValue,onSave}){
   </div>;
 }
 
+function buildConductConclusion(d){
+  const values=Object.entries(d?.self?.competencies||{}).filter(([,v])=>Number.isFinite(Number(v)));
+  if(!values.length)return d?.self_analysis||'Sin síntesis disponible.';
+  const sorted=[...values].sort((a,b)=>Number(b[1])-Number(a[1]));
+  const top=sorted.slice(0,3).map(([k,v])=>k+' ('+Math.round(Number(v))+'%)');
+  const low=[...values].sort((a,b)=>Number(a[1])-Number(b[1])).slice(0,3).map(([k,v])=>k+' ('+Math.round(Number(v))+'%)');
+  const team=d?.team?.competencies||null;
+  const gaps=team?values.map(([k,v])=>({k,self:Number(v),team:Number(team[k]||0),gap:Number(v)-Number(team[k]||0)}))
+    .filter(x=>Number.isFinite(x.team)).sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap)).slice(0,2):[];
+  let text='El perfil conductual muestra fortalezas relativas en '+top.join(', ')+'. Los principales focos de desarrollo se concentran en '+low.join(', ')+'. En términos generales, el patrón observado sugiere mantener las conductas que sostienen el desempeño y trabajar de manera priorizada aquellas competencias que pueden mejorar la coordinación, la adaptación y la efectividad del liderazgo.';
+  if(gaps.length){
+    text+=' Al comparar la autoevaluación con la percepción del equipo, las diferencias más relevantes se observan en '+gaps.map(x=>x.k+' ('+Math.abs(Math.round(x.gap))+' puntos)').join(' y ')+'. Estas brechas deben revisarse mediante retroalimentación concreta y ejemplos observables del trabajo cotidiano.';
+  }
+  return text;
+}
+
+function buildCompetencyReading(d){
+  const values=Object.entries(d?.self?.competencies||{}).filter(([,v])=>Number.isFinite(Number(v)));
+  if(!values.length)return 'Los resultados permiten identificar fortalezas y focos prioritarios de desarrollo del liderazgo.';
+  const high=[...values].sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,3);
+  const low=[...values].sort((a,b)=>Number(a[1])-Number(b[1])).slice(0,3);
+  return 'La lectura conjunta de las competencias muestra un mejor posicionamiento en '+high.map(([k,v])=>k+' ('+Math.round(Number(v))+'%)').join(', ')+'. Estas dimensiones constituyen recursos que pueden utilizarse para sostener el desempeño y apoyar procesos de mejora.\n\nLos focos que requieren mayor desarrollo son '+low.map(([k,v])=>k+' ('+Math.round(Number(v))+'%)').join(', ')+'. Se recomienda priorizar dos o tres conductas observables asociadas a estas competencias, definiendo acciones concretas y seguimiento periódico para verificar avances.';
+}
+
 function buildProfessionalAnalysis(d,psych){
   const parts=[];
   const note=String(psych?.note||'').trim();
@@ -310,6 +334,8 @@ function ReportDocument({d,report,enough}){
   const dateText=new Date(issueDate).toLocaleDateString('es-CL');
   const psych=d.professional_note||{};
   const professionalAnalysis=buildProfessionalAnalysis(d,psych);
+  const conductConclusion=buildConductConclusion(d);
+  const competencyReading=buildCompetencyReading(d);
   const strengths=(report.strengths||[]).slice(0,3);
   const development=(report.development_areas||[]).slice(0,3);
   const gaps=(d.gap_rows||[]).slice(0,3);
@@ -391,7 +417,7 @@ function ReportDocument({d,report,enough}){
           <div className="refRadarWrap"><RadarChart title="Comparación de percepciones" labels={radarKeys} self={d.self?.competencies} team={enough?d.team?.competencies:null}/></div>
         </section>
       </div>
-      <div className="refReading conclusion conductConclusionWide"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><FormattedText text={d.integrated_summary||d.self_analysis||'Sin síntesis disponible.'}/></div>
+      <div className="refReading conclusion conductConclusionWide"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><FormattedText text={conductConclusion}/></div>
       <Footer page="2"/>
     </section>
 
@@ -408,7 +434,7 @@ function ReportDocument({d,report,enough}){
             </div>})}
           </div>
           <aside className="pageThreeSide">
-            <div className="refReading"><h3>▤ &nbsp; Lectura de competencias</h3><FormattedText text={d.integrated_summary||'Los resultados permiten identificar fortalezas y focos prioritarios de desarrollo del liderazgo.'}/></div>
+            <div className="refReading"><h3>▤ &nbsp; Lectura de competencias</h3><FormattedText text={competencyReading}/></div>
             <div className="refGapBox"><h3>▲ &nbsp; Brechas prioritarias</h3><ol>{gaps.length?gaps.map((g,i)=><li key={i}>{g.competency}</li>):development.map((x,i)=><li key={i}>{typeof x==='string'?x:x.text}</li>)}</ol></div>
           </aside>
         </div>
