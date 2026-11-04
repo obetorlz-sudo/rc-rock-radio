@@ -1519,3 +1519,83 @@
     margin-bottom:0!important;
   }
 }
+
+
+/* RC Leadership 360 — Punto 8 en 8pt usando toda la página */
+@media print{
+  .refReport .pageFour{
+    padding-bottom:16mm!important;
+  }
+
+  .refReport .pageFour .psychFullPage{
+    width:100%!important;
+    box-sizing:border-box!important;
+    min-height:0!important;
+    max-height:none!important;
+    height:auto!important;
+    overflow:visible!important;
+    padding:3mm 3.4mm!important;
+    margin:0 0 1mm!important;
+  }
+
+  .refReport .pageFour .psychFullPage .formattedText,
+  .refReport .pageFour .psychFullPage .formattedText p,
+  .refReport .pageFour .psychFullPage .formattedText li,
+  .refReport .pageFour .psychSm .formattedText,
+  .refReport .pageFour .psychSm .formattedText p,
+  .refReport .pageFour .psychSm .formattedText li,
+  .refReport .pageFour .psychMd .formattedText,
+  .refReport .pageFour .psychMd .formattedText p,
+  .refReport .pageFour .psychMd .formattedText li,
+  .refReport .pageFour .psychLg .formattedText,
+  .refReport .pageFour .psychLg .formattedText p,
+  .refReport .pageFour .psychLg .formattedText li,
+  .refReport .pageFour .psychXl .formattedText,
+  .refReport .pageFour .psychXl .formattedText p,
+  .refReport .pageFour .psychXl .formattedText li{
+    font-size:8pt!important;
+    line-height:1.12!important;
+    text-align:justify!important;
+    text-justify:inter-word!important;
+    hyphens:auto!important;
+  }
+
+  .refReport .pageFour .psychFullPage .formattedText p{
+    margin:0 0 .65mm!important;
+  }
+
+  .refReport .pageFour .psychFullPage .formattedText ul,
+  .refReport .pageFour .psychFullPage .formattedText ol{
+    margin:.35mm 0 .65mm 4mm!important;
+    padding-left:2.4mm!important;
+  }
+
+  .refReport .pageFour .psychFullPage .formattedText li{
+    margin:.15mm 0!important;
+  }
+
+  .refReport .pageFour .psychIdentityBottom{
+    width:68mm!important;
+    padding:1.8mm 2.2mm!important;
+    margin:0 0 0 auto!important;
+    gap:2mm!important;
+  }
+
+  .refReport .pageFour .psychIdentityBottom .personIcon{
+    width:7mm!important;
+    height:7mm!important;
+    font-size:7pt!important;
+  }
+
+  .refReport .pageFour .psychIdentityBottom b{
+    font-size:7.6pt!important;
+  }
+
+  .refReport .pageFour .psychIdentityBottom span{
+    font-size:6.6pt!important;
+  }
+
+  .refReport .pageFour .psychIdentityBottom small{
+    font-size:5.9pt!important;
+  }
+}
