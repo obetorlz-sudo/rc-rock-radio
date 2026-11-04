@@ -283,6 +283,7 @@ function buildConductConclusion(d){
   if(gaps.length){
     text+=' Al comparar la autoevaluación con la percepción del equipo, las diferencias más relevantes se observan en '+gaps.map(x=>x.k+' ('+Math.abs(Math.round(x.gap))+' puntos)').join(' y ')+'. Estas brechas deben revisarse mediante retroalimentación concreta y ejemplos observables del trabajo cotidiano.';
   }
+  text+=' Desde una perspectiva de desarrollo, conviene priorizar pocas conductas de alto impacto y trabajarlas de forma progresiva, vinculándolas con situaciones reales del cargo. El objetivo no es modificar el estilo personal del supervisor, sino ampliar su repertorio conductual para responder con mayor flexibilidad a distintos escenarios, fortalecer la confianza del equipo y sostener un desempeño consistente en el tiempo. La revisión periódica de avances permitirá distinguir mejoras reales, ajustar las acciones y consolidar prácticas efectivas de liderazgo.';
   return text;
 }
 
@@ -362,7 +363,7 @@ function ReportDocument({d,report,enough}){
       <span><b>Cargo:</b> {d.supervisor.position||'—'}</span><span><b>Empresa:</b> {d.company.name}</span>
     </div>
   </div>;
-  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 4</strong></div>;
+  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 5</strong></div>;
   const Title=({n,children,icon='●'})=><div className="pdfRefSectionTitle"><span>{icon}</span><h2>{n}. {children}</h2></div>;
 
   return <article className="reportDocument finalFourPageReport refReport">
@@ -384,7 +385,6 @@ function ReportDocument({d,report,enough}){
         <div className="pageOneLeft">
           <section className="pdfRefBlock"><Title n="1" icon="◎">Objetivo y alcance</Title><FormattedText text={report.objective_scope}/></section>
           <section className="pdfRefBlock"><Title n="3" icon="▣">Síntesis ejecutiva</Title><FormattedText text={report.executive_summary}/></section>
-          <section className="pdfRefBlock"><Title n="4" icon="▥">Resumen del perfil</Title><FormattedText text={d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}/></section>
         </div>
         <div className="pageOneRight">
           <section className="pdfRefBlock antecedentCard"><Title n="2" icon="●">Antecedentes generales</Title>
@@ -399,6 +399,7 @@ function ReportDocument({d,report,enough}){
           <div className="refSummaryCard warning"><h3><span>▲</span> Principales áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}><span>✓</span>{typeof x==='string'?x:x.text}</li>)}</ul></div>
         </div>
       </div>
+      <section className="pdfRefBlock profileSummaryWide"><Title n="4" icon="▥">Resumen del perfil</Title><FormattedText text={d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}/></section>
       <Footer page="1"/>
     </section>
 
@@ -448,14 +449,19 @@ function ReportDocument({d,report,enough}){
         <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={professionalAnalysis}/></section>
         <aside className="psychIdentity"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></aside>
       </div>
-      <div className="pageFourGrid">
-        <section className="pdfRefBlock"><Title n="9" icon="◎">Propuesta de mejora</Title><ul className="refCheckList">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></section>
+      <section className="pdfRefBlock proposalWide"><Title n="9" icon="◎">Propuesta de mejora</Title><ul className="refCheckList">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></section>
+      <Footer page="4"/>
+    </section>
+
+    <section className="pdfRefPage pageFive">
+      <Header/>
+      <div className="pageFiveGrid">
         <section className="pdfRefBlock"><Title n="10" icon="▣">Plan de desarrollo 30/60/90 días</Title><table className="refPlanTable"><thead><tr><th>Plazo</th><th>Acciones clave</th></tr></thead><tbody>{actionPlan.map((p,i)=><tr key={i}><td>{p.deadline||['30 días','60 días','90 días'][i]}</td><td>{p.action||p.objective||'—'}</td></tr>)}</tbody></table></section>
         <section className="pdfRefBlock"><Title n="11" icon="▥">Indicadores de seguimiento</Title><table className="refPlanTable"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>{indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}</tbody></table></section>
-        <section className="pdfRefBlock"><Title n="12" icon="▣">Conclusión profesional</Title><FormattedText text={report.conclusion}/></section>
+        <section className="pdfRefBlock conclusionWide"><Title n="12" icon="▣">Conclusión profesional</Title><FormattedText text={report.conclusion}/></section>
       </div>
       <div className="pdfRefSignatures"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
-      <Footer page="4"/>
+      <Footer page="5"/>
     </section>
   </article>;
 }
