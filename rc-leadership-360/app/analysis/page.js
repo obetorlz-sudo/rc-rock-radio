@@ -270,11 +270,46 @@ function PsychForm({value,setValue,onSave}){
   </div>;
 }
 
+function buildProfessionalAnalysis(d,psych){
+  const parts=[];
+  const note=String(psych?.note||'').trim();
+  const context=String(psych?.context_position||'').trim();
+  const interview=String(psych?.interview_observations||'').trim();
+  const strengths=String(psych?.strengths_observed||'').trim();
+  const development=String(psych?.development_observed||'').trim();
+  const environment=String(psych?.environment_factors||'').trim();
+  const recommendations=String(psych?.professional_recommendations||'').trim();
+
+  if(note)parts.push(note);
+  if(context||environment){
+    parts.push('**Contexto laboral y exigencias del cargo.** '+[context,environment].filter(Boolean).join(' '));
+  }
+  if(strengths){
+    parts.push('**Fortalezas observadas.** '+strengths+' Estas fortalezas constituyen recursos relevantes para sostener el desempeño, favorecer la coordinación del equipo y apoyar la aplicación de acciones de mejora en situaciones reales de trabajo.');
+  }
+  if(development){
+    parts.push('**Aspectos a desarrollar.** '+development+' El foco de desarrollo debe traducirse en conductas observables y progresivas, evitando cambios generales difíciles de medir y priorizando aquellos comportamientos que generen mayor impacto en la gestión cotidiana.');
+  }
+  if(interview){
+    parts.push('**Lectura de la entrevista.** '+interview+' La información recogida en entrevista permite complementar los resultados cuantitativos y comprender mejor cómo se manifiestan las conductas de liderazgo en el contexto real del puesto.');
+  }
+  if(d?.integrated_summary){
+    parts.push('**Integración con los resultados de la evaluación.** '+d.integrated_summary+' Esta integración permite contrastar la autoevaluación, la percepción agregada del equipo y los antecedentes profesionales, entregando una lectura más completa del desempeño y de las brechas prioritarias.');
+  }
+  if(recommendations){
+    parts.push('**Orientación profesional.** '+recommendations+' Se recomienda realizar seguimiento con evidencias concretas de cambio, revisión periódica de avances y retroalimentación de la jefatura y del equipo para consolidar las mejoras.');
+  }else{
+    parts.push('**Orientación profesional.** Se recomienda focalizar el desarrollo en un número acotado de conductas prioritarias, definir metas observables y revisar los avances en hitos 30/60/90 días, utilizando retroalimentación y evidencias concretas del desempeño.');
+  }
+  return parts.length?parts.join('\n\n'):'Sin antecedente profesional registrado.';
+}
+
 function ReportDocument({d,report,enough}){
   if(!report)return null;
   const issueDate=report.finalized_at||report.updated_at||new Date().toISOString();
   const dateText=new Date(issueDate).toLocaleDateString('es-CL');
   const psych=d.professional_note||{};
+  const professionalAnalysis=buildProfessionalAnalysis(d,psych);
   const strengths=(report.strengths||[]).slice(0,3);
   const development=(report.development_areas||[]).slice(0,3);
   const gaps=(d.gap_rows||[]).slice(0,3);
@@ -354,9 +389,9 @@ function ReportDocument({d,report,enough}){
         <section className="pdfRefBlock perceptionBlock">
           <Title n="6" icon="▥">Comparación de percepciones (Radar)</Title>
           <div className="refRadarWrap"><RadarChart title="Comparación de percepciones" labels={radarKeys} self={d.self?.competencies} team={enough?d.team?.competencies:null}/></div>
-          <div className="refReading conclusion"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><p>{d.integrated_summary||d.self_analysis||'Sin síntesis disponible.'}</p></div>
         </section>
       </div>
+      <div className="refReading conclusion conductConclusionWide"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><FormattedText text={d.integrated_summary||d.self_analysis||'Sin síntesis disponible.'}/></div>
       <Footer page="2"/>
     </section>
 
@@ -384,7 +419,7 @@ function ReportDocument({d,report,enough}){
     <section className="pdfRefPage pageFour">
       <Header/>
       <div className="psychTopGrid">
-        <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={psych.note||psych.interview_observations||psych.context_position||'Sin antecedente profesional registrado.'}/></section>
+        <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={professionalAnalysis}/></section>
         <aside className="psychIdentity"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></aside>
       </div>
       <div className="pageFourGrid">
