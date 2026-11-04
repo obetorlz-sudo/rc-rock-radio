@@ -363,7 +363,7 @@ function ReportDocument({d,report,enough}){
       <span><b>Cargo:</b> {d.supervisor.position||'—'}</span><span><b>Empresa:</b> {d.company.name}</span>
     </div>
   </div>;
-  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 5</strong></div>;
+  const Footer=({page})=><div className="pdfRefFooter"><div><b>INNOVA RC CAPACITA</b><span>Desarrollo de personas para organizaciones con más posibilidades</span></div><strong>Pág. {page} de 6</strong></div>;
   const Title=({n,children,icon='●'})=><div className="pdfRefSectionTitle"><span>{icon}</span><h2>{n}. {children}</h2></div>;
 
   return <article className="reportDocument finalFourPageReport refReport">
@@ -399,32 +399,32 @@ function ReportDocument({d,report,enough}){
           <div className="refSummaryCard warning"><h3><span>▲</span> Principales áreas de desarrollo</h3><ul>{development.map((x,i)=><li key={i}><span>✓</span>{typeof x==='string'?x:x.text}</li>)}</ul></div>
         </div>
       </div>
-      <section className="pdfRefBlock profileSummaryWide"><Title n="4" icon="▥">Resumen del perfil</Title><FormattedText text={d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}/></section>
       <Footer page="1"/>
     </section>
 
-    <section className="pdfRefPage">
+    <section className="pdfRefPage pageTwo">
       <Header/>
+      <section className="pdfRefBlock profileSummaryPage"><Title n="4" icon="▥">Resumen del perfil</Title><FormattedText text={d.self_analysis||d.integrated_summary||'Sin síntesis disponible.'}/></section>
       <div className="pageTwoGrid">
         <section className="pdfRefBlock discProfileBlock">
           <Title n="5" icon="▥">Perfil DISC</Title>
           <div className="discColumns">
             {['D','I','S','C'].map(k=>{const v=Number(d.self?.disc?.[k]||0);return <div className={'discCol disc-'+k} key={k}><strong>{v}%</strong><div className="discColTrack"><i style={{height:v+'%','--disc-color':discColor[k]}}/></div><b>{k}</b><span>{DISC_INFO[k].name}</span></div>})}
           </div>
-          <div className="refReading"><h3>Interpretación del perfil DISC</h3><p>{d.self_analysis||'Sin análisis disponible.'}</p></div>
+          <div className="refReading"><h3>Interpretación del perfil DISC</h3><FormattedText text={d.self_analysis||'Sin análisis disponible.'}/></div>
         </section>
         <section className="pdfRefBlock perceptionBlock">
           <Title n="6" icon="▥">Comparación de percepciones (Radar)</Title>
           <div className="refRadarWrap"><RadarChart title="Comparación de percepciones" labels={radarKeys} self={d.self?.competencies} team={enough?d.team?.competencies:null}/></div>
         </section>
       </div>
-      <div className="refReading conclusion conductConclusionWide"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><FormattedText text={conductConclusion}/></div>
       <Footer page="2"/>
     </section>
 
-    <section className="pdfRefPage">
+    <section className="pdfRefPage pageThree">
       <Header/>
-      <section className="pdfRefBlock">
+      <div className="refReading conclusion conductConclusionPage"><h3>💡 &nbsp; Conclusión del perfil conductual</h3><FormattedText text={conductConclusion}/></div>
+      <section className="pdfRefBlock competencySection">
         <Title n="7" icon="⚙">Resultados de competencias clave</Title>
         <div className="pageThreeGrid">
           <div className="refCompetencyTable">
@@ -445,23 +445,24 @@ function ReportDocument({d,report,enough}){
 
     <section className="pdfRefPage pageFour">
       <Header/>
-      <div className="psychTopGrid">
-        <section className="pdfRefBlock psychMain"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={professionalAnalysis}/></section>
-        <aside className="psychIdentity"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></aside>
-      </div>
-      <section className="pdfRefBlock proposalWide"><Title n="9" icon="◎">Propuesta de mejora</Title><ul className="refCheckList">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></section>
+      <section className="pdfRefBlock psychMain psychFullPage"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={professionalAnalysis}/></section>
+      <div className="psychIdentity psychIdentityBottom"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></div>
       <Footer page="4"/>
     </section>
 
     <section className="pdfRefPage pageFive">
       <Header/>
-      <div className="pageFiveGrid">
-        <section className="pdfRefBlock"><Title n="10" icon="▣">Plan de desarrollo 30/60/90 días</Title><table className="refPlanTable"><thead><tr><th>Plazo</th><th>Acciones clave</th></tr></thead><tbody>{actionPlan.map((p,i)=><tr key={i}><td>{p.deadline||['30 días','60 días','90 días'][i]}</td><td>{p.action||p.objective||'—'}</td></tr>)}</tbody></table></section>
-        <section className="pdfRefBlock"><Title n="11" icon="▥">Indicadores de seguimiento</Title><table className="refPlanTable"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>{indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}</tbody></table></section>
-        <section className="pdfRefBlock conclusionWide"><Title n="12" icon="▣">Conclusión profesional</Title><FormattedText text={report.conclusion}/></section>
-      </div>
-      <div className="pdfRefSignatures"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
+      <section className="pdfRefBlock proposalFullPage"><Title n="9" icon="◎">Propuesta de mejora</Title><ul className="refCheckList">{(report.recommendations||[]).slice(0,5).map((x,i)=><li key={i}>✓ {typeof x==='string'?x:x.text}</li>)}</ul></section>
+      <section className="pdfRefBlock planFullPage"><Title n="10" icon="▣">Plan de desarrollo 30/60/90 días</Title><table className="refPlanTable"><thead><tr><th>Plazo</th><th>Acciones clave</th></tr></thead><tbody>{actionPlan.map((p,i)=><tr key={i}><td>{p.deadline||['30 días','60 días','90 días'][i]}</td><td>{p.action||p.objective||'—'}</td></tr>)}</tbody></table></section>
       <Footer page="5"/>
+    </section>
+
+    <section className="pdfRefPage pageSix">
+      <Header/>
+      <section className="pdfRefBlock indicatorsFullPage"><Title n="11" icon="▥">Indicadores de seguimiento</Title><table className="refPlanTable"><thead><tr><th>Indicador</th><th>Meta</th></tr></thead><tbody>{indicators.map((x,i)=><tr key={i}><td>{x.indicator||'—'}</td><td>{x.target||'—'}</td></tr>)}</tbody></table></section>
+      <section className="pdfRefBlock conclusionFullPage"><Title n="12" icon="▣">Conclusión profesional</Title><FormattedText text={report.conclusion}/></section>
+      <div className="pdfRefSignatures"><div><span>Psicóloga Laboral</span><small>{psych.author||'Innova RC Capacita'}</small></div><div><span>Supervisor / Jefatura</span><small>Constancia de recepción</small></div></div>
+      <Footer page="6"/>
     </section>
   </article>;
 }
