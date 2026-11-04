@@ -761,3 +761,87 @@
     background:#fff!important;
   }
 }
+
+
+/* RC Leadership 360 — page 2 horizontal conclusion + expanded psychologist analysis */
+@media print{
+  .refReport .pageTwoGrid{
+    grid-template-columns:.92fr 1.08fr!important;
+    gap:4mm!important;
+    align-items:start!important;
+  }
+  .refReport .discProfileBlock,
+  .refReport .perceptionBlock{
+    min-height:0!important;
+    height:auto!important;
+  }
+  .refReport .discColumns{
+    height:76mm!important;
+    padding:4.5mm 4mm 2.5mm!important;
+  }
+  .refReport .discCol{
+    height:65mm!important;
+    grid-template-rows:5mm 1fr 5mm 5mm!important;
+  }
+  .refReport .discColTrack{
+    height:47mm!important;
+  }
+  .refReport .refRadarWrap{
+    height:101mm!important;
+  }
+  .refReport .refRadarWrap .radarStage{
+    height:99mm!important;
+  }
+  .refReport .refRadarWrap .radarSvg{
+    height:95mm!important;
+    max-width:98mm!important;
+  }
+  .refReport .conductConclusionWide{
+    margin-top:3.5mm!important;
+    width:100%!important;
+    min-height:0!important;
+    padding:3.2mm 4mm!important;
+    box-sizing:border-box!important;
+  }
+  .refReport .conductConclusionWide h3{
+    font-size:8.2pt!important;
+    margin:0 0 1.6mm!important;
+  }
+  .refReport .conductConclusionWide .formattedText,
+  .refReport .conductConclusionWide .formattedText p,
+  .refReport .conductConclusionWide .formattedText li{
+    font-size:6.25pt!important;
+    line-height:1.28!important;
+  }
+
+  .refReport .psychTopGrid{
+    grid-template-columns:1fr 42mm!important;
+    gap:3.5mm!important;
+    align-items:start!important;
+  }
+  .refReport .psychMain{
+    max-height:68mm!important;
+    min-height:0!important;
+    padding:3.2mm!important;
+    overflow:hidden!important;
+  }
+  .refReport .psychMain .formattedText,
+  .refReport .psychMain .formattedText p,
+  .refReport .psychMain .formattedText li{
+    font-size:5.8pt!important;
+    line-height:1.24!important;
+  }
+  .refReport .psychMain .formattedText p{
+    margin:0 0 1.25mm!important;
+  }
+  .refReport .psychMain .formattedText strong{
+    color:#0b4c87!important;
+  }
+  .refReport .psychIdentity{
+    min-height:36mm!important;
+    padding:3mm!important;
+  }
+  .refReport .pageFourGrid{
+    margin-top:3mm!important;
+  }
+}
