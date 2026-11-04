@@ -1407,3 +1407,22 @@
   /* Mantener el informe exactamente en cinco páginas */
   .refReport .pageSix{display:none!important}
 }
+
+
+/* RC Leadership 360 — corregir subtítulo del banner */
+@media print{
+  .refReport .heroCorporatePanel{
+    grid-template-rows:auto auto auto auto!important;
+    align-content:start!important;
+  }
+  .refReport .heroCorporatePanel>p{
+    margin:2mm 0 0 4.6mm!important;
+    max-width:80mm!important;
+    width:80mm!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    font-size:6.2pt!important;
+    line-height:1.28!important;
+  }
+}
