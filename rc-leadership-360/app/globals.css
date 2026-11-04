@@ -1313,3 +1313,97 @@
     padding-bottom:18mm!important;
   }
 }
+
+
+/* RC Leadership 360 — cierre final 5 páginas + fortalezas alineadas */
+@media print{
+  /* Cuadro verde: viñetas y texto alineados completamente a la izquierda */
+  .refReport .refSummaryCard.success{
+    text-align:left!important;
+  }
+  .refReport .refSummaryCard.success ul{
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    justify-items:stretch!important;
+  }
+  .refReport .refSummaryCard.success li{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:3.6mm 1fr!important;
+    column-gap:1mm!important;
+    justify-items:start!important;
+    text-align:left!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .refReport .refSummaryCard.success li>span{
+    width:3.6mm!important;
+    text-align:left!important;
+    justify-self:start!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  /* Página 5: propuesta, plan, indicadores y conclusión bien distribuidos */
+  .refReport .proposalFive{
+    width:100%!important;
+    box-sizing:border-box!important;
+    border:1px solid #dce7ef!important;
+    border-radius:2mm!important;
+    padding:3.2mm 3.8mm!important;
+    margin-bottom:3.5mm!important;
+  }
+  .refReport .proposalFive .refCheckList li{
+    font-size:6.8pt!important;
+    line-height:1.3!important;
+    margin:.8mm 0!important;
+  }
+  .refReport .pageFiveTopGrid{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:3.5mm!important;
+    align-items:start!important;
+    margin-bottom:3.5mm!important;
+  }
+  .refReport .pageFiveTopGrid>.pdfRefBlock{
+    border:1px solid #dce7ef!important;
+    border-radius:2mm!important;
+    padding:3mm!important;
+    min-height:0!important;
+    height:auto!important;
+    box-sizing:border-box!important;
+  }
+  .refReport .pageFiveTopGrid .refPlanTable{
+    font-size:6.35pt!important;
+  }
+  .refReport .pageFiveTopGrid .refPlanTable th,
+  .refReport .pageFiveTopGrid .refPlanTable td{
+    padding:1.1mm 1.25mm!important;
+    line-height:1.24!important;
+  }
+  .refReport .conclusionFive{
+    width:100%!important;
+    box-sizing:border-box!important;
+    border:1px solid #dce7ef!important;
+    border-radius:2mm!important;
+    padding:3.2mm 3.8mm!important;
+    min-height:58mm!important;
+  }
+  .refReport .conclusionFive .formattedText,
+  .refReport .conclusionFive .formattedText p,
+  .refReport .conclusionFive .formattedText li{
+    font-size:6.85pt!important;
+    line-height:1.34!important;
+    text-align:justify!important;
+  }
+  .refReport .conclusionFive .formattedText p{
+    margin:0 0 1.5mm!important;
+  }
+  .refReport .pageFive .pdfRefSignatures{
+    bottom:18.5mm!important;
+  }
+
+  /* Mantener el informe exactamente en cinco páginas */
+  .refReport .pageSix{display:none!important}
+}
