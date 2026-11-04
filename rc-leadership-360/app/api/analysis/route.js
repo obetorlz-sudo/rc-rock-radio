@@ -59,9 +59,9 @@ function psychText(note){
 }
 function integratedSummary(self,team,note){
   if(!self)return psychText(note)||null;
-  const strengths=sorted(self.competencies,true).slice(0,2).map(x=>x[0]);
-  const dev=sorted(self.competencies,false).slice(0,2).map(x=>x[0]);
-  let text=`La autoevaluación identifica como fortalezas relativas ${strengths.join(' y ')}, mientras que ${dev.join(' y ')} aparecen como focos de desarrollo.`;
+  const strengths=sorted(self.competencies,true).slice(0,3);
+  const dev=sorted(self.competencies,false).slice(0,3);
+  let text=`La autoevaluación identifica como fortalezas relativas ${strengths.slice(0,2).map(x=>x[0]).join(' y ')}, mientras que ${dev.slice(0,2).map(x=>x[0]).join(' y ')} aparecen como focos de desarrollo.`;
   const gaps=gapRows(self,team);
   if(gaps.length){
     const g=gaps[0];
@@ -69,8 +69,14 @@ function integratedSummary(self,team,note){
       ?` La principal brecha de percepción se encuentra en ${g.competency}, con ${Math.abs(g.gap)} puntos de diferencia.`
       :' La percepción del supervisor y del equipo resulta relativamente consistente en las competencias evaluadas.';
   }
+  text+=` En términos generales, el perfil muestra un desempeño sólido en ${strengths.map(([k,v])=>k+' ('+v+'%)').join(', ')}, competencias que pueden utilizarse como base para fortalecer la coordinación, la confianza y el cumplimiento de objetivos del equipo.`;
+  text+=` Los principales focos de desarrollo se concentran en ${dev.map(([k,v])=>k+' ('+v+'%)').join(', ')}, por lo que se recomienda traducir estas áreas en conductas observables, metas concretas y acciones aplicables al trabajo cotidiano.`;
   const p=psychText(note);
-  if(p) text+=' El análisis profesional agrega: '+p;
+  if(p){
+    text+=' El análisis profesional agrega: '+p;
+  }else{
+    text+=' A nivel de desarrollo, se recomienda mantener seguimiento 30/60/90 días, incorporar retroalimentación periódica de la jefatura y del equipo, y revisar evidencias concretas de avance para consolidar prácticas sostenibles de liderazgo.';
+  }
   return text;
 }
 function evidenceMatrix(self,team,note){
