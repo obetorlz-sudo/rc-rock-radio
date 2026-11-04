@@ -1426,3 +1426,56 @@
     line-height:1.28!important;
   }
 }
+
+
+/* RC Leadership 360 — ajuste dinámico del punto 8 */
+@media print{
+  .refReport .pageFour{
+    padding-bottom:22mm!important;
+  }
+  .refReport .pageFour .psychFullPage{
+    min-height:0!important;
+    max-height:none!important;
+    height:auto!important;
+    overflow:visible!important;
+    margin-bottom:2.5mm!important;
+    padding:3.4mm!important;
+  }
+  .refReport .pageFour .psychIdentityBottom{
+    margin-top:1.5mm!important;
+    padding:2.3mm!important;
+  }
+
+  .refReport .pageFour .psychSm .formattedText,
+  .refReport .pageFour .psychSm .formattedText p,
+  .refReport .pageFour .psychSm .formattedText li{
+    font-size:7.05pt!important;
+    line-height:1.30!important;
+  }
+  .refReport .pageFour .psychMd .formattedText,
+  .refReport .pageFour .psychMd .formattedText p,
+  .refReport .pageFour .psychMd .formattedText li{
+    font-size:6.55pt!important;
+    line-height:1.27!important;
+  }
+  .refReport .pageFour .psychLg .formattedText,
+  .refReport .pageFour .psychLg .formattedText p,
+  .refReport .pageFour .psychLg .formattedText li{
+    font-size:6.05pt!important;
+    line-height:1.24!important;
+  }
+  .refReport .pageFour .psychXl .formattedText,
+  .refReport .pageFour .psychXl .formattedText p,
+  .refReport .pageFour .psychXl .formattedText li{
+    font-size:5.65pt!important;
+    line-height:1.20!important;
+  }
+
+  .refReport .pageFour .psychFullPage .formattedText p{
+    margin:0 0 1.05mm!important;
+  }
+  .refReport .pageFour .psychFullPage .formattedText ul,
+  .refReport .pageFour .psychFullPage .formattedText ol{
+    margin:.8mm 0 1.1mm 4mm!important;
+  }
+}
