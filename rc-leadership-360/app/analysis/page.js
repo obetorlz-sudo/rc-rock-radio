@@ -351,6 +351,7 @@ function ReportDocument({d,report,enough}){
   const psych=d.professional_note||{};
   const professionalAnalysis=buildProfessionalAnalysis(d,psych);
   const professionalConclusion=buildProfessionalConclusion(report.conclusion,d);
+  const psychDensity=professionalAnalysis.length>4300?'psychXl':professionalAnalysis.length>3400?'psychLg':professionalAnalysis.length>2600?'psychMd':'psychSm';
   const conductConclusion=buildConductConclusion(d);
   const competencyReading=buildCompetencyReading(d);
   const strengths=(report.strengths||[]).slice(0,3);
@@ -461,7 +462,7 @@ function ReportDocument({d,report,enough}){
 
     <section className="pdfRefPage pageFour">
       <Header/>
-      <section className="pdfRefBlock psychMain psychFullPage"><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={professionalAnalysis}/></section>
+      <section className={'pdfRefBlock psychMain psychFullPage '+psychDensity}><Title n="8" icon="●">Análisis de la Psicóloga Laboral</Title><FormattedText text={professionalAnalysis}/></section>
       <div className="psychIdentity psychIdentityBottom"><div className="personIcon">♟</div><div><b>Psicóloga Laboral</b><span>{psych.author||'Profesional responsable'}</span><small>INNOVA RC CAPACITA SPA</small></div></div>
       <Footer page="4"/>
     </section>
